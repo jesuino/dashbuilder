@@ -9,7 +9,6 @@
   <inherits name="org.uberfire.ext.plugin.RuntimePluginClient"/>
   <inherits name="org.uberfire.ext.security.management.UberfireSecurityManagementWorkbench"/>
   <inherits name="org.uberfire.ext.preferences.UberfirePreferences"/>
-  <inherits name="org.uberfire.ssh.UberfireSSHClient"/>
 
   <!-- Experimental -->
   <inherits name="org.uberfire.experimental.UberfireExperimentalAPI"/>

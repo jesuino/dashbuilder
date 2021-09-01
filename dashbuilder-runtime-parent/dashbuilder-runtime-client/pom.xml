@@ -506,11 +506,6 @@
       <artifactId>uberfire-ssh-api</artifactId>
       <scope>provided</scope>
     </dependency>
-    <dependency>
-      <groupId>org.uberfire</groupId>
-      <artifactId>uberfire-ssh-client</artifactId>
-      <scope>provided</scope>
-    </dependency>
 
     <dependency>
       <groupId>com.google.inject</groupId>
@@ -652,7 +647,6 @@
             <compileSourcesArtifact>org.uberfire:uberfire-workbench-client-backend</compileSourcesArtifact>
             <compileSourcesArtifact>org.uberfire:uberfire-workbench-client-views-patternfly</compileSourcesArtifact>
             <compileSourcesArtifact>org.uberfire:uberfire-backend-api</compileSourcesArtifact>
-            <compileSourcesArtifact>org.uberfire:uberfire-ssh-client</compileSourcesArtifact>
             <compileSourcesArtifact>org.uberfire:uberfire-ssh-api</compileSourcesArtifact>
 
             <!-- Dependencies for Navigation -->
