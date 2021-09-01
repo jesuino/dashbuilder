@@ -1914,19 +1914,6 @@
 
       <dependency>
         <groupId>org.dashbuilder</groupId>
-        <artifactId>dashbuilder-renderer-lienzo</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.dashbuilder</groupId>
-        <artifactId>dashbuilder-renderer-lienzo</artifactId>
-        <version>${project.version}</version>
-        <classifier>sources</classifier>
-      </dependency>
-
-      <dependency>
-        <groupId>org.dashbuilder</groupId>
         <artifactId>dashbuilder-renderer-default</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -1986,21 +1973,6 @@
       <dependency>
         <groupId>org.dashbuilder</groupId>
         <artifactId>dashbuilder-cms-client</artifactId>
-        <version>${project.version}</version>
-        <classifier>sources</classifier>
-      </dependency>
-
-      <!-- Chart JS -->
-
-      <dependency>
-        <groupId>org.dashbuilder</groupId>
-        <artifactId>dashbuilder-renderer-chartjs</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.dashbuilder</groupId>
-        <artifactId>dashbuilder-renderer-chartjs</artifactId>
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
