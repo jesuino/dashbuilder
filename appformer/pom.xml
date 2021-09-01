@@ -710,7 +710,6 @@
     <module>uberfire-extensions</module>
     <module>uberfire-m2repo-editor</module>
     <module>uberfire-project</module>
-    <module>uberfire-rest</module>
     <module>uberfire-services</module>
     <module>uberfire-structure</module>
     <module>uberfire-test-utils</module>
