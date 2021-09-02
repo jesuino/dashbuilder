@@ -113,7 +113,6 @@ public class ResourceTypeManagerCacheTest {
         when(iocManager.lookupBeans(eq(type))).thenReturn(resourceTypeBeans);
 
         SyncBeanDef editorActivityDef = mock(SyncBeanDef.class);
-        when(editorActivityDef.getBeanClass()).thenReturn(editorActivityClass);
         when(editorActivityDef.getName()).thenReturn(type);
 
         activityBeansCache.addNewEditorActivity(editorActivityDef, priority, type);

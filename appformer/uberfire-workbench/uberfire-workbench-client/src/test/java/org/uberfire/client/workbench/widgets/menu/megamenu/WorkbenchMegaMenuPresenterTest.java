@@ -151,7 +151,6 @@ public class WorkbenchMegaMenuPresenterTest {
         presenter.canHideMenuItemByIdentifier = spy(new HashMap<>());
 
         doReturn(mock(ChildMenuItemPresenter.class)).when(childMenuItemPresenters).get();
-        doReturn(mock(GroupMenuItemPresenter.class)).when(groupMenuItemPresenters).get();
         doReturn(mock(ChildContextMenuItemPresenter.class)).when(childContextMenuItemPresenters).get();
     }
 

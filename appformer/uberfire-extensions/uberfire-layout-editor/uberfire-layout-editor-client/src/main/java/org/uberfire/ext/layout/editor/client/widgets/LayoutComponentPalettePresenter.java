@@ -20,13 +20,11 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.jboss.errai.ioc.client.api.ManagedInstance;
-import org.jboss.errai.ioc.client.container.Factory;
 import org.kie.soup.commons.validation.PortablePreconditions;
 import org.uberfire.client.mvp.UberElement;
 import org.uberfire.ext.layout.editor.client.api.LayoutDragComponent;
@@ -85,15 +83,6 @@ public class LayoutComponentPalettePresenter implements LayoutDragComponentPalet
         PortablePreconditions.checkNotNull("groupProvider", groupProvider);
 
         LayoutDragComponentGroup group = groupProvider.getComponentGroup();
-
-        Map<String, LayoutDragComponent> components = group.getComponents();
-
-        List<String> disabledGroups =  group.getComponents().entrySet().stream()
-                .map(entry -> entry.getKey())
-                .collect(Collectors.toList());
-
-        disabledGroups.stream()
-                .forEach(components::remove);
 
         LayoutDragComponentGroupPresenter layoutDragComponentGroupPresenter = layoutDragComponentGroupInstance.get();
         layoutDragComponentGroups.put(group.getName(), layoutDragComponentGroupPresenter);
