@@ -35,7 +35,6 @@ import org.uberfire.client.workbench.events.PerspectiveChange;
 import org.uberfire.client.workbench.events.PlaceMaximizedEvent;
 import org.uberfire.client.workbench.events.PlaceMinimizedEvent;
 import org.uberfire.client.workbench.widgets.menu.events.PerspectiveVisibiltiyChangeEvent;
-import org.uberfire.experimental.service.auth.ExperimentalActivitiesAuthorizationManager;
 import org.uberfire.mvp.Command;
 import org.uberfire.mvp.PlaceRequest;
 import org.uberfire.mvp.impl.DefaultPlaceRequest;
@@ -81,9 +80,6 @@ public class WorkbenchMenuBarPresenterTest {
 
     @Mock
     private WorkbenchMenuBarPresenter.View view;
-
-    @Mock
-    private ExperimentalActivitiesAuthorizationManager experimentalActivitiesAuthorizationManager;
 
     @InjectMocks
     private WorkbenchMenuBarPresenter presenter;
@@ -347,43 +343,6 @@ public class WorkbenchMenuBarPresenterTest {
                    presenter.getAddedMenus().get(1));
         assertSame(thirdMenus,
                    presenter.getAddedMenus().get(2));
-    }
-
-    @Test
-    public void testAddMenusWithExperimentalPerspective() {
-
-        when(authzManager.authorize(any(MenuItem.class), any())).thenReturn(true);
-
-        List<MenuItem> items = new ArrayList<>();
-
-        items.add(MenuFactory.newSimpleItem(NAME).perspective(PERSPECTIVE_ID).endMenu().build().getItems().get(0));
-        items.add(MenuFactory.newSimpleItem(NAME).perspective(SECOND_PERSPECTIVE_ID).endMenu().build().getItems().get(0));
-        items.add(MenuFactory.newSimpleItem(NAME).perspective(THIRD_PERSPECTIVE_ID).endMenu().build().getItems().get(0));
-
-        final Menus menus = MenuFactory.newSimpleItem(NAME).withItems(items).endMenu().build();
-
-        when(experimentalActivitiesAuthorizationManager.authorizeActivityId(anyString()))
-                .thenAnswer((Answer<Boolean>) invocationOnMock -> !SECOND_PERSPECTIVE_ID.equals(invocationOnMock.getArguments()[0]));
-
-        presenter.addMenus(menus);
-
-        verify(experimentalActivitiesAuthorizationManager, times(3)).authorizeActivityId(anyString());
-        verify(view, times(2)).setMenuItemVisible(anyString(), eq(true));
-        verify(view).setMenuItemVisible(anyString(), eq(false));
-    }
-
-    @Test
-    public void testShowHideExperimentalPerspectiveMenus() {
-        testAddMenusWithExperimentalPerspective();
-
-        presenter.onPerspectiveVisibilityChange(new PerspectiveVisibiltiyChangeEvent(PERSPECTIVE_ID, false));
-        verify(view).setMenuItemVisible(PERSPECTIVE_ID, false);
-
-        presenter.onPerspectiveVisibilityChange(new PerspectiveVisibiltiyChangeEvent(SECOND_PERSPECTIVE_ID, true));
-        verify(view).setMenuItemVisible(SECOND_PERSPECTIVE_ID, true);
-
-        presenter.onPerspectiveVisibilityChange(new PerspectiveVisibiltiyChangeEvent(THIRD_PERSPECTIVE_ID, false));
-        verify(view).setMenuItemVisible(THIRD_PERSPECTIVE_ID, false);
     }
 
     @Test

@@ -28,10 +28,6 @@
 	<!-- Navigation Dependency -->
 	<inherits name="org.uberfire.ext.security.management.UberfireSecurityManagementWidgets"/>
 
-	<!-- Experimental -->
-  	<inherits name="org.uberfire.experimental.UberfireExperimentalAPI"/>
-  	<inherits name="org.uberfire.experimental.UberfireExperimentalClient"/>
-
 	<!-- Dashbuilder Client Deps -->
 	<inherits name="org.dashbuilder.CommonClient" />
 	<inherits name="org.dashbuilder.CommonWidgets" />

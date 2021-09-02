@@ -28,7 +28,6 @@ import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
-import org.uberfire.experimental.client.service.ClientExperimentalFeaturesRegistryService;
 import org.uberfire.ext.layout.editor.client.api.LayoutDragComponent;
 import org.uberfire.ext.layout.editor.client.api.LayoutDragComponentGroup;
 import org.uberfire.ext.layout.editor.client.test.group1.Group1LayoutComponentPaletteGroupProvider;
@@ -69,21 +68,14 @@ public class LayoutComponentPalettePresenterTest {
     @Mock
     private LayoutDragComponentGroupPresenter.View dragComponentGroupView;
 
-    @Mock
-    private ClientExperimentalFeaturesRegistryService experimentalFeaturesRegistryService;
-
     private LayoutDragComponentGroupPresenter dragComponentGroupPresenter;
 
     private LayoutComponentPalettePresenter presenter;
-
-    private List<String> disabledExperimentalFeatures = new ArrayList<>();
 
     private List<String> currentDragComponents = new ArrayList<>();
 
     @Before
     public void initialize() {
-
-        when(experimentalFeaturesRegistryService.isFeatureEnabled(anyString())).thenAnswer((Answer<Boolean>) invocationOnMock -> !disabledExperimentalFeatures.contains(invocationOnMock.getArguments()[0]));
 
         ManagedInstance<LayoutDragComponentGroupPresenter> instance = mock(ManagedInstance.class);
 
@@ -107,7 +99,7 @@ public class LayoutComponentPalettePresenterTest {
             }
         });
 
-        presenter = new LayoutComponentPalettePresenter(view, instance, experimentalFeaturesRegistryService);
+        presenter = new LayoutComponentPalettePresenter(view, instance);
     }
 
     @Test
@@ -147,36 +139,6 @@ public class LayoutComponentPalettePresenterTest {
 
         presenter.removeDraggableComponent(Group1LayoutComponentPaletteGroupProvider.ID, DRAGGABLE_COMPONENT_NAME);
         verify(dragComponentGroupPresenter).removeComponent(DRAGGABLE_COMPONENT_NAME);
-    }
-
-    @Test
-    public void testAddDraggableGroupsWithExperimental() {
-        disabledExperimentalFeatures.add(Group1LayoutDragComponent1.class.getName());
-        disabledExperimentalFeatures.add(Group1LayoutDragComponent3.class.getName());
-        disabledExperimentalFeatures.add(Group2LayoutComponentPaletteGroupProvider.class.getName());
-        disabledExperimentalFeatures.add(Group3LayoutDragComponent1.class.getName());
-
-        presenter.addDraggableGroups(Arrays.asList(new Group1LayoutComponentPaletteGroupProvider(true), new Group2LayoutComponentPaletteGroupProvider(), new Group3LayoutComponentPaletteGroupProvider()));
-
-        verify(dragComponentGroupPresenter, times(2)).init(any());
-        verify(dragComponentGroupPresenter, times(2)).getView();
-        verify(dragComponentGroupView).setExpanded(true);
-        verify(dragComponentGroupView).setExpanded(false);
-        verify(view, times(2)).addDraggableComponentGroup(any());
-
-        assertEquals(2, presenter.getLayoutDragComponentGroups().size());
-
-        assertNotNull(presenter.getLayoutDragComponentGroups().get(Group1LayoutComponentPaletteGroupProvider.ID));
-        assertFalse(presenter.hasDraggableComponent(Group1LayoutComponentPaletteGroupProvider.ID, Group1LayoutDragComponent1.ID));
-        assertTrue(presenter.hasDraggableComponent(Group1LayoutComponentPaletteGroupProvider.ID, Group1LayoutDragComponent2.ID));
-        assertFalse(presenter.hasDraggableComponent(Group1LayoutComponentPaletteGroupProvider.ID, Group1LayoutDragComponent3.ID));
-
-        assertNull(presenter.getLayoutDragComponentGroups().get(Group2LayoutComponentPaletteGroupProvider.ID));
-        assertFalse(presenter.hasDraggableComponent(Group2LayoutComponentPaletteGroupProvider.ID, Group2LayoutDragComponent1.ID));
-        assertFalse(presenter.hasDraggableComponent(Group2LayoutComponentPaletteGroupProvider.ID, Group2LayoutDragComponent2.ID));
-
-        assertNotNull(presenter.getLayoutDragComponentGroups().get(Group3LayoutComponentPaletteGroupProvider.ID));
-        assertFalse(presenter.hasDraggableComponent(Group3LayoutComponentPaletteGroupProvider.ID, Group3LayoutDragComponent1.ID));
     }
 
     @Test

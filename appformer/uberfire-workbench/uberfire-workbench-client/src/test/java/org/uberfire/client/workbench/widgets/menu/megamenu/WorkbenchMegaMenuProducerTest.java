@@ -36,7 +36,6 @@ import org.uberfire.client.workbench.widgets.menu.megamenu.contextmenuitem.Child
 import org.uberfire.client.workbench.widgets.menu.megamenu.contextmenuitem.GroupContextMenuItemPresenter;
 import org.uberfire.client.workbench.widgets.menu.megamenu.menuitem.ChildMenuItemPresenter;
 import org.uberfire.client.workbench.widgets.menu.megamenu.menuitem.GroupMenuItemPresenter;
-import org.uberfire.experimental.service.auth.ExperimentalActivitiesAuthorizationManager;
 import org.uberfire.rpc.SessionInfo;
 import org.uberfire.security.authz.AuthorizationManager;
 
@@ -105,9 +104,6 @@ public class WorkbenchMegaMenuProducerTest {
     @Mock
     private Workbench workbench;
 
-    @Mock
-    private ExperimentalActivitiesAuthorizationManager experimentalActivitiesAuthorizationManager;
-
     private WorkbenchMegaMenuProducer producer;
     private boolean isStandalone = false;
 
@@ -126,8 +122,7 @@ public class WorkbenchMegaMenuProducerTest {
                                                  groupMenuItemPresenters,
                                                  childContextMenuItemPresenters,
                                                  groupContextMenuItemPresenters,
-                                                 workbench,
-                                                 experimentalActivitiesAuthorizationManager) {
+                                                 workbench) {
             @Override
             protected boolean isStandalone() {
                 return isStandalone;

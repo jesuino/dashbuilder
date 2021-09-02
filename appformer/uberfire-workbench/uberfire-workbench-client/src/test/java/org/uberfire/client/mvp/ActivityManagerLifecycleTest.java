@@ -37,7 +37,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.uberfire.backend.vfs.ObservablePath;
 import org.uberfire.backend.vfs.Path;
 import org.uberfire.client.util.MockIOCBeanDef;
-import org.uberfire.experimental.service.auth.ExperimentalActivitiesAuthorizationManager;
 import org.uberfire.mvp.PlaceRequest;
 import org.uberfire.mvp.impl.DefaultPlaceRequest;
 import org.uberfire.mvp.impl.PathPlaceRequest;
@@ -60,9 +59,6 @@ public class ActivityManagerLifecycleTest {
     ActivityBeansCache activityBeansCache;
     @Mock
     AuthorizationManager authzManager;
-
-    @Mock
-    private ExperimentalActivitiesAuthorizationManager activitiesAuthorizationManager;
 
     @Spy
     User dorothy = new UserImpl("dorothy");
@@ -105,8 +101,6 @@ public class ActivityManagerLifecycleTest {
 
         when(authzManager.authorize(any(Resource.class),
                                     eq(dorothy))).thenReturn(true);
-
-        when(activitiesAuthorizationManager.authorizeActivity(anyObject())).thenReturn(true);
     }
 
     @Test

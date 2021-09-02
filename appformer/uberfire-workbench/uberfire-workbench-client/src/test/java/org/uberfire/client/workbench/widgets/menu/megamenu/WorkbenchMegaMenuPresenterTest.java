@@ -47,7 +47,6 @@ import org.uberfire.client.workbench.widgets.menu.megamenu.contextmenuitem.Child
 import org.uberfire.client.workbench.widgets.menu.megamenu.contextmenuitem.GroupContextMenuItemPresenter;
 import org.uberfire.client.workbench.widgets.menu.megamenu.menuitem.ChildMenuItemPresenter;
 import org.uberfire.client.workbench.widgets.menu.megamenu.menuitem.GroupMenuItemPresenter;
-import org.uberfire.experimental.service.auth.ExperimentalActivitiesAuthorizationManager;
 import org.uberfire.mvp.Command;
 import org.uberfire.mvp.PlaceRequest;
 import org.uberfire.mvp.impl.DefaultPlaceRequest;
@@ -126,9 +125,6 @@ public class WorkbenchMegaMenuPresenterTest {
     @Mock
     private WorkbenchMegaMenuPresenter.View view;
 
-    @Mock
-    private ExperimentalActivitiesAuthorizationManager experimentalActivitiesAuthorizationManager;
-
     private WorkbenchMegaMenuPresenter presenter;
 
     @Before
@@ -147,8 +143,7 @@ public class WorkbenchMegaMenuPresenterTest {
                                                        groupMenuItemPresenters,
                                                        childContextMenuItemPresenters,
                                                        groupContextMenuItemPresenters,
-                                                       workbench,
-                                                       experimentalActivitiesAuthorizationManager));
+                                                       workbench));
         reset(view);
         presenter.selectableMenuItemByIdentifier = spy(new HashMap<>());
         presenter.hasChildrenMenuItemByIdentifier = spy(new HashMap<>());
@@ -734,45 +729,6 @@ public class WorkbenchMegaMenuPresenterTest {
         commandCaptor.getValue().execute();
 
         verify(placeManager).goTo("identifier");
-    }
-
-    @Test
-    public void testAddMenusWithExperimentalPerspective() {
-
-        when(authzManager.authorize(any(MenuItem.class), any())).thenReturn(true);
-
-        List<MenuItem> items = new ArrayList<>();
-
-        items.add(MenuFactory.newSimpleItem(NAME).perspective(PERSPECTIVE_ID).endMenu().build().getItems().get(0));
-        items.add(MenuFactory.newSimpleItem(NAME).perspective(SECOND_PERSPECTIVE_ID).endMenu().build().getItems().get(0));
-        items.add(MenuFactory.newSimpleItem(NAME).perspective(THIRD_PERSPECTIVE_ID).endMenu().build().getItems().get(0));
-
-        final Menus menus = MenuFactory.newSimpleItem(NAME).withItems(items).endMenu().build();
-
-        when(experimentalActivitiesAuthorizationManager.authorizeActivityId(anyString()))
-                .thenAnswer((Answer<Boolean>) invocationOnMock -> !SECOND_PERSPECTIVE_ID.equals(invocationOnMock.getArguments()[0]));
-
-        presenter.addMenus(menus);
-
-        verify(experimentalActivitiesAuthorizationManager, times(3)).authorizeActivityId(anyString());
-        verify(presenter.canHideMenuItemByIdentifier, times(3)).put(any(), any());
-        verify(presenter.canHideMenuItemByIdentifier.get(PERSPECTIVE_ID), times(2)).show();
-        verify(presenter.canHideMenuItemByIdentifier.get(SECOND_PERSPECTIVE_ID)).hide();
-        verify(presenter.canHideMenuItemByIdentifier.get(THIRD_PERSPECTIVE_ID), times(2)).show();
-    }
-
-    @Test
-    public void testShowHideExperimentalPerspectiveMenus() {
-        testAddMenusWithExperimentalPerspective();
-
-        presenter.onPerspectiveVisibilityChange(new PerspectiveVisibiltiyChangeEvent(PERSPECTIVE_ID, false));
-        verify(presenter.canHideMenuItemByIdentifier.get(PERSPECTIVE_ID), times(2)).hide();
-
-        presenter.onPerspectiveVisibilityChange(new PerspectiveVisibiltiyChangeEvent(SECOND_PERSPECTIVE_ID, true));
-        verify(presenter.canHideMenuItemByIdentifier.get(SECOND_PERSPECTIVE_ID), times(3)).show();
-
-        presenter.onPerspectiveVisibilityChange(new PerspectiveVisibiltiyChangeEvent(THIRD_PERSPECTIVE_ID, false));
-        verify(presenter.canHideMenuItemByIdentifier.get(PERSPECTIVE_ID), times(3)).hide();
     }
 
     class MegaMenuBrandMock implements MegaMenuBrand {

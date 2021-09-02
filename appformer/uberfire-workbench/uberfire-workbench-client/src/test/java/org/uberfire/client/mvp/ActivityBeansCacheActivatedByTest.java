@@ -36,7 +36,6 @@ import org.uberfire.client.workbench.events.NewPerspectiveEvent;
 import org.uberfire.client.workbench.events.NewWorkbenchScreenEvent;
 import org.uberfire.client.workbench.type.ClientResourceType;
 import org.uberfire.client.workbench.type.DotResourceType;
-import org.uberfire.experimental.service.auth.ExperimentalActivitiesAuthorizationManager;
 import org.uberfire.mocks.EventSourceMock;
 import org.uberfire.workbench.category.Others;
 
@@ -83,9 +82,6 @@ public class ActivityBeansCacheActivatedByTest {
     private ResourceTypeManagerCache resourceTypeManagerCache;
 
     @Mock
-    private ExperimentalActivitiesAuthorizationManager experimentalActivitiesAuthorizationManager;
-
-    @Mock
     private GWTEditorNativeRegister gwtEditorNativeRegister;
 
     private ActiveSplashScreenActivity activeSplashScreenActivity;
@@ -110,7 +106,6 @@ public class ActivityBeansCacheActivatedByTest {
                                                     newPerspectiveEventEvent,
                                                     newWorkbenchScreenEventEvent,
                                                     resourceTypeManagerCache,
-                                                    experimentalActivitiesAuthorizationManager,
                                                     gwtEditorNativeRegister);
 
         activeSplashScreenActivity = mock(ActiveSplashScreenActivity.class);

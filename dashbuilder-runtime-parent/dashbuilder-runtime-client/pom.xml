@@ -646,10 +646,6 @@
             <compileSourcesArtifact>org.uberfire:uberfire-security-management-client</compileSourcesArtifact>
             <compileSourcesArtifact>org.uberfire:uberfire-security-management-api</compileSourcesArtifact>
 
-            <!-- Uberfire Experimentals -->
-            <compileSourcesArtifact>org.uberfire:uberfire-experimental-api</compileSourcesArtifact>
-            <compileSourcesArtifact>org.uberfire:uberfire-experimental-client</compileSourcesArtifact>
-
           </compileSourcesArtifacts>
         </configuration>
         <executions>

@@ -36,7 +36,6 @@ import org.uberfire.client.workbench.widgets.menu.megamenu.contextmenuitem.Child
 import org.uberfire.client.workbench.widgets.menu.megamenu.contextmenuitem.GroupContextMenuItemPresenter;
 import org.uberfire.client.workbench.widgets.menu.megamenu.menuitem.ChildMenuItemPresenter;
 import org.uberfire.client.workbench.widgets.menu.megamenu.menuitem.GroupMenuItemPresenter;
-import org.uberfire.experimental.service.auth.ExperimentalActivitiesAuthorizationManager;
 import org.uberfire.mvp.Command;
 import org.uberfire.mvp.PlaceRequest;
 import org.uberfire.rpc.SessionInfo;
@@ -104,9 +103,6 @@ public class WorkbenchMegaMenuStandalonePresenterTest {
     @Mock
     private Workbench workbench;
 
-    @Mock
-    private ExperimentalActivitiesAuthorizationManager experimentalActivitiesAuthorizationManager;
-
     private WorkbenchMegaMenuStandalonePresenter presenter;
 
     @Before
@@ -125,8 +121,7 @@ public class WorkbenchMegaMenuStandalonePresenterTest {
                                                                  groupMenuItemPresenters,
                                                                  childContextMenuItemPresenters,
                                                                  groupContextMenuItemPresenters,
-                                                                 workbench,
-                                                                 experimentalActivitiesAuthorizationManager));
+                                                                 workbench));
         doReturn(mock(ChildMenuItemPresenter.class)).when(childMenuItemPresenters).get();
     }
 

@@ -27,7 +27,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.uberfire.experimental.client.service.ClientExperimentalFeaturesRegistryService;
 import org.uberfire.ext.layout.editor.client.LayoutEditorPresenter;
 import org.uberfire.ext.layout.editor.client.api.LayoutDragComponent;
 import org.uberfire.ext.layout.editor.client.api.RenderingContext;
@@ -44,9 +43,6 @@ public class LayoutDragComponentHelperTest {
 
     @Mock
     private SyncBeanManager beanManager;
-
-    @Mock
-    private ClientExperimentalFeaturesRegistryService experimentalFeaturesRegistryService;
 
     private LayoutDragComponentHelper helper;
     private SyncBeanDef<LayoutDragComponent> beanDefMock;
@@ -68,16 +64,12 @@ public class LayoutDragComponentHelperTest {
     }
 
     private LayoutDragComponentHelper createLayoutDragMock() {
-        return new LayoutDragComponentHelper(beanManager, experimentalFeaturesRegistryService) {
+        return new LayoutDragComponentHelper(beanManager) {
             @Override
             Predicate<SyncBeanDef<LayoutDragComponent>> syncBeanDefBeanClassNamePredicate(String dragTypeClassName) {
                 return s -> true;
             }
 
-            @Override
-            boolean isAnEnabledExperimentalFeature(SyncBeanDef<LayoutDragComponent> beanDef) {
-                return true;
-            }
         };
     }
 

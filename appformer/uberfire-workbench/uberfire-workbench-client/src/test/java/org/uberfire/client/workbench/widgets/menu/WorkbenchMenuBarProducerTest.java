@@ -29,7 +29,6 @@ import org.uberfire.client.workbench.events.PerspectiveChange;
 import org.uberfire.client.workbench.events.PlaceMaximizedEvent;
 import org.uberfire.client.workbench.events.PlaceMinimizedEvent;
 import org.uberfire.client.workbench.widgets.menu.events.PerspectiveVisibiltiyChangeEvent;
-import org.uberfire.experimental.service.auth.ExperimentalActivitiesAuthorizationManager;
 import org.uberfire.security.authz.AuthorizationManager;
 
 import static org.junit.Assert.assertEquals;
@@ -66,9 +65,6 @@ public class WorkbenchMenuBarProducerTest {
     private WorkbenchMenuBarStandalonePresenter standalonePresenter;
 
     @Mock
-    private ExperimentalActivitiesAuthorizationManager experimentalActivitiesAuthorizationManager;
-
-    @Mock
     private PerspectiveChange perspectiveChangeEvent;
 
     @Mock
@@ -87,7 +83,7 @@ public class WorkbenchMenuBarProducerTest {
                                                 placeManager,
                                                 activityManager,
                                                 identity,
-                                                experimentalActivitiesAuthorizationManager, view
+                                                view
         ) {
             @Override
             protected boolean isStandalone() {

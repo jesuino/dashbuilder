@@ -39,7 +39,6 @@ import org.uberfire.client.util.GWTEditorNativeRegister;
 import org.uberfire.client.workbench.events.NewPerspectiveEvent;
 import org.uberfire.client.workbench.events.NewWorkbenchScreenEvent;
 import org.uberfire.client.workbench.type.ClientResourceType;
-import org.uberfire.experimental.service.auth.ExperimentalActivitiesAuthorizationManager;
 import org.uberfire.workbench.category.Category;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -73,9 +72,6 @@ public class ResourceTypeManagerCacheTest {
     private ResourceTypeManagerCache resourceTypeManagerCache;
 
     @Mock
-    private ExperimentalActivitiesAuthorizationManager experimentalActivitiesAuthorizationManager;
-
-    @Mock
     private GWTEditorNativeRegister gwtEditorNativeRegister;
 
     private ActivityBeansCache activityBeansCache;
@@ -86,21 +82,9 @@ public class ResourceTypeManagerCacheTest {
 
     private EditorDef formEditorDef;
 
-    private List<Class> experimentalTestActivities = new ArrayList<>();
 
     @Before
     public void setUp() {
-        experimentalTestActivities.add(ModelEditorActivity.class);
-        experimentalTestActivities.add(FormEditorActivity.class);
-        experimentalTestActivities.add(DefaultEditorActivity.class);
-
-        when(experimentalActivitiesAuthorizationManager.authorizeActivityClass(any())).thenAnswer(new Answer<Boolean>() {
-            @Override
-            public Boolean answer(InvocationOnMock invocationOnMock) throws Throwable {
-                Class type = (Class) invocationOnMock.getArguments()[0];
-                return experimentalTestActivities.contains(type);
-            }
-        });
 
         resourceTypeManagerCache = new ResourceTypeManagerCache(categoriesManagerCache);
 
@@ -108,7 +92,6 @@ public class ResourceTypeManagerCacheTest {
                                                     newPerspectiveEventEvent,
                                                     newWorkbenchScreenEvent,
                                                     resourceTypeManagerCache,
-                                                    experimentalActivitiesAuthorizationManager,
                                                     gwtEditorNativeRegister);
 
         modelEditorDef = registerResourceType(MODEL_CATEGORY, ModelEditorActivity.class, MODEL_TYPE, "1");
@@ -209,23 +192,6 @@ public class ResourceTypeManagerCacheTest {
 
     }
 
-    @Test
-    public void testGetDefaultEditoFromDisabledExperimentalEditorByPath() {
-        Path path = mock(Path.class);
-
-        when(path.getFileName()).thenReturn("any." + FORM_TYPE);
-
-        registerDefaultResourceType();
-
-        // Removing this will make Experimental FormEditorActivity disabled
-        experimentalTestActivities.remove(FormEditorActivity.class);
-
-        Assertions.assertThat(activityBeansCache.getActivity(path))
-                .isNotNull()
-                .isEqualTo(defaultEditorDef.getEditorActivityBeanDef());
-    }
-    
-        
     public class EditorDef {
         private SyncBeanDef editorActivity;
         private ClientResourceType resourceType;

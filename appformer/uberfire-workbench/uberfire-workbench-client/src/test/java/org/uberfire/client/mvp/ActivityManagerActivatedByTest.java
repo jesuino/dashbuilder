@@ -32,7 +32,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.uberfire.experimental.service.auth.ExperimentalActivitiesAuthorizationManager;
 import org.uberfire.mvp.impl.DefaultPlaceRequest;
 import org.uberfire.security.Resource;
 import org.uberfire.security.authz.AuthorizationManager;
@@ -68,17 +67,12 @@ public class ActivityManagerActivatedByTest {
     @Mock
     private AuthorizationManager authzManager;
 
-    @Mock
-    private ExperimentalActivitiesAuthorizationManager activitiesAuthorizationManager;
-
     private Activity activatedActivity;
 
     @Before
     public void setup() {
         when(authzManager.authorize(Mockito.<Resource>any(),
                                     any())).thenReturn(true);
-
-        when(activitiesAuthorizationManager.authorizeActivity(any())).thenReturn(true);
 
         activatedActivity = mock(Activity.class);
         when(activatedActivity.getIdentifier()).thenReturn("activated activity");

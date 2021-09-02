@@ -39,7 +39,6 @@ import org.uberfire.client.workbench.PanelManager;
 import org.uberfire.client.workbench.WorkbenchLayout;
 import org.uberfire.client.workbench.docks.UberfireDocks;
 import org.uberfire.client.workbench.events.*;
-import org.uberfire.experimental.service.auth.ExperimentalActivitiesAuthorizationManager;
 import org.uberfire.mvp.BiParameterizedCommand;
 import org.uberfire.mvp.Command;
 import org.uberfire.mvp.ParameterizedCommand;
@@ -119,8 +118,6 @@ public class PlaceManagerTest {
     WorkbenchLayout workbenchLayout;
     @Mock
     LayoutSelection layoutSelection;
-    @Mock
-    ExperimentalActivitiesAuthorizationManager activitiesAuthorizationManager;
     @Mock
     PlaceManagerImpl.AppFormerActivityLoader appFormerActivityLoader;
     /**
@@ -730,8 +727,6 @@ public class PlaceManagerTest {
         });
 
         placeManager.goTo(mainPlaceRequest);
-
-        verify(activitiesAuthorizationManager).securePart(eq(panelPart), eq(perspectiveDefinition.getRoot()));
 
         verify(panelPlaceRequest).clone();
 
