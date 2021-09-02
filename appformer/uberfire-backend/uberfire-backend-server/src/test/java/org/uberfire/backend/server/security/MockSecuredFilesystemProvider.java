@@ -80,7 +80,6 @@ public class MockSecuredFilesystemProvider implements SecuredFileSystemProvider 
 
     public FileSystemAuthorizer authorizer;
 
-    public SSHAuthenticator sshAuthenticator;
 
     public MockSecuredFilesystemProvider() {
         LATEST_INSTANCE = this;
@@ -271,6 +270,9 @@ public class MockSecuredFilesystemProvider implements SecuredFileSystemProvider 
     }
 
     @Override
+    public void setSSHAuthenticator(SSHAuthenticator sshAuthenticator) {
+    }
+    @Override
     public void setHTTPAuthenticator(AuthenticationService authenticator) {
 
     }
@@ -278,11 +280,6 @@ public class MockSecuredFilesystemProvider implements SecuredFileSystemProvider 
     @Override
     public void setAuthorizer(FileSystemAuthorizer authorizer) {
         this.authorizer = authorizer;
-    }
-
-    @Override
-    public void setSSHAuthenticator(SSHAuthenticator authenticator) {
-        this.sshAuthenticator = authenticator;
     }
 
     private class MockPath extends AbstractPath {

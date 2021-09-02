@@ -628,12 +628,6 @@
       <scope>provided</scope>
     </dependency>
 
-    <!-- Uberfire SSH -->
-    <dependency>
-      <groupId>org.uberfire</groupId>
-      <artifactId>uberfire-ssh-api</artifactId>
-    </dependency>
-
     <dependency>
       <groupId>com.google.inject</groupId>
       <artifactId>guice</artifactId>
@@ -726,7 +720,6 @@
             <compileSourcesArtifact>org.uberfire:uberfire-workbench-client-backend</compileSourcesArtifact>
             <compileSourcesArtifact>org.uberfire:uberfire-workbench-client-views-patternfly</compileSourcesArtifact>
             <compileSourcesArtifact>org.uberfire:uberfire-backend-api</compileSourcesArtifact>
-            <compileSourcesArtifact>org.uberfire:uberfire-ssh-api</compileSourcesArtifact>
 
             <!-- UberFire Security Management -->
             <compileSourcesArtifact>org.uberfire:uberfire-security-management-api</compileSourcesArtifact>
