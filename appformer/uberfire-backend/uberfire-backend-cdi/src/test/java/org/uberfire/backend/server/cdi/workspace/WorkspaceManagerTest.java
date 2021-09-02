@@ -32,18 +32,12 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class WorkspaceManagerTest {
 
-    @Mock
-    private WorkspaceManagerPreferences preferences;
-
     private WorkspaceManager workspaceManager;
 
     @Before
     public void setUp() {
-        when(preferences.getCacheExpirationTime()).thenReturn(10);
-        when(preferences.getCacheExpirationUnit()).thenReturn("MINUTES");
-        when(preferences.getCacheMaximumSize()).thenReturn(3);
 
-        this.workspaceManager = new WorkspaceManager(preferences);
+        this.workspaceManager = new WorkspaceManager();
         this.workspaceManager.initialize();
     }
 
@@ -98,7 +92,7 @@ public class WorkspaceManagerTest {
                                       "e",
                                       new Object());
 
-        assertEquals(3,
+        assertEquals(5,
                      this.workspaceManager.getBeansCount(workspace));
     }
 

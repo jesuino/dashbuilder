@@ -22,8 +22,6 @@
 	<inherits name="org.uberfire.client.views.PatternFlyTheme" />
 
 	<inherits name="org.uberfire.ext.plugin.RuntimePluginClient" />
-	<inherits name="org.uberfire.ext.preferences.UberfirePreferences" />
-	<inherits name="org.uberfire.preferences.UberfirePreferencesClient"/>
 	
 	<!-- Navigation Dependency -->
 	<inherits name="org.uberfire.ext.security.management.UberfireSecurityManagementWidgets"/>

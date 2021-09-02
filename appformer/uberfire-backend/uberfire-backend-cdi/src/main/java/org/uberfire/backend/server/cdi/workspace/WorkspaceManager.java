@@ -43,15 +43,9 @@ import static org.kie.soup.commons.validation.PortablePreconditions.checkNotNull
 public class WorkspaceManager {
 
     private Logger logger = LoggerFactory.getLogger(WorkspaceManager.class);
-    private WorkspaceManagerPreferences preferences;
     private ConcurrentHashMap<Workspace, Cache<String, Object>> workspaces;
 
     public WorkspaceManager() {
-    }
-
-    @Inject
-    public WorkspaceManager(WorkspaceManagerPreferences workspaceManagerPreferences) {
-        this.preferences = workspaceManagerPreferences;
     }
 
     @PostConstruct
@@ -75,11 +69,10 @@ public class WorkspaceManager {
     }
 
     protected synchronized Cache<String, Object> createCache() {
-        preferences.load();
         final Cache<String, Object> cache = CacheBuilder.newBuilder()
-                .maximumSize(preferences.getCacheMaximumSize())
-                .expireAfterAccess(preferences.getCacheExpirationTime(),
-                                   TimeUnit.valueOf(preferences.getCacheExpirationUnit()))
+                .maximumSize(50)
+                .expireAfterAccess(30,
+                                   TimeUnit.MINUTES)
                 .removalListener(removalNotification -> {
                     if (logger.isDebugEnabled()) {
                         logger.debug("[{},{}] {}",

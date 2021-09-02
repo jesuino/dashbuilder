@@ -705,7 +705,6 @@
     <module>uberfire-testing-utils</module>
     <module>uberfire-workbench</module>
     <module>uberfire-packaging</module>
-    <module>uberfire-preferences</module>
     <module>uberfire-extensions</module>
     <module>uberfire-test-utils</module>
     <module>appformer-js-bridge</module>

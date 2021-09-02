@@ -36,7 +36,6 @@
     <module>uberfire-security</module>
     <module>uberfire-widgets</module>
     <module>uberfire-commons-editor</module>
-    <module>uberfire-preferences-ui-client</module>
     <module>uberfire-runtime-plugins</module>
     <module>uberfire-apps</module>
     <module>uberfire-layout-editor</module>

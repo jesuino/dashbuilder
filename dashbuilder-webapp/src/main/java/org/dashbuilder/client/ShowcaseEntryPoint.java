@@ -30,7 +30,6 @@ import org.dashbuilder.client.navbar.AppHeader;
 import org.dashbuilder.client.navigation.NavTreeDefinitions;
 import org.dashbuilder.client.navigation.NavigationManager;
 import org.dashbuilder.client.resources.i18n.AppConstants;
-import org.dashbuilder.client.security.PermissionTreeSetup;
 import org.dashbuilder.navigation.NavTree;
 import org.dashbuilder.navigation.impl.NavTreeImpl;
 import org.jboss.errai.common.client.api.Caller;
@@ -67,9 +66,6 @@ public class ShowcaseEntryPoint {
     NavigationExplorerScreen navigationExplorerScreen;
 
     @Inject
-    private PermissionTreeSetup permissionTreeSetup;
-
-    @Inject
     private AppHeader appHeader;
 
     @PostConstruct
@@ -77,7 +73,6 @@ public class ShowcaseEntryPoint {
         // OPTIONAL: Rename perspectives to dashboards in CMS
         
         userSystemManager.waitForInitialization(() -> dashboardManager.loadDashboards(t -> navigationManager.init(() -> {
-            permissionTreeSetup.configureTree();
             initNavBar();
             initNavigation();
             hideLoadingPopup();

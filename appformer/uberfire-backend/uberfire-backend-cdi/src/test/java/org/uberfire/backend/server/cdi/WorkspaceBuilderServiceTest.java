@@ -54,8 +54,6 @@ public class WorkspaceBuilderServiceTest {
 
         return ShrinkWrap.create(JavaArchive.class)
                 .addPackages(true,
-                             "org.uberfire.preferences")
-                .addPackages(true,
                              "org.uberfire.backend.server.spaces")
                 .addPackages(true,
                              "org.uberfire.mvp")

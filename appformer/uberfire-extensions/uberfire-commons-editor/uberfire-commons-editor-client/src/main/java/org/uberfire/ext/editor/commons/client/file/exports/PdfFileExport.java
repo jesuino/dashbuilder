@@ -18,7 +18,6 @@ package org.uberfire.ext.editor.commons.client.file.exports;
 
 import org.uberfire.ext.editor.commons.client.file.exports.jso.JsPdf;
 import org.uberfire.ext.editor.commons.client.file.exports.jso.JsPdfSettings;
-import org.uberfire.ext.editor.commons.file.exports.PdfExportPreferences;
 
 public class PdfFileExport implements FileExport<PdfDocument> {
 
@@ -58,10 +57,9 @@ public class PdfFileExport implements FileExport<PdfDocument> {
     }
 
     private static JsPdf createNewDocument(final PdfDocument content) {
-        final PdfExportPreferences settings = content.getSettings();
-        final String orientation = settings.getOrientation().name().toLowerCase();
-        final String unit = settings.getUnit().name().toLowerCase();
-        final String format = settings.getFormat().name().toLowerCase();
+        final String orientation = "portrait";
+        final String unit = "mm";
+        final String format = "a4";
         final JsPdfSettings jsPdfSettings = JsPdfSettings.create(orientation,
                                                                  unit,
                                                                  format);

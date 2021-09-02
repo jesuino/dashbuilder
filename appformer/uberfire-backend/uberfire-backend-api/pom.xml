@@ -57,11 +57,6 @@
       <artifactId>uberfire-security-api</artifactId>
     </dependency>
 
-    <dependency>
-      <groupId>org.uberfire</groupId>
-      <artifactId>uberfire-preferences-api</artifactId>
-    </dependency>
-
     <!-- Errai Core -->
     <dependency>
       <groupId>org.jboss.errai</groupId>

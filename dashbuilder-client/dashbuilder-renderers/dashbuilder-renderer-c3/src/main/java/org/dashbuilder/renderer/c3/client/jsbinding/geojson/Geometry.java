@@ -22,8 +22,6 @@ import jsinterop.annotations.JsType;
 public interface Geometry {
     
     @JsProperty
-    public GeometryType getType();
-    @JsProperty
     public double[][][] getCoordinates();
 
 }
