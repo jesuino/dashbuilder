@@ -1471,12 +1471,6 @@
         <version>${project.version}</version>
       </dependency>
 
-      <dependency>
-        <groupId>org.uberfire</groupId>
-        <artifactId>appformer-js-monaco</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-
     </dependencies>
     
   </dependencyManagement>

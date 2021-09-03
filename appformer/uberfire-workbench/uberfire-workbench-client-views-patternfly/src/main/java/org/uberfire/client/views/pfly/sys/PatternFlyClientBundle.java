@@ -48,6 +48,4 @@ public interface PatternFlyClientBundle extends ClientBundle {
     @Source("org/uberfire/client/views/static/jquery-ui/jquery-ui.min.js")
     TextResource jQueryUI();
 
-    @Source("org/uberfire/client/views/static/appformer-js-monaco/monaco.min.js")
-    TextResource monacoEditor();
 }

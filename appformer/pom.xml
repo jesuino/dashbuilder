@@ -709,7 +709,6 @@
     <module>uberfire-test-utils</module>
     <module>appformer-js-bridge</module>
     <module>appformer-js</module>
-    <module>appformer-js-monaco</module>
   </modules>
 
   <dependencyManagement>

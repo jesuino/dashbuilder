@@ -129,12 +129,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.uberfire</groupId>
-      <artifactId>appformer-js-monaco</artifactId>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
       <groupId>org.kie.soup</groupId>
       <artifactId>kie-soup-commons</artifactId>
       <classifier>sources</classifier>
@@ -337,27 +331,6 @@
               <overWriteSnapshots>true</overWriteSnapshots>
             </configuration>
           </execution>
-          <execution>
-            <id>unpack-appformer-js-monaco</id>
-            <phase>process-resources</phase>
-            <goals>
-              <goal>unpack</goal>
-            </goals>
-            <configuration>
-              <artifactItems>
-                <artifactItem>
-                  <groupId>org.uberfire</groupId>
-                  <artifactId>appformer-js-monaco</artifactId>
-                  <version>${uberfire.version}</version>
-                  <type>jar</type>
-                  <overWrite>true</overWrite>
-                  <outputDirectory>${project.build.directory}/appformer-js-monaco</outputDirectory>
-                </artifactItem>
-              </artifactItems>
-              <overWriteReleases>false</overWriteReleases>
-              <overWriteSnapshots>true</overWriteSnapshots>
-            </configuration>
-          </execution>
         </executions>
       </plugin>
       <plugin>
@@ -489,24 +462,6 @@
                   <directory>${project.build.directory}/d3/META-INF/resources/webjars/d3/${version.org.webjars.bower.d3js}/</directory>
                   <includes>
                     <include>d3.min.js</include>
-                  </includes>
-                </resource>
-              </resources>
-            </configuration>
-          </execution>
-          <execution>
-            <id>copy-monaco-resources</id>
-            <phase>process-resources</phase>
-            <goals>
-              <goal>copy-resources</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${project.build.outputDirectory}/org/uberfire/client/views/static/appformer-js-monaco/</outputDirectory>
-              <resources>
-                <resource>
-                  <directory>${project.build.directory}/appformer-js-monaco/META-INF/resources/webjars/appformer-js-monaco/${uberfire.version}/monaco-editor</directory>
-                  <includes>
-                    <include>monaco.min.js</include>
                   </includes>
                 </resource>
               </resources>
