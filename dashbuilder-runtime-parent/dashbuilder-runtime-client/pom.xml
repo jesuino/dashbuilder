@@ -53,6 +53,7 @@
     <dependency>
       <groupId>org.dashbuilder</groupId>
       <artifactId>dashbuilder-runtime-shared</artifactId>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.jboss.resteasy</groupId>
@@ -82,15 +83,6 @@
       </exclusions>
     </dependency>
 
-    <dependency>
-      <groupId>com.google.code.gson</groupId>
-      <artifactId>gson</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.jboss.xnio</groupId>
-      <artifactId>xnio-api</artifactId>
-    </dependency>
 
     <dependency>
       <groupId>jakarta.xml.bind</groupId>
@@ -108,11 +100,6 @@
       <groupId>jakarta.enterprise.concurrent</groupId>
       <artifactId>jakarta.enterprise.concurrent-api</artifactId>
       <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-lang3</artifactId>
     </dependency>
 
     <!-- Dashbuilder -->
@@ -366,28 +353,14 @@
 
     <dependency>
       <groupId>org.jboss.errai</groupId>
-      <artifactId>errai-ioc</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.jboss.errai</groupId>
       <artifactId>errai-jboss-as-support</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.jboss.errai</groupId>
-      <artifactId>errai-cdi-server</artifactId>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>org.jboss.errai</groupId>
       <artifactId>errai-javax-enterprise</artifactId>
       <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.owasp.encoder</groupId>
-      <artifactId>encoder</artifactId>
     </dependency>
 
     <dependency>
@@ -420,18 +393,6 @@
     <dependency>
       <groupId>org.jboss.errai</groupId>
       <artifactId>errai-cdi-jboss</artifactId>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>xml-apis</groupId>
-      <artifactId>xml-apis</artifactId>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>com.sun.xml.bind</groupId>
-      <artifactId>jaxb-impl</artifactId>
       <scope>provided</scope>
     </dependency>
 
