@@ -51,10 +51,8 @@ public class FileExportScriptInjector {
 
     public void inject() {
         final String fileSaver = getFileSaverSource();
-        final String jsPdf = getJsPdfSource();
         final String c2sSource = getC2SSource();
         scriptInjector.accept("var " + fileSaver + "\n" +
-                                      jsPdf + "\n" +
                                       c2sSource + "\n");
     }
 
@@ -66,22 +64,13 @@ public class FileExportScriptInjector {
                 "return saveAs(blob, fileName, disableAutoBOM);};";
     }
 
-    private String getJsPdfSource() {
-        final String jsPdfScript = FileExportResources.INSTANCE.jsPdf().getText();
-        final String jsPdfNsObject = buildNamespaceObject(NS + "JsPdf");
-        return jsPdfNsObject + " = function(settings) {" + "\n" +
-                jsPdfScript + "\n" +
-                "var saveAs = " + NS + "JsFileSaver.saveAs; " +
-                "return new jsPDF(settings);};";
-    }
-
     private String getC2SSource() {
         return FileExportResources.INSTANCE.canvas2svg().getText();
     }
 
     private static void inject(final String raw) {
-        final ScriptInjector.FromString jsPdfScript = ScriptInjector.fromString(raw);
-        jsPdfScript.setWindow(ScriptInjector.TOP_WINDOW).setRemoveTag(false).inject();
+        final ScriptInjector.FromString jsScript = ScriptInjector.fromString(raw);
+        jsScript.setWindow(ScriptInjector.TOP_WINDOW).setRemoveTag(false).inject();
     }
 
     static String buildNamespaceObject(final String namespace) {

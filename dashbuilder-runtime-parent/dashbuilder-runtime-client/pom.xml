@@ -575,6 +575,7 @@
             <compileSourcesArtifact>org.uberfire:uberfire-security-management-api</compileSourcesArtifact>
 
           </compileSourcesArtifacts>
+          <compileReport>true</compileReport>
         </configuration>
         <executions>
           <execution>
@@ -687,7 +688,7 @@
               <style>PRETTY</style>
             </configuration>
           </plugin>
-                    <plugin>
+          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-war-plugin</artifactId>
             <executions>

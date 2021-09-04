@@ -53,12 +53,6 @@ public class FileExportProducerTest {
     }
 
     @Test
-    public void producePDFFileSaverTest() {
-        PdfFileExport pdfFileSaver = fs.forPDF();
-        assertNotNull(pdfFileSaver);
-    }
-
-    @Test
     public void produceImageFileSaver() {
         ImageFileExport imageFileSaver = fs.forImage();
         assertNotNull(imageFileSaver);

@@ -46,35 +46,9 @@ public class FileExportScriptInjectorTest {
     }
 
     @Test
-    public void testInject() {
-        tested.inject();
-        final ArgumentCaptor<String> scriptCaptor = ArgumentCaptor.forClass(String.class);
-        verify(scriptInjector,
-               times(1)).accept(scriptCaptor.capture());
-        final String script = scriptCaptor.getValue();
-        final String fsNsObject = buildNamespaceObject(NS + JsFileSaver.class.getSimpleName() + ".saveAs");
-        final String jsPdfNsObject = buildNamespaceObject(NS + JsPdf.class.getSimpleName());
-        final String c2sNsObject = FileExportResources.INSTANCE.canvas2svg().getText();
-        assertEquals("var " +
-                             fsNsObject +
-                             " = function(blob, fileName, disableAutoBOM) {\n" +
-                             "fileSaver\n" +
-                             "return saveAs(blob, fileName, disableAutoBOM);};\n" +
-                             jsPdfNsObject +
-                             " = function(settings) {\n" +
-                             "jsPdf\n" +
-                             "var saveAs = " + NS + "JsFileSaver.saveAs; " +
-                             "return new jsPDF(settings);};" + "\n" +
-                             c2sNsObject + "\n",
-                     script);
-    }
-
-    @Test
     public void testNamespaces() {
         assertEquals("window = window || {};\n" + NS + "JsFileSaver",
                      buildNamespaceObject(NS + JsFileSaver.class.getSimpleName()));
-        assertEquals("window = window || {};\n" + NS + "JsPdf",
-                     buildNamespaceObject(NS + JsPdf.class.getSimpleName()));
         assertEquals("nonamespace", buildNamespaceObject("nonamespace"));
     }
 }

@@ -53,11 +53,6 @@ public class FileExportProducer {
     }
 
     @Produces
-    public PdfFileExport forPDF() {
-        return new PdfFileExport();
-    }
-
-    @Produces
     public ImageFileExport forImage() {
         return new ImageFileExport();
     }
