@@ -32,7 +32,6 @@ import org.uberfire.client.mvp.Activity;
 import org.uberfire.client.mvp.ActivityBeansCache;
 import org.uberfire.client.mvp.PlaceManager;
 import org.uberfire.client.mvp.WorkbenchEditorActivity;
-import org.uberfire.jsbridge.client.cdi.SingletonBeanDefinition;
 
 import static org.jboss.errai.ioc.client.QualifierUtil.DEFAULT_QUALIFIERS;
 
@@ -81,20 +80,6 @@ public class EditorJSExporter implements UberfireJSExporter {
                                         placeManager);
 
         final Set<Annotation> qualifiers = new HashSet<Annotation>(Arrays.asList(DEFAULT_QUALIFIERS));
-        final SingletonBeanDefinition<JSEditorActivity, JSEditorActivity> beanDef = new SingletonBeanDefinition<>(
-                activity,
-                JSEditorActivity.class,
-                qualifiers,
-                newNativeEditor.getId(),
-                true,
-                WorkbenchEditorActivity.class,
-                Activity.class);
-
-        beanManager.registerBean(beanDef);
-        beanManager.registerBeanTypeAlias(beanDef,
-                                          WorkbenchEditorActivity.class);
-        beanManager.registerBeanTypeAlias(beanDef,
-                                          Activity.class);
 
         activityBeansCache.addNewEditorActivity(beanManager.lookupBeans(newNativeEditor.getId()).iterator().next(),
                                                 newNativeEditor.getPriority(),

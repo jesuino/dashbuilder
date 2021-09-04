@@ -707,8 +707,6 @@
     <module>uberfire-packaging</module>
     <module>uberfire-extensions</module>
     <module>uberfire-test-utils</module>
-    <module>appformer-js-bridge</module>
-    <module>appformer-js</module>
   </modules>
 
   <dependencyManagement>

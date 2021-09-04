@@ -24,7 +24,6 @@ import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.SimplePanel;
-import org.uberfire.jsbridge.client.JsPlaceRequest;
 import org.uberfire.mvp.ParameterizedCommand;
 import org.uberfire.mvp.PlaceRequest;
 
@@ -133,11 +132,6 @@ public abstract class JSNativePlugin {
     private static native void executeOnStartup(final JavaScriptObject o,
                                                 String URI) /*-{
         o.on_startup(URI);
-    }-*/;
-
-    private static native void executeOnStartup(final JavaScriptObject o,
-                                                final JsPlaceRequest place) /*-{
-        o.on_startup(place);
     }-*/;
 
     private static native void executeOnFocus(final JavaScriptObject o) /*-{
@@ -339,12 +333,9 @@ public abstract class JSNativePlugin {
     }
 
     public void onStartup(PlaceRequest place) {
-        if (hasMethod(obj,
-                      "on_startup")) {
-            executeOnStartup(obj,
-                             JsPlaceRequest.fromPlaceRequest(place));
-        }
+        // empty
     }
+    
 
     public void onShutdown() {
         if (hasMethod(obj,

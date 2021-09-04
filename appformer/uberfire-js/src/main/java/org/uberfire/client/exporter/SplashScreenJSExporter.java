@@ -32,7 +32,6 @@ import org.uberfire.client.mvp.SplashScreenActivity;
 import org.uberfire.client.splash.JSNativeSplashScreen;
 import org.uberfire.client.splash.JSSplashScreenActivity;
 import org.uberfire.client.workbench.widgets.splash.SplashView;
-import org.uberfire.jsbridge.client.cdi.SingletonBeanDefinition;
 
 import static org.jboss.errai.ioc.client.QualifierUtil.DEFAULT_QUALIFIERS;
 
@@ -81,19 +80,6 @@ public class SplashScreenJSExporter implements UberfireJSExporter {
         activity = new JSSplashScreenActivity(newNativePlugin,
                                               splashView);
         final Set<Annotation> qualifiers = new HashSet<Annotation>(Arrays.asList(DEFAULT_QUALIFIERS));
-        final SingletonBeanDefinition<JSSplashScreenActivity, JSSplashScreenActivity> beanDef =
-                new SingletonBeanDefinition<>(activity,
-                                              JSSplashScreenActivity.class,
-                                              qualifiers,
-                                              newNativePlugin.getId(),
-                                              true,
-                                              SplashScreenActivity.class,
-                                              Activity.class);
-        beanManager.registerBean(beanDef);
-        beanManager.registerBeanTypeAlias(beanDef,
-                                          SplashScreenActivity.class);
-        beanManager.registerBeanTypeAlias(beanDef,
-                                          Activity.class);
 
         activityBeansCache.addNewSplashScreenActivity(beanManager.lookupBeans(newNativePlugin.getId()).iterator().next());
     }

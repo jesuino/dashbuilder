@@ -131,8 +131,6 @@ public class PlaceManagerImpl implements PlaceManager {
     private WorkbenchLayout workbenchLayout;
     @Inject
     private LayoutSelection layoutSelection;
-    @Inject
-    private AppFormerActivityLoader appFormerActivityLoader;
 
     public interface AppFormerActivityLoader {
         boolean triggerLoadOfMatchingEditors(final Path path, final Runnable callback);
@@ -414,10 +412,6 @@ public class PlaceManagerImpl implements PlaceManager {
 
         if (existingDestination != null) {
             return existingDestination;
-        }
-
-        if (appFormerActivityLoader.triggerLoadOfMatchingEditors(place.getPath(), () -> closeLazyLoadingScreenAndGoToPlace(place))) {
-            return new ResolvedRequest(null, new DefaultPlaceRequest("LazyLoadingScreen"));
         }
 
         final Set<Activity> activities = activityManager.getActivities(resolvedPlaceRequest);

@@ -28,7 +28,6 @@ import org.uberfire.client.plugin.JSNativePlugin;
 import org.uberfire.client.workbench.PanelManager;
 import org.uberfire.client.workbench.WorkbenchServicesProxy;
 import org.uberfire.client.workbench.panels.impl.MultiTabWorkbenchPanelPresenter;
-import org.uberfire.jsbridge.client.JsPlaceRequest;
 import org.uberfire.mvp.PlaceRequest;
 import org.uberfire.mvp.impl.DefaultPlaceRequest;
 import org.uberfire.workbench.model.CompassPosition;
@@ -60,11 +59,6 @@ public class JSNativePerspective {
 
     private static native JSPanelDefinition getView(final JavaScriptObject o) /*-{
         return o.view;
-    }-*/;
-
-    private static native void executeOnStartup(final JavaScriptObject o,
-                                                JsPlaceRequest place) /*-{
-        o.on_open(place);
     }-*/;
 
     private static native void executeOnOpen(final JavaScriptObject o) /*-{
@@ -118,14 +112,9 @@ public class JSNativePerspective {
     }-*/;
 
     public void onStartup(final PlaceRequest place) {
-        if (JSNativePlugin.hasMethod(obj,
-                                     "on_startup")) {
-
-            executeOnStartup(obj,
-                             JsPlaceRequest.fromPlaceRequest(place));
-        }
+	    // do nothing
     }
-
+    
     public void onOpen() {
         if (JSNativePlugin.hasMethod(obj,
                                      "on_open")) {

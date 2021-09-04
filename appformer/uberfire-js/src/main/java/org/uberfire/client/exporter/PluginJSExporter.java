@@ -33,7 +33,6 @@ import org.uberfire.client.mvp.WorkbenchScreenActivity;
 import org.uberfire.client.plugin.JSNativePlugin;
 import org.uberfire.client.screen.JSNativeScreen;
 import org.uberfire.client.screen.JSWorkbenchScreenActivity;
-import org.uberfire.jsbridge.client.cdi.SingletonBeanDefinition;
 
 import static org.jboss.errai.ioc.client.QualifierUtil.DEFAULT_QUALIFIERS;
 
@@ -79,20 +78,6 @@ public class PluginJSExporter implements UberfireJSExporter {
                                                  beanManager.lookupBean(PlaceManager.class).getInstance());
 
         final Set<Annotation> qualifiers = new HashSet<Annotation>(Arrays.asList(DEFAULT_QUALIFIERS));
-        final SingletonBeanDefinition<JSWorkbenchScreenActivity, JSWorkbenchScreenActivity> beanDef =
-                new SingletonBeanDefinition<>(activity,
-                                              JSWorkbenchScreenActivity.class,
-                                              qualifiers,
-                                              newNativePlugin.getId(),
-                                              true,
-                                              WorkbenchScreenActivity.class,
-                                              Activity.class);
-        beanManager.registerBean(beanDef);
-        beanManager.registerBeanTypeAlias(beanDef,
-                                          WorkbenchScreenActivity.class);
-        beanManager.registerBeanTypeAlias(beanDef,
-                                          Activity.class);
-
         activityBeansCache.addNewScreenActivity(beanManager.lookupBeans(newNativePlugin.getId()).iterator().next());
     }
 

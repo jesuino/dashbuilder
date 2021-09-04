@@ -28,7 +28,6 @@ import org.uberfire.client.editor.type.JSClientResourceType;
 import org.uberfire.client.editor.type.JSNativeClientResourceType;
 import org.uberfire.client.plugin.JSNativePlugin;
 import org.uberfire.client.workbench.type.ClientResourceType;
-import org.uberfire.jsbridge.client.cdi.SingletonBeanDefinition;
 import org.uberfire.workbench.category.Category;
 import org.uberfire.workbench.category.Others;
 
@@ -48,12 +47,6 @@ public class ResourceTypeDefinitionJSExporter implements UberfireJSExporter {
             newNativeClientResourceType.build(obj);
             JSClientResourceType jsClientResourceType = new JSClientResourceType(newNativeClientResourceType,
                                                                                  category);
-            beanManager.registerBean(new SingletonBeanDefinition<ClientResourceType, JSClientResourceType>(jsClientResourceType,
-                                                                   ClientResourceType.class,
-                                                                   new HashSet<>(Arrays.asList(DEFAULT_QUALIFIERS)),
-                                                                   jsClientResourceType.getId(),
-                                                                   true,
-                                                                   JSClientResourceType.class));
         }
     }
 

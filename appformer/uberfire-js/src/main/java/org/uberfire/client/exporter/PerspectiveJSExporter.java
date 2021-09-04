@@ -29,7 +29,6 @@ import org.uberfire.client.mvp.PerspectiveActivity;
 import org.uberfire.client.perspective.JSNativePerspective;
 import org.uberfire.client.perspective.JSWorkbenchPerspectiveActivity;
 import org.uberfire.client.plugin.JSNativePlugin;
-import org.uberfire.jsbridge.client.cdi.SingletonBeanDefinition;
 
 import static org.jboss.errai.ioc.client.QualifierUtil.DEFAULT_QUALIFIERS;
 
@@ -48,13 +47,6 @@ public class PerspectiveJSExporter implements UberfireJSExporter {
             newNativePerspective.build(obj);
 
             final JSWorkbenchPerspectiveActivity activity = new JSWorkbenchPerspectiveActivity(newNativePerspective);
-
-            beanManager.registerBean(new SingletonBeanDefinition<PerspectiveActivity, JSWorkbenchPerspectiveActivity>(activity,
-                                                                   PerspectiveActivity.class,
-                                                                   new HashSet<>(Arrays.asList(DEFAULT_QUALIFIERS)),
-                                                                   newNativePerspective.getId(),
-                                                                   true,
-                                                                   JSWorkbenchPerspectiveActivity.class));
 
             activityBeansCache.addNewPerspectiveActivity(beanManager.lookupBeans(newNativePerspective.getId()).iterator().next());
         }

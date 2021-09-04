@@ -1459,18 +1459,6 @@
         <type>war</type>
       </dependency>
 
-
-      <dependency> 
-        <groupId>org.uberfire</groupId> 
-        <artifactId>appformer-js-bridge</artifactId> 
-        <version>${project.version}</version> 
-      </dependency>
-      <dependency>
-        <groupId>org.uberfire</groupId>
-        <artifactId>appformer-js</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-
     </dependencies>
     
   </dependencyManagement>

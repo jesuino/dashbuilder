@@ -42,13 +42,13 @@ import org.uberfire.client.mvp.WorkbenchScreenActivity;
 import org.uberfire.ext.layout.editor.api.PerspectiveServices;
 import org.uberfire.ext.layout.editor.api.editor.LayoutTemplate;
 import org.uberfire.ext.layout.editor.client.generator.LayoutGenerator;
+import org.uberfire.ext.plugin.client.cdi.SingletonBeanDefinition;
 import org.uberfire.ext.plugin.event.PluginAdded;
 import org.uberfire.ext.plugin.event.PluginDeleted;
 import org.uberfire.ext.plugin.event.PluginRenamed;
 import org.uberfire.ext.plugin.event.PluginSaved;
 import org.uberfire.ext.plugin.model.Plugin;
 import org.uberfire.ext.plugin.model.PluginType;
-import org.uberfire.jsbridge.client.cdi.SingletonBeanDefinition;
 
 import static org.jboss.errai.ioc.client.QualifierUtil.DEFAULT_QUALIFIERS;
 

@@ -18,20 +18,11 @@ package org.dashbuilder.client;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
-import com.google.gwt.animation.client.Animation;
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style;
-import com.google.gwt.user.client.ui.RootPanel;
-import elemental2.dom.DomGlobal;
 import org.dashbuilder.client.cms.screen.explorer.NavigationExplorerScreen;
-import org.dashbuilder.client.dashboard.DashboardManager;
 import org.dashbuilder.client.navbar.AppHeader;
 import org.dashbuilder.client.navigation.NavTreeDefinitions;
 import org.dashbuilder.client.navigation.NavigationManager;
 import org.dashbuilder.client.resources.i18n.AppConstants;
-import org.dashbuilder.navigation.NavTree;
-import org.dashbuilder.navigation.impl.NavTreeImpl;
 import org.jboss.errai.common.client.api.Caller;
 import org.jboss.errai.ioc.client.api.EntryPoint;
 import org.jboss.errai.security.shared.service.AuthenticationService;
@@ -39,90 +30,92 @@ import org.uberfire.client.mvp.PlaceManager;
 import org.uberfire.ext.security.management.client.ClientUserSystemManager;
 import org.uberfire.mvp.Command;
 
+import com.google.gwt.animation.client.Animation;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style;
+import com.google.gwt.user.client.ui.RootPanel;
+
+import elemental2.dom.DomGlobal;
+
 /**
  * Entry-point for the Dashbuilder showcase
  */
 @EntryPoint
 public class ShowcaseEntryPoint {
 
-    private AppConstants constants = AppConstants.INSTANCE;
+	private AppConstants constants = AppConstants.INSTANCE;
 
-    @Inject
-    private PlaceManager placeManager;
+	@Inject
+	private PlaceManager placeManager;
 
-    @Inject
-    private ClientUserSystemManager userSystemManager;
+	@Inject
+	private ClientUserSystemManager userSystemManager;
 
-    @Inject
-    private DashboardManager dashboardManager;
+	@Inject
+	private Caller<AuthenticationService> authService;
 
-    @Inject
-    private Caller<AuthenticationService> authService;
+	@Inject
+	private NavigationManager navigationManager;
 
-    @Inject
-    private NavigationManager navigationManager;
-    
-    @Inject
-    NavigationExplorerScreen navigationExplorerScreen;
+	@Inject
+	NavigationExplorerScreen navigationExplorerScreen;
 
-    @Inject
-    private AppHeader appHeader;
+	@Inject
+	private AppHeader appHeader;
 
-    @PostConstruct
-    public void startApp() {
-        // OPTIONAL: Rename perspectives to dashboards in CMS
-        
-        userSystemManager.waitForInitialization(() -> dashboardManager.loadDashboards(t -> navigationManager.init(() -> {
-            initNavBar();
-            initNavigation();
-            hideLoadingPopup();
-        })));
-    }
+	@PostConstruct
+	public void startApp() {
+		// OPTIONAL: Rename perspectives to dashboards in CMS
+		userSystemManager.waitForInitialization(() -> navigationManager.init(() -> {
+			initNavBar();
+			initNavigation();
+			hideLoadingPopup();
+		}));
+	}
 
-    private void initNavBar() {
-        // Show the top menu bar
-        appHeader.setOnLogoutCommand(onLogoutCommand);
-        appHeader.setupMenu(NavTreeDefinitions.NAV_TREE_DEFAULT);
-    }
+	private void initNavBar() {
+		// Show the top menu bar
+		appHeader.setOnLogoutCommand(onLogoutCommand);
+		appHeader.setupMenu(NavTreeDefinitions.NAV_TREE_DEFAULT);
+	}
 
-    private void initNavigation() {
-        // Set the dashbuilder's default nav tree
-        navigationManager.setDefaultNavTree(NavTreeDefinitions.INITIAL_EMPTY);
+	private void initNavigation() {
+		// Set the dashbuilder's default nav tree
+		navigationManager.setDefaultNavTree(NavTreeDefinitions.INITIAL_EMPTY);
 
-        // Allow links to core perspectives only under the top menu's nav group
-        navigationExplorerScreen.getNavTreeEditor()
-                                .setOnlyRuntimePerspectives(NavTreeDefinitions.DASHBOARDS_GROUP, true)
-                                .applyToAllChildren();
+		// Allow links to core perspectives only under the top menu's nav group
+		navigationExplorerScreen.getNavTreeEditor()
+				.setOnlyRuntimePerspectives(NavTreeDefinitions.DASHBOARDS_GROUP, true).applyToAllChildren();
 
-        // Disable perspective context setup under the top menu nav's group
-        navigationExplorerScreen.getNavTreeEditor()
-                                .setPerspectiveContextEnabled(NavTreeDefinitions.DASHBOARDS_GROUP, false)
-                                .applyToAllChildren();
-    }
+		// Disable perspective context setup under the top menu nav's group
+		navigationExplorerScreen.getNavTreeEditor()
+				.setPerspectiveContextEnabled(NavTreeDefinitions.DASHBOARDS_GROUP, false).applyToAllChildren();
+	}
 
-    // Fade out the "Loading application" pop-up
-    private void hideLoadingPopup() {
-        final Element e = RootPanel.get("loading").getElement();
+	// Fade out the "Loading application" pop-up
+	private void hideLoadingPopup() {
+		final Element e = RootPanel.get("loading").getElement();
 
-        new Animation() {
+		new Animation() {
 
-            @Override
-            protected void onUpdate(double progress) {
-                e.getStyle().setOpacity(1.0 - progress);
-            }
+			@Override
+			protected void onUpdate(double progress) {
+				e.getStyle().setOpacity(1.0 - progress);
+			}
 
-            @Override
-            protected void onComplete() {
-                e.getStyle().setVisibility(Style.Visibility.HIDDEN);
-            }
-        }.run(500);
-    }
+			@Override
+			protected void onComplete() {
+				e.getStyle().setVisibility(Style.Visibility.HIDDEN);
+			}
+		}.run(500);
+	}
 
-    private Command onLogoutCommand = () -> {
-        authService.call(r -> {
-            final String location = GWT.getModuleBaseURL().replaceFirst("/" + GWT.getModuleName() + "/", "/logout.jsp");
-            DomGlobal.window.location.assign(location);
-        }).logout();
-    };
+	private Command onLogoutCommand = () -> {
+		authService.call(r -> {
+			final String location = GWT.getModuleBaseURL().replaceFirst("/" + GWT.getModuleName() + "/", "/logout.jsp");
+			DomGlobal.window.location.assign(location);
+		}).logout();
+	};
 
 }
