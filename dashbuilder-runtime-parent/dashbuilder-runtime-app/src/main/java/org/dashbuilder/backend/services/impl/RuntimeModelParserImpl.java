@@ -215,13 +215,13 @@ public class RuntimeModelParserImpl implements RuntimeModelParser {
     }
 
     private void partitionDisplayer(LayoutComponent lc, String modelId, String json) {
-        DisplayerSettings settings = displayerSettingsMarshaller.fromJsonString(json);
-        String componentId = settings.getComponentId();
+        var settings = displayerSettingsMarshaller.fromJsonString(json);
+        var componentId = settings.getComponentId();
 
         if (options.isDatasetPartition() &&
             settings.getDataSetLookup() != null) {
-            DataSetLookup dataSetLookup = settings.getDataSetLookup();
-            String newId = PartitionHelper.partition(modelId, dataSetLookup.getDataSetUUID());
+            var dataSetLookup = settings.getDataSetLookup();
+            var newId = PartitionHelper.partition(modelId, dataSetLookup.getDataSetUUID());
             settings.getDataSetLookup().setDataSetUUID(newId);
         }
 

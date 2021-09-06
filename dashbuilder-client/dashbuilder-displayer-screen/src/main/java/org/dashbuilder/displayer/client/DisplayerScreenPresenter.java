@@ -117,7 +117,7 @@ public class DisplayerScreenPresenter {
     @OnStartup
     public void onStartup( final PlaceRequest placeRequest ) {
         this.placeRequest = placeRequest;
-        String json = placeRequest.getParameter("json", "");
+        var json = placeRequest.getParameter("json", "");
         if (!StringUtils.isBlank(json)) {
             this.displayerSettings = jsonMarshaller.fromJsonString(json);
         }
@@ -126,7 +126,7 @@ public class DisplayerScreenPresenter {
         }
 
         // Check if display renderer selector component.
-        Boolean showRendererSelector = Boolean.parseBoolean(placeRequest.getParameter("showRendererSelector","false"));
+        var showRendererSelector = Boolean.parseBoolean(placeRequest.getParameter("showRendererSelector","false"));
         displayerViewer.setIsShowRendererSelector(showRendererSelector);
 
         // Draw the Displayer.
@@ -134,14 +134,14 @@ public class DisplayerScreenPresenter {
             displayerSettings.setUUID(uuidGenerator.newUuid());
         }
         displayerViewer.init(displayerSettings);
-        Displayer displayer = displayerViewer.draw();
+        var displayer = displayerViewer.draw();
 
         // Register the Displayer into the coordinator.
         perspectiveCoordinator.addDisplayer(displayer);
 
         // Check edit mode
-        String edit = placeRequest.getParameter("edit", "false" );
-        String clone = placeRequest.getParameter("clone", "false" );
+        var edit = placeRequest.getParameter("edit", "false" );
+        var clone = placeRequest.getParameter("clone", "false" );
         editEnabled = Boolean.parseBoolean(edit);
         cloneEnabled = Boolean.parseBoolean(clone);
         csvExportAllowed = displayerSettings.isCSVExportAllowed();
@@ -203,7 +203,7 @@ public class DisplayerScreenPresenter {
         return () -> {
             perspectiveCoordinator.editOn();
 
-            String currentTitle = displayerSettings.getTitle();
+            var currentTitle = displayerSettings.getTitle();
             DisplayerEditorPopup displayerEditor = beanManager.lookupBean(DisplayerEditorPopup.class).newInstance();
             displayerEditor.init(displayerSettings.cloneInstance());
             displayerEditor.setOnSaveCommand(getSaveCommand(displayerEditor, currentTitle));
