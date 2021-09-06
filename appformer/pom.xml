@@ -706,7 +706,6 @@
     <module>uberfire-workbench</module>
     <module>uberfire-packaging</module>
     <module>uberfire-extensions</module>
-    <module>uberfire-test-utils</module>
   </modules>
 
   <dependencyManagement>

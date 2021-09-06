@@ -1031,12 +1031,6 @@
         <classifier>sources</classifier>
       </dependency>
 
-      <dependency>
-        <groupId>org.uberfire</groupId>
-        <artifactId>uberfire-test-utils</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-
       <!-- Dashbuilder APIs -->
       <dependency>
         <groupId>org.dashbuilder</groupId>
