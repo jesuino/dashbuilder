@@ -16,23 +16,19 @@
 package org.dashbuilder.client.cms.screen.explorer;
 
 import java.util.function.Consumer;
-import javax.enterprise.context.ApplicationScoped;
+
 import javax.enterprise.context.Dependent;
-import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
 import org.dashbuilder.client.cms.resources.i18n.ContentManagerI18n;
 import org.dashbuilder.client.cms.widget.NewPerspectivePopUp;
 import org.dashbuilder.client.cms.widget.PerspectivesExplorer;
 import org.jboss.errai.common.client.api.IsElement;
-import org.uberfire.backend.events.AuthorizationPolicySavedEvent;
 import org.uberfire.client.annotations.WorkbenchMenu;
 import org.uberfire.client.annotations.WorkbenchPartTitle;
 import org.uberfire.client.annotations.WorkbenchPartView;
 import org.uberfire.client.annotations.WorkbenchScreen;
-import org.uberfire.client.authz.PerspectiveAction;
 import org.uberfire.lifecycle.OnStartup;
-import org.uberfire.workbench.model.ActivityResourceType;
 import org.uberfire.workbench.model.menu.MenuFactory;
 import org.uberfire.workbench.model.menu.Menus;
 
@@ -76,7 +72,6 @@ public class PerspectivesExplorerScreen {
     @WorkbenchMenu
     public void getMenus(final Consumer<Menus> menusConsumer) {
         menusConsumer.accept(MenuFactory.newTopLevelMenu(i18n.getContentExplorerNew())
-                                     .withPermission(ActivityResourceType.PERSPECTIVE, PerspectiveAction.CREATE)
                                      .respondsWith(this::createNewPerspective)
                                      .endMenu()
                                      .build());
@@ -86,7 +81,4 @@ public class PerspectivesExplorerScreen {
         newPerspectivePopUp.show();
     }
 
-    void onAuthzPolicyChanged(@Observes final AuthorizationPolicySavedEvent event) {
-        perspectivesExplorer.show();
-    }
 }

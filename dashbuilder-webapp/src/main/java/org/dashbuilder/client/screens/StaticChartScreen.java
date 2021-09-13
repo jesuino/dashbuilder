@@ -15,20 +15,31 @@
  */
 package org.dashbuilder.client.screens;
 
-import javax.enterprise.context.ApplicationScoped;
+import static org.dashbuilder.dataset.date.Month.APRIL;
+import static org.dashbuilder.dataset.date.Month.AUGUST;
+import static org.dashbuilder.dataset.date.Month.DECEMBER;
+import static org.dashbuilder.dataset.date.Month.FEBRUARY;
+import static org.dashbuilder.dataset.date.Month.JANUARY;
+import static org.dashbuilder.dataset.date.Month.JULY;
+import static org.dashbuilder.dataset.date.Month.JUNE;
+import static org.dashbuilder.dataset.date.Month.MARCH;
+import static org.dashbuilder.dataset.date.Month.MAY;
+import static org.dashbuilder.dataset.date.Month.NOVEMBER;
+import static org.dashbuilder.dataset.date.Month.OCTOBER;
+import static org.dashbuilder.dataset.date.Month.SEPTEMBER;
+
 import javax.inject.Inject;
 
-import com.google.gwt.user.client.ui.IsWidget;
 import org.dashbuilder.dataset.DataSetFactory;
-import org.dashbuilder.displayer.DisplayerSettingsFactory;
 import org.dashbuilder.displayer.DisplayerSettings;
+import org.dashbuilder.displayer.DisplayerSettingsFactory;
 import org.dashbuilder.displayer.client.widgets.DisplayerViewer;
 import org.uberfire.client.annotations.WorkbenchPartTitle;
 import org.uberfire.client.annotations.WorkbenchPartView;
 import org.uberfire.client.annotations.WorkbenchScreen;
 import org.uberfire.lifecycle.OnStartup;
 
-import static org.dashbuilder.dataset.date.Month.*;
+import com.google.gwt.user.client.ui.IsWidget;
 
 @WorkbenchScreen(identifier = "StaticChartScreen")
 public class StaticChartScreen {

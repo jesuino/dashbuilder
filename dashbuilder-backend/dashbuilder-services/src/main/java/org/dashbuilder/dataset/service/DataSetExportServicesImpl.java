@@ -16,7 +16,6 @@
 package org.dashbuilder.dataset.service;
 
 import java.io.BufferedWriter;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.math.BigDecimal;
@@ -30,10 +29,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import au.com.bytecode.opencsv.CSVWriter;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.BuiltinFormats;
 import org.apache.poi.ss.usermodel.Cell;
@@ -53,18 +52,17 @@ import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.dashbuilder.DataSetCore;
 import org.dashbuilder.dataset.DataColumn;
 import org.dashbuilder.dataset.DataSet;
-import org.dashbuilder.dataset.DataSetDefRegistryCDI;
 import org.dashbuilder.dataset.DataSetLookup;
 import org.dashbuilder.dataset.DataSetManagerCDI;
 import org.dashbuilder.dataset.group.Interval;
 import org.dashbuilder.dataset.uuid.UUIDGenerator;
 import org.dashbuilder.exception.ExceptionManager;
+import org.dashbuilder.project.storage.ProjectStorageServices;
 import org.jboss.errai.bus.server.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.uberfire.backend.server.util.Paths;
-import org.uberfire.java.nio.file.Files;
-import org.uberfire.java.nio.file.Path;
+
+import au.com.bytecode.opencsv.CSVWriter;
 
 @ApplicationScoped
 @Service
@@ -73,7 +71,7 @@ public class DataSetExportServicesImpl implements DataSetExportServices {
     private static final String TEXT_CELL = "text_cell";
     protected static Logger log = LoggerFactory.getLogger(DataSetExportServicesImpl.class);
     protected DataSetManagerCDI dataSetManager;
-    protected DataSetDefRegistryCDI gitStorage;
+    protected ProjectStorageServices projectStorageServices;
     protected UUIDGenerator uuidGenerator;
     protected ExceptionManager exceptionManager;
 
@@ -87,15 +85,14 @@ public class DataSetExportServicesImpl implements DataSetExportServices {
     protected DecimalFormat decf = new DecimalFormat(numberFormatPattern);
     protected DateFormat datef = new SimpleDateFormat(dateFormatPattern);
 
-    public DataSetExportServicesImpl() {
-    }
+    public DataSetExportServicesImpl() {}
 
     @Inject
     public DataSetExportServicesImpl(DataSetManagerCDI dataSetManager,
-                                     DataSetDefRegistryCDI gitStorage,
+                                     ProjectStorageServices projectStorageServices,
                                      ExceptionManager exceptionManager) {
         this.dataSetManager = dataSetManager;
-        this.gitStorage = gitStorage;
+        this.projectStorageServices = projectStorageServices;
         this.uuidGenerator = DataSetCore.get().getUuidGenerator();
         this.exceptionManager = exceptionManager;
     }
@@ -113,7 +110,7 @@ public class DataSetExportServicesImpl implements DataSetExportServices {
             int columnCount = dataSet.getColumns().size();
             int rowCount = dataSet.getRowCount();
 
-            List<String[]> lines = new ArrayList<>(rowCount+1);
+            List<String[]> lines = new ArrayList<>(rowCount + 1);
 
             String[] line = new String[columnCount];
             for (int cc = 0; cc < columnCount; cc++) {
@@ -131,29 +128,48 @@ public class DataSetExportServicesImpl implements DataSetExportServices {
             }
 
             String tempCsvFile = uuidGenerator.newUuid() + ".csv";
-            Path tempCsvPath = gitStorage.createTempFile(tempCsvFile);
+            var tempCsvPath = projectStorageServices.createTempPath(tempCsvFile);
 
-            try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(Files.newOutputStream(tempCsvPath)));
-                 CSVWriter writer = new CSVWriter(bw,
-                                                  DEFAULT_SEPARATOR_CHAR.charAt(0),
-                                                  DEFAULT_QUOTE_CHAR.charAt(0),
-                                                  DEFAULT_ESCAPE_CHAR.charAt(0))
-                 ) {
-                     writer.writeAll(lines);
-                     writer.flush();
+            try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(java.nio.file.Files.newOutputStream(
+                    tempCsvPath)));
+                    CSVWriter writer = new CSVWriter(bw,
+                            DEFAULT_SEPARATOR_CHAR.charAt(0),
+                            DEFAULT_QUOTE_CHAR.charAt(0),
+                            DEFAULT_ESCAPE_CHAR.charAt(0))) {
+                writer.writeAll(lines);
+                writer.flush();
             }
 
-            return Paths.convert(tempCsvPath);
-        }
-        catch (Exception e) {
+            return convert(tempCsvPath);
+        } catch (Exception e) {
             throw exceptionManager.handleException(e);
         }
     }
 
+    private org.uberfire.backend.vfs.Path convert(java.nio.file.Path tempCsvPath) {
+        return new org.uberfire.backend.vfs.Path() {
+            
+            @Override
+            public int compareTo(org.uberfire.backend.vfs.Path o) {
+                return o.getFileName().compareTo(this.getFileName());
+            }
+            
+            @Override
+            public String toURI() {
+                return tempCsvPath.getFileName().toString();
+            }
+            
+            @Override
+            public String getFileName() {
+                return tempCsvPath.getFileName().toString();
+            }
+        };
+    }
+
     @Override
     public org.uberfire.backend.vfs.Path exportDataSetExcel(DataSetLookup dataSetLookup) {
-        DataSet dataSet = dataSetManager.lookupDataSet( dataSetLookup );
-        return exportDataSetExcel( dataSet );
+        DataSet dataSet = dataSetManager.lookupDataSet(dataSetLookup);
+        return exportDataSetExcel(dataSet);
     }
 
     @Override
@@ -162,9 +178,9 @@ public class DataSetExportServicesImpl implements DataSetExportServices {
             SXSSFWorkbook wb = dataSetToWorkbook(dataSet);
 
             // Write workbook to Path
-            String tempXlsFile = uuidGenerator.newUuid() + ".xlsx";
-            Path tempXlsPath = gitStorage.createTempFile(tempXlsFile);
-            try (OutputStream os = Files.newOutputStream(tempXlsPath)) {
+            var tempXlsFile = uuidGenerator.newUuid() + ".xlsx";
+            var tempXlsPath = projectStorageServices.createTempPath(tempXlsFile);
+            try (OutputStream os = java.nio.file.Files.newOutputStream(tempXlsPath)) {
                 wb.write(os);
                 os.flush();
             }
@@ -173,7 +189,7 @@ public class DataSetExportServicesImpl implements DataSetExportServices {
             if (!wb.dispose()) {
                 log.warn("Could not dispose of temporary file associated to data export!");
             }
-            return Paths.convert(tempXlsPath);
+            return convert(tempXlsPath);
         } catch (Exception e) {
             throw exceptionManager.handleException(e);
         }
@@ -217,8 +233,9 @@ public class DataSetExportServicesImpl implements DataSetExportServices {
             for (int cellnum = 0; cellnum < columnCount; cellnum++) {
                 Cell cell = _row.createCell(cellnum);
                 Object value = dataSet.getValueAt(row - 1,
-                                                  cellnum);
-                if (value instanceof Short || value instanceof Long || value instanceof Integer || value instanceof BigInteger) {
+                        cellnum);
+                if (value instanceof Short || value instanceof Long || value instanceof Integer ||
+                    value instanceof BigInteger) {
                     cell.setCellType(CellType.NUMERIC);
                     cell.setCellStyle(styles.get("integer_number_cell"));
                     cell.setCellValue(((Number) value).doubleValue());
@@ -251,25 +268,30 @@ public class DataSetExportServicesImpl implements DataSetExportServices {
     }
 
     private String formatAsString(Object value) {
-        if (value == null) return "";
-        if (value instanceof Number) return decf.format(value);
-        else if (value instanceof Date) return datef.format(value);
+        if (value == null)
+            return "";
+        if (value instanceof Number)
+            return decf.format(value);
+        else if (value instanceof Date)
+            return datef.format(value);
         // TODO verify if this is correct
-        else if (value instanceof Interval) return ((Interval)value).getName();
-        else return value.toString();
+        else if (value instanceof Interval)
+            return ((Interval) value).getName();
+        else
+            return value.toString();
     }
 
-    private Map<String, CellStyle> createStyles(Workbook wb){
+    private Map<String, CellStyle> createStyles(Workbook wb) {
         Map<String, CellStyle> styles = new HashMap<>();
         CellStyle style;
 
         Font titleFont = wb.createFont();
-        titleFont.setFontHeightInPoints((short)12);
+        titleFont.setFontHeightInPoints((short) 12);
         titleFont.setBold(true);
         style = wb.createCellStyle();
         style.setAlignment(HorizontalAlignment.CENTER);
         style.setVerticalAlignment(VerticalAlignment.CENTER);
-        style.setFillForegroundColor( IndexedColors.GREY_25_PERCENT.getIndex());
+        style.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
         style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         style.setFont(titleFont);
         style.setWrapText(false);
@@ -278,7 +300,7 @@ public class DataSetExportServicesImpl implements DataSetExportServices {
         styles.put("header", style);
 
         Font cellFont = wb.createFont();
-        cellFont.setFontHeightInPoints((short)10);
+        cellFont.setFontHeightInPoints((short) 10);
         cellFont.setBold(true);
 
         style = wb.createCellStyle();
@@ -286,7 +308,7 @@ public class DataSetExportServicesImpl implements DataSetExportServices {
         style.setVerticalAlignment(VerticalAlignment.BOTTOM);
         style.setFont(cellFont);
         style.setWrapText(false);
-        style.setDataFormat(wb.createDataFormat().getFormat( BuiltinFormats.getBuiltinFormat( 3 )));
+        style.setDataFormat(wb.createDataFormat().getFormat(BuiltinFormats.getBuiltinFormat(3)));
         styles.put("integer_number_cell", style);
 
         style = wb.createCellStyle();
@@ -302,7 +324,7 @@ public class DataSetExportServicesImpl implements DataSetExportServices {
         style.setVerticalAlignment(VerticalAlignment.BOTTOM);
         style.setFont(cellFont);
         style.setWrapText(false);
-        style.setDataFormat( (short) BuiltinFormats.getBuiltinFormat("text") );
+        style.setDataFormat((short) BuiltinFormats.getBuiltinFormat("text"));
         styles.put(TEXT_CELL, style);
 
         style = wb.createCellStyle();
@@ -310,7 +332,8 @@ public class DataSetExportServicesImpl implements DataSetExportServices {
         style.setVerticalAlignment(VerticalAlignment.BOTTOM);
         style.setFont(cellFont);
         style.setWrapText(false);
-        style.setDataFormat(wb.createDataFormat().getFormat( DateFormatConverter.convert( Locale.getDefault(), dateFormatPattern )));
+        style.setDataFormat(wb.createDataFormat().getFormat(DateFormatConverter.convert(Locale.getDefault(),
+                dateFormatPattern)));
         styles.put("date_cell", style);
         return styles;
     }

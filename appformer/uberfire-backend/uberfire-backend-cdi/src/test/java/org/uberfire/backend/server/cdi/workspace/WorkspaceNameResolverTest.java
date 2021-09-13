@@ -19,7 +19,6 @@ package org.uberfire.backend.server.cdi.workspace;
 
 import javax.enterprise.inject.spi.BeanManager;
 
-import org.jboss.errai.security.shared.api.identity.UserImpl;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -60,15 +59,4 @@ public class WorkspaceNameResolverTest {
                      name);
     }
 
-    @Test
-    public void testUserInfoWorkspaceName() {
-        final String user = "clapton";
-
-        SessionInfo sessionInfo = mock(SessionInfo.class);
-        when(sessionInfo.getIdentity()).thenReturn(new UserImpl(user));
-        doReturn(sessionInfo).when(this.resolver).getSessionInfo();
-        String name = this.resolver.getWorkspaceName();
-        assertEquals(user,
-                     name);
-    }
 }

@@ -16,12 +16,20 @@
 
 package org.uberfire.client.docks.view;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.gwt.user.client.ui.Widget;
-import com.google.gwtmockito.GwtMockitoTestRunner;
-import org.jboss.errai.security.shared.api.identity.User;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,13 +45,10 @@ import org.uberfire.client.workbench.docks.UberfireDocksInteractionEvent;
 import org.uberfire.mocks.EventSourceMock;
 import org.uberfire.mvp.ParameterizedCommand;
 import org.uberfire.mvp.impl.DefaultPlaceRequest;
-import org.uberfire.security.authz.AuthorizationManager;
 import org.uberfire.workbench.model.toolbar.IconType;
 
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import com.google.gwt.user.client.ui.Widget;
+import com.google.gwtmockito.GwtMockitoTestRunner;
 
 @RunWith(GwtMockitoTestRunner.class)
 public class DocksBarsTest {
@@ -57,10 +62,6 @@ public class DocksBarsTest {
     private MenuBuilder menuBuilder;
     @Mock
     private EventSourceMock<UberfireDocksInteractionEvent> dockInteractionEvent;
-    @Mock
-    private AuthorizationManager authorizationManager;
-    @Mock
-    private User identity;
     private DocksBars docksBars;
     private UberfireDock dock0 = new UberfireDock(UberfireDockPosition.SOUTH,
                                                   IconType.CHEVRON_RIGHT.name(),
@@ -73,9 +74,7 @@ public class DocksBarsTest {
         docksBars = new DocksBars(placeManager,
                                   menuBuilder,
                                   dockInteractionEvent,
-                                  uberfireDocksContainer,
-                                  authorizationManager,
-                                  identity);
+                                  uberfireDocksContainer);
     }
 
     @Test
@@ -150,7 +149,6 @@ public class DocksBarsTest {
 
     @Test
     public void clearAndCollapse() {
-
         docksBars.setup();
         DocksBars docksBarsSpy = spy(docksBars);
         DocksBar dock1 = createDocksBarMock();

@@ -16,6 +16,9 @@
 
 package org.dashbuilder.transfer.rest;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -28,8 +31,6 @@ import org.dashbuilder.transfer.DataTransferExportModel;
 import org.dashbuilder.transfer.DataTransferServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.uberfire.io.IOService;
-import org.uberfire.java.nio.file.Paths;
 
 @ApplicationScoped
 @Path("dashbuilder")
@@ -40,20 +41,16 @@ public class DataTransferResource {
     @Inject
     private DataTransferServices dataTransferServices;
 
-    @Inject
-    @Named("ioStrategy")
-    private IOService ioService;
-
     @GET
     @Path("export")
     @Produces("application/zip")
     public Response export() {
         try {
-            String exportFile = dataTransferServices.doExport(DataTransferExportModel.exportAll());
-            org.uberfire.java.nio.file.Path path = Paths.get(exportFile);
-            return Response.ok(ioService.readAllBytes(path)).build();
+            var exportFile = dataTransferServices.doExport(DataTransferExportModel.exportAll());
+            var path = Paths.get(exportFile);
+            return Response.ok(Files.readAllBytes(path)).build();
         } catch (Exception e) {
-            String errorMessage = "Error creating export: " + e.getMessage();
+            var errorMessage = "Error creating export: " + e.getMessage();
             logger.error(errorMessage);
             logger.debug("Not able to create export.", e);
             return Response.serverError()

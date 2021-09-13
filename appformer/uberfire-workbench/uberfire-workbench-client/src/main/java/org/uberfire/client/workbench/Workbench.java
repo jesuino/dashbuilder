@@ -38,7 +38,6 @@ import org.jboss.errai.ioc.client.api.EntryPoint;
 import org.jboss.errai.ioc.client.api.ManagedInstance;
 import org.jboss.errai.ioc.client.container.SyncBeanDef;
 import org.jboss.errai.ioc.client.container.SyncBeanManager;
-import org.jboss.errai.security.shared.api.identity.User;
 import org.slf4j.Logger;
 import org.uberfire.backend.vfs.Path;
 import org.uberfire.client.mvp.ActivityBeansCache;
@@ -54,9 +53,6 @@ import org.uberfire.mvp.impl.DefaultPlaceRequest;
 import org.uberfire.mvp.impl.PathPlaceRequest;
 import org.uberfire.rpc.SessionInfo;
 import org.uberfire.rpc.impl.SessionInfoImpl;
-import org.uberfire.security.authz.AuthorizationManager;
-import org.uberfire.security.authz.AuthorizationPolicy;
-import org.uberfire.security.authz.PermissionManager;
 
 /**
  * Responsible for bootstrapping the client-side Workbench user interface by coordinating calls to the PanelManager and
@@ -129,14 +125,8 @@ public class Workbench {
     @Inject
     private PlaceManager placeManager;
     @Inject
-    private PermissionManager permissionManager;
-    @Inject
-    private AuthorizationManager authorizationManager;
-    @Inject
     private VFSServiceProxy vfsService;
     private WorkbenchLayout layout;
-    @Inject
-    private User identity;
     @Inject
     private ClientMessageBus bus;
     @Inject
@@ -185,7 +175,8 @@ public class Workbench {
         if (startupBlockers.remove(responsibleParty)) {
             logger.info(responsibleParty.getName() + " is no longer blocking startup.");
         } else {
-            logger.info(responsibleParty.getName() + " tried to unblock startup, but it wasn't blocking to begin with!");
+            logger.info(responsibleParty.getName() +
+                    " tried to unblock startup, but it wasn't blocking to begin with!");
         }
         startIfNotBlocked();
     }
@@ -234,7 +225,7 @@ public class Workbench {
             }
         } else {
             layout.setMarginWidgets(isStandaloneMode,
-                                    headersToKeep);
+                    headersToKeep);
             layout.onBootstrap();
 
             addLayoutToRootPanel(layout);
@@ -245,7 +236,7 @@ public class Workbench {
 
         // Resizing the Window should resize everything
         Window.addResizeHandler(event -> layout.resizeTo(event.getWidth(),
-                                                         event.getHeight()));
+                event.getHeight()));
 
         // Defer the initial resize call until widgets are rendered and sizes are available
         Scheduler.get().scheduleDeferred(() -> layout.onResize());
@@ -288,7 +279,8 @@ public class Workbench {
         boolean openEditor = true;
 
         if (!workbenchCustomStandalonePerspectiveDefinition.isUnsatisfied()) {
-            final WorkbenchCustomStandalonePerspectiveDefinition workbenchCustomStandalonePerspectiveDefinition = this.workbenchCustomStandalonePerspectiveDefinition.get();
+            final WorkbenchCustomStandalonePerspectiveDefinition workbenchCustomStandalonePerspectiveDefinition =
+                    this.workbenchCustomStandalonePerspectiveDefinition.get();
             standalonePerspective = workbenchCustomStandalonePerspectiveDefinition.getStandalonePerspectiveIdentifier();
             openEditor = workbenchCustomStandalonePerspectiveDefinition.openPathAutomatically();
         }
@@ -296,13 +288,13 @@ public class Workbench {
         placeManager.goTo(new DefaultPlaceRequest(standalonePerspective));
         if (openEditor) {
             vfsService.get(parameters.get("path").get(0),
-                           path -> {
-                               if (parameters.containsKey("editor") && !parameters.get("editor").isEmpty()) {
-                                   openEditor(path, parameters.get("editor").get(0));
-                               } else {
-                                   openEditor(path);
-                               }
-                           });
+                    path -> {
+                        if (parameters.containsKey("editor") && !parameters.get("editor").isEmpty()) {
+                            openEditor(path, parameters.get("editor").get(0));
+                        } else {
+                            openEditor(path);
+                        }
+                    });
         }
     }
 
@@ -325,38 +317,27 @@ public class Workbench {
      */
     public PerspectiveActivity getHomePerspectiveActivity() {
 
-        // Get the user's home perspective
-        PerspectiveActivity homePerspective = null;
-        AuthorizationPolicy authPolicy = permissionManager.getAuthorizationPolicy();
-        String homePerspectiveId = authPolicy.getHomePerspective(identity);
-
-        // Get the workbench's default perspective
         PerspectiveActivity defaultPerspective = null;
-        final Collection<SyncBeanDef<PerspectiveActivity>> perspectives = iocManager.lookupBeans(PerspectiveActivity.class);
+        final Collection<SyncBeanDef<PerspectiveActivity>> perspectives = iocManager.lookupBeans(
+                PerspectiveActivity.class);
 
         for (final SyncBeanDef<PerspectiveActivity> perspective : perspectives) {
             final PerspectiveActivity instance = perspective.getInstance();
 
-            if (homePerspectiveId != null && homePerspectiveId.equals(instance.getIdentifier())) {
-                homePerspective = instance;
-                if (defaultPerspective != null) {
-                    iocManager.destroyBean(defaultPerspective);
-                }
-            } else if (instance.isDefault()) {
+            if (instance.isDefault()) {
                 defaultPerspective = instance;
             } else {
                 iocManager.destroyBean(instance);
             }
         }
-        // The home perspective has always priority over the default
-        return homePerspective != null ? homePerspective : defaultPerspective;
+        return defaultPerspective;
     }
 
     @Produces
     @ApplicationScoped
     private SessionInfo currentSession() {
         if (sessionInfo == null) {
-            sessionInfo = new SessionInfoImpl(identity);
+            sessionInfo = new SessionInfoImpl();
         }
         return sessionInfo;
     }

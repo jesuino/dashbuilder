@@ -16,47 +16,27 @@
 
 package org.uberfire.server.cdi;
 
-import javax.enterprise.context.RequestScoped;
-import javax.enterprise.inject.Default;
-import javax.enterprise.inject.Instance;
-import javax.enterprise.inject.Produces;
-import javax.inject.Inject;
-
-import org.jboss.errai.security.shared.api.identity.User;
-import org.jboss.errai.security.shared.service.AuthenticationService;
-import org.uberfire.rpc.SessionInfo;
-import org.uberfire.rpc.impl.SessionInfoImpl;
-
 import static org.jboss.errai.bus.server.api.RpcContext.getMessage;
 import static org.jboss.errai.bus.server.api.RpcContext.getQueueSession;
 
-public class UberFireGeneralFactory {
+import javax.enterprise.context.RequestScoped;
+import javax.enterprise.inject.Default;
+import javax.enterprise.inject.Produces;
 
-    @Inject
-    private Instance<User> user;
+import org.uberfire.rpc.SessionInfo;
+import org.uberfire.rpc.impl.SessionInfoImpl;
+
+public class UberFireGeneralFactory {
 
     @Produces
     @RequestScoped
     @Default
-    public SessionInfo getSessionInfo(AuthenticationService authenticationService) {
+    public SessionInfo getSessionInfo() {
         String sessionId = getSessionId();
-        User user;
         if (sessionId == null) {
-            user = getDefaultUser();
-            sessionId = user.getIdentifier();
-        } else {
-            user = authenticationService.getUser();
+            sessionId = "Any Session";
         }
-        return new SessionInfoImpl(sessionId,
-                                   user);
-    }
-
-    private User getDefaultUser() {
-        if (user.isAmbiguous() || user.isUnsatisfied()) {
-            throw new IllegalStateException("Cannot get session info outside of servlet thread when no default user is provided.");
-        } else {
-            return user.get();
-        }
+        return new SessionInfoImpl(sessionId);
     }
 
     private String getSessionId() {

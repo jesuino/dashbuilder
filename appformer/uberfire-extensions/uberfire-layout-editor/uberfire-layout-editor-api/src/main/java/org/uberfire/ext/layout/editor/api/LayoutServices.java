@@ -22,7 +22,7 @@ import org.uberfire.ext.layout.editor.api.editor.LayoutTemplate;
 @Remote
 public interface LayoutServices {
 
-    String convertLayoutToString(LayoutTemplate layoutTemplate);
+    String toJson(LayoutTemplate layoutTemplate);
 
-    LayoutTemplate convertLayoutFromString(String layoutEditorModel);
+    LayoutTemplate fromJson(String layoutEditorModel);
 }

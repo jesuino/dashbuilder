@@ -16,15 +16,14 @@
 
 package org.uberfire.client.views.pfly.menu;
 
-import com.google.gwtmockito.GwtMockitoTestRunner;
-import org.jboss.errai.security.shared.api.identity.User;
+import static org.mockito.Mockito.verify;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.uberfire.security.authz.AuthorizationManager;
 
-import static org.mockito.Mockito.*;
+import com.google.gwtmockito.GwtMockitoTestRunner;
 
 @RunWith(GwtMockitoTestRunner.class)
 public class UserMenuTest {
@@ -32,47 +31,14 @@ public class UserMenuTest {
     @Mock
     private UserMenu.UserMenuView userMenuView;
 
-    @Mock
-    private User user;
-
-    @Mock
-    private AuthorizationManager authzManager;
-
     @InjectMocks
     private UserMenu userMenu;
 
     @Test
     public void testUserNameWithId() {
         final String userName = "mock";
-        when(user.getIdentifier()).thenReturn(userName);
         userMenu.setup();
         verify(userMenuView).setUserName(userName);
-    }
-
-    @Test
-    public void testUserNameUsingFirstAndLastName() {
-        final String firstName = "Mock";
-        final String lastName = "Test";
-        when(user.getProperty(User.StandardUserProperties.FIRST_NAME)).thenReturn(firstName);
-        when(user.getProperty(User.StandardUserProperties.LAST_NAME)).thenReturn(lastName);
-        userMenu.setup();
-        verify(userMenuView).setUserName(firstName + " " + lastName);
-    }
-
-    @Test
-    public void testUserNameUsingFirstName() {
-        final String firstName = "Mock";
-        when(user.getProperty(User.StandardUserProperties.FIRST_NAME)).thenReturn(firstName);
-        userMenu.setup();
-        verify(userMenuView).setUserName(firstName);
-    }
-
-    @Test
-    public void testUserNameUsingLastName() {
-        final String lastName = "Test";
-        when(user.getProperty(User.StandardUserProperties.LAST_NAME)).thenReturn(lastName);
-        userMenu.setup();
-        verify(userMenuView).setUserName(lastName);
     }
 
     @Test

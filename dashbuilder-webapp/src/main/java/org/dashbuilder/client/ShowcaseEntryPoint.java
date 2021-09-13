@@ -22,12 +22,8 @@ import org.dashbuilder.client.cms.screen.explorer.NavigationExplorerScreen;
 import org.dashbuilder.client.navbar.AppHeader;
 import org.dashbuilder.client.navigation.NavTreeDefinitions;
 import org.dashbuilder.client.navigation.NavigationManager;
-import org.dashbuilder.client.resources.i18n.AppConstants;
 import org.jboss.errai.common.client.api.Caller;
 import org.jboss.errai.ioc.client.api.EntryPoint;
-import org.jboss.errai.security.shared.service.AuthenticationService;
-import org.uberfire.client.mvp.PlaceManager;
-import org.uberfire.ext.security.management.client.ClientUserSystemManager;
 import org.uberfire.mvp.Command;
 
 import com.google.gwt.animation.client.Animation;
@@ -44,17 +40,6 @@ import elemental2.dom.DomGlobal;
 @EntryPoint
 public class ShowcaseEntryPoint {
 
-	private AppConstants constants = AppConstants.INSTANCE;
-
-	@Inject
-	private PlaceManager placeManager;
-
-	@Inject
-	private ClientUserSystemManager userSystemManager;
-
-	@Inject
-	private Caller<AuthenticationService> authService;
-
 	@Inject
 	private NavigationManager navigationManager;
 
@@ -66,17 +51,15 @@ public class ShowcaseEntryPoint {
 
 	@PostConstruct
 	public void startApp() {
-		// OPTIONAL: Rename perspectives to dashboards in CMS
-		userSystemManager.waitForInitialization(() -> navigationManager.init(() -> {
+		navigationManager.init(() -> {
 			initNavBar();
 			initNavigation();
 			hideLoadingPopup();
-		}));
+		});
 	}
 
 	private void initNavBar() {
 		// Show the top menu bar
-		appHeader.setOnLogoutCommand(onLogoutCommand);
 		appHeader.setupMenu(NavTreeDefinitions.NAV_TREE_DEFAULT);
 	}
 
@@ -110,12 +93,5 @@ public class ShowcaseEntryPoint {
 			}
 		}.run(500);
 	}
-
-	private Command onLogoutCommand = () -> {
-		authService.call(r -> {
-			final String location = GWT.getModuleBaseURL().replaceFirst("/" + GWT.getModuleName() + "/", "/logout.jsp");
-			DomGlobal.window.location.assign(location);
-		}).logout();
-	};
 
 }

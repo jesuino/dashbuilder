@@ -33,7 +33,6 @@
   <name>Extensions to UberFire</name>
 
   <modules>
-    <module>uberfire-security</module>
     <module>uberfire-widgets</module>
     <module>uberfire-commons-editor</module>
     <module>uberfire-runtime-plugins</module>

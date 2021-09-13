@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
   <parent>
@@ -56,12 +57,6 @@
     </dependency>
 
     <dependency>
-      <groupId>jakarta.security.jacc</groupId>
-      <artifactId>jakarta.security.jacc-api</artifactId>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
     </dependency>
@@ -100,18 +95,18 @@
       <artifactId>dashbuilder-dataset-client</artifactId>
       <scope>provided</scope>
     </dependency>
-    
+
     <dependency>
       <groupId>org.dashbuilder</groupId>
       <artifactId>dashbuilder-kie-server-client</artifactId>
       <scope>provided</scope>
     </dependency>
-    
+
     <dependency>
       <groupId>org.dashbuilder</groupId>
       <artifactId>dashbuilder-kie-server-api</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>org.dashbuilder</groupId>
       <artifactId>dashbuilder-kie-server-backend</artifactId>
@@ -212,7 +207,7 @@
       <artifactId>uberfire-commons-editor-client</artifactId>
       <scope>provided</scope>
     </dependency>
-	    
+
     <dependency>
       <groupId>org.uberfire</groupId>
       <artifactId>uberfire-widgets-core-client</artifactId>
@@ -349,56 +344,6 @@
       <scope>provided</scope>
     </dependency>
 
-    <!-- UberFire Security (Extension) -->
-    <dependency>
-      <groupId>org.uberfire</groupId>
-      <artifactId>uberfire-security-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.uberfire</groupId>
-      <artifactId>uberfire-security-client-backend</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.uberfire</groupId>
-      <artifactId>uberfire-servlet-security</artifactId>
-    </dependency>
-
-    <!-- Uberfire Security Management -->
-
-    <dependency>
-      <groupId>org.uberfire</groupId>
-      <artifactId>uberfire-security-management-api</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.uberfire</groupId>
-      <artifactId>uberfire-security-management-backend</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.uberfire</groupId>
-      <artifactId>uberfire-security-management-wildfly</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.uberfire</groupId>
-      <artifactId>uberfire-security-management-client</artifactId>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.uberfire</groupId>
-      <artifactId>uberfire-widgets-security-management</artifactId>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.uberfire</groupId>
-      <artifactId>uberfire-security-management-client-wb</artifactId>
-      <scope>provided</scope>
-    </dependency>
-
     <!-- Log -->
 
     <dependency>
@@ -443,18 +388,7 @@
 
     <dependency>
       <groupId>org.jboss.errai</groupId>
-      <artifactId>errai-security-server</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.jboss.errai</groupId>
       <artifactId>errai-javax-enterprise</artifactId>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.jboss.errai</groupId>
-      <artifactId>errai-security-client</artifactId>
       <scope>provided</scope>
     </dependency>
 
@@ -555,6 +489,18 @@
       <scope>provided</scope>
     </dependency>
 
+    <dependency>
+      <groupId>jakarta.ws.rs</groupId>
+      <artifactId>jakarta.ws.rs-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
     <!-- GWT and GWT Extensions -->
 
     <dependency>
@@ -637,7 +583,7 @@
             <compileSourcesArtifact>org.dashbuilder:dashbuilder-cms-client</compileSourcesArtifact>
             <compileSourcesArtifact>org.dashbuilder:dashbuilder-kie-server-api</compileSourcesArtifact>
             <compileSourcesArtifact>org.dashbuilder:dashbuilder-kie-server-client</compileSourcesArtifact>
-            
+
             <!-- Uberfire ext -->
             <compileSourcesArtifact>org.uberfire:uberfire-runtime-plugins-api</compileSourcesArtifact>
             <compileSourcesArtifact>org.uberfire:uberfire-runtime-plugins-client</compileSourcesArtifact>
@@ -661,23 +607,27 @@
             <compileSourcesArtifact>org.uberfire:uberfire-io</compileSourcesArtifact>
             <compileSourcesArtifact>org.uberfire:uberfire-api</compileSourcesArtifact>
             <compileSourcesArtifact>org.uberfire:uberfire-js</compileSourcesArtifact>
-            <compileSourcesArtifact>org.uberfire:uberfire-security-api</compileSourcesArtifact>
-            <compileSourcesArtifact>org.uberfire:uberfire-security-client</compileSourcesArtifact>
             <compileSourcesArtifact>org.uberfire:uberfire-client-api</compileSourcesArtifact>
             <compileSourcesArtifact>org.uberfire:uberfire-workbench-client</compileSourcesArtifact>
             <compileSourcesArtifact>org.uberfire:uberfire-workbench-client-backend</compileSourcesArtifact>
             <compileSourcesArtifact>org.uberfire:uberfire-workbench-client-views-patternfly</compileSourcesArtifact>
             <compileSourcesArtifact>org.uberfire:uberfire-backend-api</compileSourcesArtifact>
 
-            <!-- UberFire Security Management -->
-            <compileSourcesArtifact>org.uberfire:uberfire-security-management-api</compileSourcesArtifact>
-            <compileSourcesArtifact>org.uberfire:uberfire-security-management-client</compileSourcesArtifact>
-            <compileSourcesArtifact>org.uberfire:uberfire-security-management-client-wb</compileSourcesArtifact>
-            <compileSourcesArtifact>org.uberfire:uberfire-widgets-security-management</compileSourcesArtifact>
 
           </compileSourcesArtifacts>
           <runTarget>dashbuilder.html</runTarget>
-	  <extraJvmArgs>-Xmx4024m -XX:CompileThreshold=7000 -Derrai.jboss.home=${errai.jboss.home} -Derrai.jboss.debug.port=8787 -Ddashbuilder.components.enable=true -Ddashbuilder.export.dir=/tmp/dashbuilder/models -Ddashbuilder.runtime.location=http://localhost:8280 -Ddashbuilder.shareOpenModel=true -Ddashbuilder.kieserver.serverTemplate.default.location=http://localhost:8080/kie-server/services/rest/server -Ddashbuilder.kieserver.serverTemplate.default.user=kieserver -Ddashbuilder.kieserver.serverTemplate.default.password=kieserver1! -Ddashbuilder.kieserver.defaultServerTemplate=default -Ddashbuilder.kieserver.serverTemplates=default</extraJvmArgs>
+          <extraJvmArgs>-Xmx4024m -XX:CompileThreshold=7000
+            -Derrai.jboss.home=${errai.jboss.home}
+            -Derrai.jboss.debug.port=8787
+            -Ddashbuilder.components.enable=true
+            -Ddashbuilder.export.dir=/tmp/dashbuilder/models
+            -Ddashbuilder.runtime.location=http://localhost:8280
+            -Ddashbuilder.shareOpenModel=true
+            -Ddashbuilder.kieserver.serverTemplate.default.location=http://localhost:8080/kie-server/services/rest/server
+            -Ddashbuilder.kieserver.serverTemplate.default.user=kieserver
+            -Ddashbuilder.kieserver.serverTemplate.default.password=kieserver1!
+            -Ddashbuilder.kieserver.defaultServerTemplate=default
+            -Ddashbuilder.kieserver.serverTemplates=default</extraJvmArgs>
           <noServer>false</noServer>
           <server>org.jboss.errai.cdi.server.gwt.EmbeddedWildFlyLauncher</server>
           <hostedWebapp>src/main/webapp</hostedWebapp>
@@ -810,7 +760,8 @@
         </plugins>
       </build>
     </profile>
-    <!-- profile to disable GWT compilation of showcase (useful in full downstream builds) -->
+    <!-- profile to disable GWT compilation of showcase (useful in full downstream 
+      builds) -->
     <profile>
       <id>no-showcase</id>
       <build>

@@ -16,15 +16,33 @@
 
 package org.dashbuilder.transfer;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.net.URI;
-import java.net.URL;
+import static org.dashbuilder.project.storage.ProjectStorageServices.NAV_TREE_FILE_NAME;
+import static org.dashbuilder.project.storage.ProjectStorageServices.PERSPECTIVE_LAYOUT;
+import static org.dashbuilder.project.storage.ProjectStorageServices.PERSPECTIVE_LAYOUT_PLUGIN;
+import static org.dashbuilder.project.storage.ProjectStorageServices.README;
+import static org.dashbuilder.project.storage.ProjectStorageServices.getDatasetsExportPath;
+import static org.dashbuilder.project.storage.ProjectStorageServices.getNavigationExportPath;
+import static org.dashbuilder.project.storage.ProjectStorageServices.getPerspectivesExportPath;
+import static org.dashbuilder.transfer.DataTransferServices.COMPONENTS_EXPORT_PATH;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -38,6 +56,8 @@ import org.dashbuilder.external.model.ExternalComponent;
 import org.dashbuilder.external.service.ComponentLoader;
 import org.dashbuilder.navigation.event.NavTreeChangedEvent;
 import org.dashbuilder.navigation.storage.NavTreeStorage;
+import org.dashbuilder.project.storage.ProjectStorageServices;
+import org.dashbuilder.project.storage.impl.ProjectStorageServicesImpl;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,38 +66,11 @@ import org.lesscss.deps.org.apache.commons.io.FileUtils;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.uberfire.ext.plugin.event.PluginAdded;
-import org.uberfire.io.IOService;
-import org.uberfire.io.impl.IOServiceDotFileImpl;
-import org.uberfire.java.nio.IOException;
-import org.uberfire.java.nio.file.FileSystem;
-import org.uberfire.java.nio.file.FileVisitResult;
-import org.uberfire.java.nio.file.Files;
-import org.uberfire.java.nio.file.Path;
-import org.uberfire.java.nio.file.Paths;
-import org.uberfire.java.nio.file.SimpleFileVisitor;
-import org.uberfire.java.nio.file.attribute.BasicFileAttributes;
 import org.uberfire.rpc.SessionInfo;
-import org.uberfire.spaces.SpacesAPI;
-
-import static java.util.Arrays.asList;
-import static org.dashbuilder.transfer.DataTransferServices.COMPONENTS_EXPORT_PATH;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.Silent.class)
 public class DataTransferServicesTest {
 
-    private IOService ioService;
-    private FileSystem datasetsFS;
-    private FileSystem perspectivesFS;
-    private FileSystem navigationFS;
-    private FileSystem systemFS;
     private DataTransferServices dataTransferServices;
 
     @Mock
@@ -100,449 +93,354 @@ public class DataTransferServicesTest {
     LayoutComponentHelper layoutComponentsHelper;
 
     Path componentsDir;
-    
-    @Before
-    public void setup() {
-        ioService = new IOServiceDotFileImpl();
-        componentsDir = Files.createTempDirectory("dashbuilder-components");
+    private ProjectStorageServices projectStorageServices;
 
-        datasetsFS = createFileSystem("datasets");
-        perspectivesFS = createFileSystem("perspectives");
-        navigationFS = createFileSystem("navigation");
-        systemFS = createFileSystem("system");
+    @Before
+    public void setup() throws IOException {
+
+        componentsDir = Files.createTempDirectory("dashbuilder-components");
 
         when(dataSetDefRegistryCDI.getDataSetDefJsonMarshaller()).thenReturn(dataSetDefJSONMarshaller);
         when(externalComponentLoader.getExternalComponentsDir()).thenReturn(componentsDir.toString());
         when(externalComponentLoader.isExternalComponentsEnabled()).thenReturn(true);
 
-        dataTransferServices = new DataTransferServicesImpl(ioService,
-                                                            datasetsFS,
-                                                            perspectivesFS,
-                                                            navigationFS,
-                                                            systemFS,
-                                                            dataSetDefRegistryCDI,
-                                                            sessionInfo,
-                                                            dataSetDefRegisteredEvent,
-                                                            pluginAddedEvent,
-                                                            navTreeChangedEvent,
-                                                            navTreeStorage,
-                                                            externalComponentLoader,
-                                                            layoutComponentsHelper);
+        projectStorageServices = new ProjectStorageServicesImpl();
+        dataTransferServices = new DataTransferServicesImpl(projectStorageServices,
+                dataSetDefRegistryCDI,
+                sessionInfo,
+                dataSetDefRegisteredEvent,
+                pluginAddedEvent,
+                navTreeChangedEvent,
+                externalComponentLoader,
+                layoutComponentsHelper);
+        projectStorageServices.clear();
+        projectStorageServices.createStructure();
     }
 
     @After
     public void cleanFileSystems() {
-        cleanFileSystem(datasetsFS);
-        cleanFileSystem(perspectivesFS);
-        cleanFileSystem(navigationFS);
-        cleanFileSystem(systemFS);
-        
+        projectStorageServices.clear();
         FileUtils.deleteQuietly(componentsDir.toFile());
     }
 
     @Test
-    @SuppressWarnings("serial")
     public void testDoExportEmptyFileSystems() throws Exception {
-        String exportPath = dataTransferServices.doExport(DataTransferExportModel.exportAll());
+        dataTransferServices.doExport(DataTransferExportModel.exportAll());
 
-        assertTrue(exportPath.equals(getExpectedExportFileSystemPath()));
+        var exportPath = projectStorageServices.getTempPath(DataTransferServicesImpl.EXPORT_ZIP);
 
-        assertEquals(new ArrayList<String>() {{
-                        add(getExpectedExportFilePath());
-                        add("/readme.md");
-                    }}, getFiles(systemFS));
+        assertTrue(exportPath.toFile().exists());
 
-        ZipInputStream zis = getZipInputStream();
+        var zis = new ZipInputStream(new FileInputStream(exportPath.toFile()));
 
-        assertEquals(new ArrayList<String>() {{
-                        add(datasetsFS.getName() + "/readme.md");
-                        add(perspectivesFS.getName() + "/readme.md");
-                        add(navigationFS.getName() + "/readme.md");
-                        add("VERSION");
-                    }}, getFiles(zis));
+        var expected = List.of(getDatasetsExportPath().getParent().resolve(README).toString(),
+                getPerspectivesExportPath().resolve(README).toString(),
+                getNavigationExportPath().getParent().resolve(README).toString(),
+                DataTransferServicesImpl.VERSION_FILE);
+
+        assertArrayEquals(expected.toArray(), getFiles(zis).toArray());
     }
 
     @Test
-    @SuppressWarnings("serial")
     public void testDoExportNotEmptyFileSystems() throws Exception {
-        createFile(datasetsFS, "definitions/dataset1.csv", "Test 1");
-        createFile(datasetsFS, "definitions/dataset1.dset", "Test ABC");
-        createFile(perspectivesFS, "page1/perspective_layout", "Test Page 1");
-        createFile(perspectivesFS, "page1/perspective_layout.plugin", "Test Page 1 Plugin");
-        createFile(navigationFS, "navtree.json", "{ }");
+        projectStorageServices.saveDataSetContent("dataset1.csv", "");
+        projectStorageServices.saveDataSet("dataset1", "");
+        projectStorageServices.savePerspective("page1", "");
+        projectStorageServices.saveNavigation("");
 
-        String exportPath = dataTransferServices.doExport(DataTransferExportModel.exportAll());
+        var exportPath = dataTransferServices.doExport(DataTransferExportModel.exportAll());
+        var zis = new ZipInputStream(new FileInputStream(exportPath));
 
-        assertTrue(exportPath.equals(getExpectedExportFileSystemPath()));
+        var expected = List.of(
+                getDatasetsExportPath().resolve("dataset1.csv").toString(),
+                getDatasetsExportPath().resolve("dataset1.dset").toString(),
+                getDatasetsExportPath().getParent().resolve(README).toString(),
 
-        assertEquals(new ArrayList<String>() {{
-                        add(getExpectedExportFilePath());
-                        add("/readme.md");
-                    }}, getFiles(systemFS));
+                getPerspectivesExportPath().resolve("page1").resolve(PERSPECTIVE_LAYOUT).toString(),
+                getPerspectivesExportPath().resolve("page1").resolve(PERSPECTIVE_LAYOUT_PLUGIN).toString(),
+                getPerspectivesExportPath().resolve(README).toString(),
 
-        ZipInputStream zis = getZipInputStream();
+                getNavigationExportPath().resolve(NAV_TREE_FILE_NAME).toString(),
+                getNavigationExportPath().getParent().resolve(README).toString(),
+                DataTransferServicesImpl.VERSION_FILE);
 
-        assertEquals(new ArrayList<String>() {{
-                        add(datasetsFS.getName() + "/definitions/dataset1.csv");
-                        add(datasetsFS.getName() + "/definitions/dataset1.dset");
-                        add(datasetsFS.getName() + "/readme.md");
-                        add(perspectivesFS.getName() + "/page1/perspective_layout");
-                        add(perspectivesFS.getName() + "/page1/perspective_layout.plugin");
-                        add(perspectivesFS.getName() + "/readme.md");
-                        add(navigationFS.getName() + "/navtree.json");
-                        add(navigationFS.getName() + "/readme.md");
-                        add("VERSION");
-                    }}, getFiles(zis));
+        assertArrayEquals(expected.toArray(), getFiles(zis).toArray());
     }
-    
+
     @Test
-    @SuppressWarnings("serial")
     public void testDoExportFilteringDataSets() throws Exception {
-        createFile(datasetsFS, "definitions/dataset1.csv", "");
-        createFile(datasetsFS, "definitions/dataset1.dset", "");
-        createFile(datasetsFS, "definitions/dataset2.dset", "");
-        createFile(perspectivesFS, "page1/perspective_layout", "");
-        createFile(perspectivesFS, "page1/perspective_layout.plugin", "");
-        createFile(navigationFS, "navtree.json", "");
-        
-        DataSetDef def = mock(DataSetDef.class);
-        when(def.getUUID()).thenReturn("dataset1");
-        DataTransferExportModel model = new DataTransferExportModel(Arrays.asList(def), 
-                                                                    Arrays.asList("page1", "page2"), 
-                                                                    true);
+        projectStorageServices.saveDataSetContent("dataset1.csv", "");
+        projectStorageServices.saveDataSet("dataset1", "");
+        projectStorageServices.saveDataSet("dataset2", "");
+        projectStorageServices.savePerspective("page1", "");
+        projectStorageServices.saveNavigation("");
 
-        String exportPath = dataTransferServices.doExport(model);
+        var def = mock(DataSetDef.class);
+        when(def.getUUID()).thenReturn("dataset2");
+        var model = new DataTransferExportModel(List.of(def),
+                List.of("page1", "page2"),
+                true);
 
-        assertTrue(exportPath.equals(getExpectedExportFileSystemPath()));
+        var exportPath = dataTransferServices.doExport(model);
+        var zis = new ZipInputStream(new FileInputStream(exportPath));
+        var expected = List.of(
+                getDatasetsExportPath().resolve("dataset2.dset").toString(),
+                getDatasetsExportPath().getParent().resolve(README).toString(),
 
-        ZipInputStream zis = getZipInputStream();
+                getPerspectivesExportPath().resolve("page1").resolve(PERSPECTIVE_LAYOUT).toString(),
+                getPerspectivesExportPath().resolve("page1").resolve(PERSPECTIVE_LAYOUT_PLUGIN).toString(),
+                getPerspectivesExportPath().resolve(README).toString(),
 
-        assertEquals(new ArrayList<String>() {{
-                        add(datasetsFS.getName() + "/definitions/dataset1.csv");
-                        add(datasetsFS.getName() + "/definitions/dataset1.dset");
-                        add(datasetsFS.getName() + "/readme.md");
-                        add(perspectivesFS.getName() + "/page1/perspective_layout");
-                        add(perspectivesFS.getName() + "/page1/perspective_layout.plugin");
-                        add(perspectivesFS.getName() + "/readme.md");
-                        add(navigationFS.getName() + "/navtree.json");
-                        add(navigationFS.getName() + "/readme.md");
-                        add("VERSION");
-                    }}, getFiles(zis));
-        cleanFileSystems();
+                getNavigationExportPath().resolve(NAV_TREE_FILE_NAME).toString(),
+                getNavigationExportPath().getParent().resolve(README).toString(),
+                DataTransferServicesImpl.VERSION_FILE);
+
+        assertArrayEquals(expected.toArray(), getFiles(zis).toArray());
     }
-    
+
     @Test
-    @SuppressWarnings("serial")
     public void testDoExportFilteringPages() throws Exception {
-        createFile(datasetsFS, "definitions/dataset.csv", "");
-        createFile(datasetsFS, "definitions/dataset.dset", "");
-        createFile(perspectivesFS, "page1/perspective_layout", "");
-        createFile(perspectivesFS, "page1/perspective_layout.plugin", "");
-        createFile(perspectivesFS, "page2/perspective_layout", "");
-        createFile(perspectivesFS, "page2/perspective_layout.plugin", "");
-        createFile(navigationFS, "navtree.json", "");
-        
-        DataSetDef def = mock(DataSetDef.class);
+        projectStorageServices.saveDataSetContent("dataset.csv", "");
+        projectStorageServices.saveDataSet("dataset", "");
+        projectStorageServices.saveDataSet("dataset", "");
+        projectStorageServices.savePerspective("page1", "");
+        projectStorageServices.savePerspective("page2", "");
+        projectStorageServices.saveNavigation("");
+
+        var def = mock(DataSetDef.class);
         when(def.getUUID()).thenReturn("dataset");
-        DataTransferExportModel model = new DataTransferExportModel(Arrays.asList(def), 
-                                                                    Arrays.asList("page2"), 
-                                                                    true);
+        var model = new DataTransferExportModel(List.of(def),
+                List.of("page2"),
+                true);
 
-        String exportPath = dataTransferServices.doExport(model);
+        var exportPath = dataTransferServices.doExport(model);
 
-        assertTrue(exportPath.equals(getExpectedExportFileSystemPath()));
+        var zis = new ZipInputStream(new FileInputStream(exportPath));
+        var expected = List.of(
+                getDatasetsExportPath().resolve("dataset.csv").toString(),
+                getDatasetsExportPath().resolve("dataset.dset").toString(),
+                getDatasetsExportPath().getParent().resolve(README).toString(),
 
-        ZipInputStream zis = getZipInputStream();
+                getPerspectivesExportPath().resolve("page2").resolve(PERSPECTIVE_LAYOUT).toString(),
+                getPerspectivesExportPath().resolve("page2").resolve(PERSPECTIVE_LAYOUT_PLUGIN).toString(),
+                getPerspectivesExportPath().resolve(README).toString(),
 
-        assertEquals(new ArrayList<String>() {{
-                        add(datasetsFS.getName() + "/definitions/dataset.csv");
-                        add(datasetsFS.getName() + "/definitions/dataset.dset");
-                        add(datasetsFS.getName() + "/readme.md");
-                        add(perspectivesFS.getName() + "/page2/perspective_layout");
-                        add(perspectivesFS.getName() + "/page2/perspective_layout.plugin");
-                        add(perspectivesFS.getName() + "/readme.md");
-                        add(navigationFS.getName() + "/navtree.json");
-                        add(navigationFS.getName() + "/readme.md");
-                        add("VERSION");
-                    }}, getFiles(zis));
-        cleanFileSystems();
+                getNavigationExportPath().resolve(NAV_TREE_FILE_NAME).toString(),
+                getNavigationExportPath().getParent().resolve(README).toString(),
+                DataTransferServicesImpl.VERSION_FILE);
+
+        assertArrayEquals(expected.toArray(), getFiles(zis).toArray());
     }
-    
+
     @Test
-    @SuppressWarnings("serial")
     public void testDoExportWithoutNavigation() throws Exception {
-        createFile(datasetsFS, "definitions/dataset.csv", "");
-        createFile(datasetsFS, "definitions/dataset.dset", "");
-        createFile(perspectivesFS, "page1/perspective_layout", "");
-        createFile(perspectivesFS, "page1/perspective_layout.plugin", "");
-        createFile(navigationFS, "navtree.json", "");
-        
-        DataSetDef def = mock(DataSetDef.class);
+        projectStorageServices.saveDataSetContent("dataset.csv", "");
+        projectStorageServices.saveDataSet("dataset", "");
+        projectStorageServices.saveDataSet("dataset", "");
+        projectStorageServices.savePerspective("page1", "");
+        projectStorageServices.saveNavigation("");
+
+        var def = mock(DataSetDef.class);
         when(def.getUUID()).thenReturn("dataset");
-        DataTransferExportModel model = new DataTransferExportModel(Arrays.asList(def), 
-                                                                    Arrays.asList("page1"), 
-                                                                    false);
+        var model = new DataTransferExportModel(List.of(def),
+                List.of("page1"),
+                false);
 
-        String exportPath = dataTransferServices.doExport(model);
+        var exportPath = dataTransferServices.doExport(model);
 
-        assertTrue(exportPath.equals(getExpectedExportFileSystemPath()));
+        var zis = new ZipInputStream(new FileInputStream(exportPath));
+        var expected = List.of(
+                getDatasetsExportPath().resolve("dataset.csv").toString(),
+                getDatasetsExportPath().resolve("dataset.dset").toString(),
+                getDatasetsExportPath().getParent().resolve(README).toString(),
 
-        ZipInputStream zis = getZipInputStream();
+                getPerspectivesExportPath().resolve("page1").resolve(PERSPECTIVE_LAYOUT).toString(),
+                getPerspectivesExportPath().resolve("page1").resolve(PERSPECTIVE_LAYOUT_PLUGIN).toString(),
+                getPerspectivesExportPath().resolve(README).toString(),
 
-        assertEquals(new ArrayList<String>() {{
-                        add(datasetsFS.getName() + "/definitions/dataset.csv");
-                        add(datasetsFS.getName() + "/definitions/dataset.dset");
-                        add(datasetsFS.getName() + "/readme.md");
-                        add(perspectivesFS.getName() + "/page1/perspective_layout");
-                        add(perspectivesFS.getName() + "/page1/perspective_layout.plugin");
-                        add(perspectivesFS.getName() + "/readme.md");
-                        add(navigationFS.getName() + "/readme.md");
-                        add("VERSION");
-                    }}, getFiles(zis));
-        cleanFileSystems();
+                getNavigationExportPath().getParent().resolve(README).toString(),
+                DataTransferServicesImpl.VERSION_FILE);
+
+        assertArrayEquals(expected.toArray(), getFiles(zis).toArray());
     }
-    
+
     @Test
     public void testDoExportWithComponents() throws Exception {
-        when(layoutComponentsHelper.findComponentsInTemplates((any()))).thenReturn(asList("c1"));
+        when(layoutComponentsHelper.findComponentsInTemplates((any()))).thenReturn(List.of("c1"));
 
-        createFile(perspectivesFS, "page1/perspective_layout", "");
-        createFile(perspectivesFS, "page1/perspective_layout.plugin", "");
-        
+        projectStorageServices.savePerspective("page1", "");
+
         createComponentFile("c1", "manifest.json", "manifest");
         createComponentFile("c1", "index.html", "html");
         createComponentFile("c1", "css/style.css", "style");
         createComponentFile("c1", "js/index.js", "js");
-        
+
         // lost file in component Dir that should be ignored
         createComponentFile("lost", "lostfile", "ignore-me-import");
-        
+
         // Other component that is not used so it should not be exported
         createComponentFile("c2", "manifest.json", "manifest");
         createComponentFile("c2", "index.html", "html");
         createComponentFile("c2", "css/style.css", "style");
         createComponentFile("c2", "js/index.js", "js");
-        
-        
-        dataTransferServices.doExport(DataTransferExportModel.exportAll());
 
-        ZipInputStream zis = getZipInputStream();
+        var exportPath = dataTransferServices.doExport(DataTransferExportModel.exportAll());
+
+        var zis = new ZipInputStream(new FileInputStream(exportPath));
 
         String[] expectedFiles = {
-                                  datasetsFS.getName() + "/readme.md",
-                                  perspectivesFS.getName() + "/page1/perspective_layout",
-                                  perspectivesFS.getName() + "/page1/perspective_layout.plugin",
-                                  perspectivesFS.getName() + "/readme.md",
-                                  navigationFS.getName() + "/readme.md",
+                                  getDatasetsExportPath().getParent().resolve(README).toString(),
+                                  getPerspectivesExportPath().resolve("page1").resolve(PERSPECTIVE_LAYOUT).toString(),
+                                  getPerspectivesExportPath().resolve("page1").resolve(PERSPECTIVE_LAYOUT_PLUGIN)
+                                          .toString(),
+                                  getPerspectivesExportPath().resolve(README).toString(),
+                                  getNavigationExportPath().getParent().resolve(README).toString(),
                                   COMPONENTS_EXPORT_PATH + "c1/js/index.js",
                                   COMPONENTS_EXPORT_PATH + "c1/css/style.css",
                                   COMPONENTS_EXPORT_PATH + "c1/index.html",
                                   COMPONENTS_EXPORT_PATH + "c1/manifest.json",
-                                  "VERSION"
-                              };
-        Object[] actualList = getFiles(zis).toArray();
+                                  DataTransferServicesImpl.VERSION_FILE
+        };
+        var actualList = getFiles(zis).toArray();
         Arrays.sort(expectedFiles);
         Arrays.sort(actualList);
         assertArrayEquals(expectedFiles, actualList);
-        
-        cleanFileSystems();
-        
+
     }
-    
+
     @Test
-    @SuppressWarnings("serial")
     public void testDoExportIgnoringComponents() throws Exception {
         when(externalComponentLoader.isExternalComponentsEnabled()).thenReturn(false);
-        when(externalComponentLoader.loadExternal()).thenReturn(asList(component("c1")));
-        
-        createFile(perspectivesFS, "page1/perspective_layout", "");
-        createFile(perspectivesFS, "page1/perspective_layout.plugin", "");
-        
+        when(externalComponentLoader.loadExternal()).thenReturn(List.of(component("c1")));
+
+        projectStorageServices.savePerspective("page1", "");
+
         createComponentFile("c1", "manifest.json", "manifest");
         createComponentFile("c1", "index.html", "html");
         createComponentFile("c1", "css/style.css", "style");
         createComponentFile("c1", "js/index.js", "js");
-                
-        dataTransferServices.doExport(DataTransferExportModel.exportAll());
 
-        ZipInputStream zis = getZipInputStream();
+        var exportPath = dataTransferServices.doExport(DataTransferExportModel.exportAll());
+        var zis = new ZipInputStream(new FileInputStream(exportPath));
 
-        assertEquals(new ArrayList<String>() {{
-                        add(datasetsFS.getName() + "/readme.md");
-                        add(perspectivesFS.getName() + "/page1/perspective_layout");
-                        add(perspectivesFS.getName() + "/page1/perspective_layout.plugin");
-                        add(perspectivesFS.getName() + "/readme.md");
-                        add(navigationFS.getName() + "/readme.md");
-                        add("VERSION");
-                    }}, getFiles(zis));
-        
-        cleanFileSystems();
-        
+        String[] expected = {
+                             getDatasetsExportPath().getParent().resolve(README).toString(),
+                             getPerspectivesExportPath().resolve("page1").resolve(PERSPECTIVE_LAYOUT).toString(),
+                             getPerspectivesExportPath().resolve("page1").resolve(PERSPECTIVE_LAYOUT_PLUGIN)
+                                     .toString(),
+                             getPerspectivesExportPath().resolve(README).toString(),
+                             getNavigationExportPath().getParent().resolve(README).toString(),
+                             DataTransferServicesImpl.VERSION_FILE
+
+        };
+        var actual = getFiles(zis).toArray();
+        assertArrayEquals(expected, actual);
     }
-    
+
     @Test
-    @SuppressWarnings("serial")
     public void testDoExportWhenComponentsDirIsNotPresent() throws Exception {
-        createFile(perspectivesFS, "page1/perspective_layout", "");
-        createFile(perspectivesFS, "page1/perspective_layout.plugin", "");
+        projectStorageServices.savePerspective("page1", "");
 
         FileUtils.deleteQuietly(componentsDir.toFile());
-        
-        dataTransferServices.doExport(DataTransferExportModel.exportAll());
 
-        ZipInputStream zis = getZipInputStream();
+        var exportPath = dataTransferServices.doExport(DataTransferExportModel.exportAll());
+        var zis = new ZipInputStream(new FileInputStream(exportPath));
 
-        assertEquals(new ArrayList<String>() {{
-                        add(datasetsFS.getName() + "/readme.md");
-                        add(perspectivesFS.getName() + "/page1/perspective_layout");
-                        add(perspectivesFS.getName() + "/page1/perspective_layout.plugin");
-                        add(perspectivesFS.getName() + "/readme.md");
-                        add(navigationFS.getName() + "/readme.md");
-                        add("VERSION");
-                    }}, getFiles(zis));
-        
-        cleanFileSystems();        
-    }
-    
-    @Test
-    @SuppressWarnings("serial")
-    public void testDoImportNoZip() throws Exception {
-        List<String> filesImported = dataTransferServices.doImport();
+        String[] expected = {
+                             getDatasetsExportPath().getParent().resolve(README).toString(),
+                             getPerspectivesExportPath().resolve("page1").resolve(PERSPECTIVE_LAYOUT).toString(),
+                             getPerspectivesExportPath().resolve("page1").resolve(PERSPECTIVE_LAYOUT_PLUGIN)
+                                     .toString(),
+                             getPerspectivesExportPath().resolve(README).toString(),
+                             getNavigationExportPath().getParent().resolve(README).toString(),
+                             DataTransferServicesImpl.VERSION_FILE
+        };
 
-        assertEquals(new ArrayList<String>(), filesImported);
-
-        assertEquals(new ArrayList<String>() {{
-                        add("/readme.md");
-                    }}, getFiles(datasetsFS));
-
-        assertEquals(new ArrayList<String>() {{
-                        add("/readme.md");
-                    }}, getFiles(perspectivesFS));
-
-        assertEquals(new ArrayList<String>() {{
-                        add("/readme.md");
-                    }}, getFiles(navigationFS));
-
-        assertEquals(new ArrayList<String>() {{
-                        add("/readme.md"); 
-                    }}, getFiles(systemFS));
-
-        verify(dataSetDefRegisteredEvent, times(0)).fire(any());
-        verify(pluginAddedEvent, times(0)).fire(any());
-        verify(navTreeChangedEvent, times(0)).fire(any());
+        var actual = getFiles(zis).toArray();
+        assertArrayEquals(expected, actual);
     }
 
     @Test
-    @SuppressWarnings("serial")
     public void testDoImportEmptyZip() throws Exception {
-        moveZipToFileSystem("/empty.zip");
+        var importZip = projectStorageServices.createTempPath(DataTransferServices.IMPORT_FILE_NAME);
 
-        List<String> filesImported = dataTransferServices.doImport();
+        Files.copy(getClass().getResource("/empty.zip").openStream(), importZip, StandardCopyOption.REPLACE_EXISTING);
 
-        assertEquals(new ArrayList<String>(), filesImported);
+        var filesImported = dataTransferServices.doImport();
 
-        assertEquals(new ArrayList<String>() {{
-                        add("/readme.md");
-                    }}, getFiles(datasetsFS));
+        assertTrue(filesImported.isEmpty());
 
-        assertEquals(new ArrayList<String>() {{
-                        add("/readme.md");
-                    }}, getFiles(perspectivesFS));
-
-        assertEquals(new ArrayList<String>() {{
-                        add("/readme.md");
-                    }}, getFiles(navigationFS));
-
-        assertEquals(new ArrayList<String>() {{
-                        add("/readme.md");
-                    }}, getFiles(systemFS));
-
+        assertTrue(projectStorageServices.listAllDataSetsContent().isEmpty());
+        assertTrue(projectStorageServices.listPerspectivesPlugins().isEmpty());
+        assertTrue(projectStorageServices.getNavigation().isEmpty());
         verify(dataSetDefRegisteredEvent, times(0)).fire(any());
         verify(pluginAddedEvent, times(0)).fire(any());
         verify(navTreeChangedEvent, times(0)).fire(any());
     }
 
     @Test
-    @SuppressWarnings("serial")
     public void testDoImportNotEmptyZip() throws Exception {
-        moveZipToFileSystem("/import.zip");
+        var importZip = projectStorageServices.createTempPath(DataTransferServices.IMPORT_FILE_NAME);
+        Files.copy(getClass().getResource("/import.zip").openStream(), importZip, StandardCopyOption.REPLACE_EXISTING);
 
-        List<String> filesImported = dataTransferServices.doImport();
-        
-        assertEquals(new ArrayList<String>() {{
-                        add("dashbuilder/datasets/readme.md");
-                        add("dashbuilder/datasets/definitions/eb241039-1792-4d08-9596-b6c8d27dfe6b.csv");
-                        add("dashbuilder/datasets/definitions/d1b24449-fe90-40d4-8cd7-f175b498c0bb.dset");
-                        add("dashbuilder/datasets/definitions/8060a7f1-ef03-4ce9-a0a8-266301e79ff6.dset");
-                        add("dashbuilder/datasets/definitions/eb241039-1792-4d08-9596-b6c8d27dfe6b.dset");
-                        add("dashbuilder/datasets/definitions/7e68d20d-6807-4b86-8737-1d429afe9dbc.csv");
-                        add("dashbuilder/datasets/definitions/d1b24449-fe90-40d4-8cd7-f175b498c0bb.csv");
-                        add("dashbuilder/datasets/definitions/8060a7f1-ef03-4ce9-a0a8-266301e79ff6.csv");
-                        add("dashbuilder/datasets/definitions/7e68d20d-6807-4b86-8737-1d429afe9dbc.dset");
-                        add("dashbuilder/components/c2/manifest.json");
-                        add("dashbuilder/components/c2/styles/level/styles.css");
-                        add("dashbuilder/components/c2/index.html");
-                        add("dashbuilder/components/c1/manifest.json");
-                        add("dashbuilder/components/c1/images/db_logo.png");
-                        add("dashbuilder/components/c1/scripts/index.js");
-                        add("dashbuilder/components/c1/index.html");
-                        add("dashbuilder/perspectives/page3/perspective_layout");
-                        add("dashbuilder/perspectives/page3/perspective_layout.plugin");
-                        add("dashbuilder/perspectives/readme.md");
-                        add("dashbuilder/perspectives/page4/perspective_layout");
-                        add("dashbuilder/perspectives/page4/perspective_layout.plugin");
-                        add("dashbuilder/perspectives/page2/perspective_layout");
-                        add("dashbuilder/perspectives/page2/perspective_layout.plugin");
-                        add("dashbuilder/perspectives/page1/perspective_layout");
-                        add("dashbuilder/perspectives/page1/perspective_layout.plugin");
-                        add("dashbuilder/navigation/readme.md");
-                        add("dashbuilder/navigation/navigation/navtree.json");
-                    }}, filesImported);
+        var filesImported = dataTransferServices.doImport();
+        String[] expected =
+                {
+                 "dashbuilder/datasets/definitions/eb241039-1792-4d08-9596-b6c8d27dfe6b.csv",
+                 "dashbuilder/datasets/definitions/d1b24449-fe90-40d4-8cd7-f175b498c0bb.dset",
+                 "dashbuilder/datasets/definitions/8060a7f1-ef03-4ce9-a0a8-266301e79ff6.dset",
+                 "dashbuilder/datasets/definitions/eb241039-1792-4d08-9596-b6c8d27dfe6b.dset",
+                 "dashbuilder/datasets/definitions/7e68d20d-6807-4b86-8737-1d429afe9dbc.csv",
+                 "dashbuilder/datasets/definitions/d1b24449-fe90-40d4-8cd7-f175b498c0bb.csv",
+                 "dashbuilder/datasets/definitions/8060a7f1-ef03-4ce9-a0a8-266301e79ff6.csv",
+                 "dashbuilder/datasets/definitions/7e68d20d-6807-4b86-8737-1d429afe9dbc.dset",
+                 "dashbuilder/components/c2/manifest.json",
+                 "dashbuilder/components/c2/styles/level/styles.css",
+                 "dashbuilder/components/c2/index.html",
+                 "dashbuilder/components/c1/manifest.json",
+                 "dashbuilder/components/c1/images/db_logo.png",
+                 "dashbuilder/components/c1/scripts/index.js",
+                 "dashbuilder/components/c1/index.html",
+                 "dashbuilder/perspectives/page3/perspective_layout",
+                 "dashbuilder/perspectives/page4/perspective_layout",
+                 "dashbuilder/perspectives/page2/perspective_layout",
+                 "dashbuilder/perspectives/page1/perspective_layout",
+                 "dashbuilder/navigation/navigation/navtree.json"
 
-        assertEquals(new ArrayList<String>() {{
-                        add("/definitions/7e68d20d-6807-4b86-8737-1d429afe9dbc.csv");
-                        add("/definitions/7e68d20d-6807-4b86-8737-1d429afe9dbc.dset");
-                        add("/definitions/8060a7f1-ef03-4ce9-a0a8-266301e79ff6.csv");
-                        add("/definitions/8060a7f1-ef03-4ce9-a0a8-266301e79ff6.dset");
-                        add("/definitions/d1b24449-fe90-40d4-8cd7-f175b498c0bb.csv");
-                        add("/definitions/d1b24449-fe90-40d4-8cd7-f175b498c0bb.dset");
-                        add("/definitions/eb241039-1792-4d08-9596-b6c8d27dfe6b.csv");
-                        add("/definitions/eb241039-1792-4d08-9596-b6c8d27dfe6b.dset");
-                        add("/readme.md");
-                    }}, getFiles(datasetsFS));
+                };
 
-        assertEquals(new ArrayList<String>() {{
-                        add("/page1/perspective_layout");
-                        add("/page1/perspective_layout.plugin");
-                        add("/page2/perspective_layout");
-                        add("/page2/perspective_layout.plugin");
-                        add("/page3/perspective_layout");
-                        add("/page3/perspective_layout.plugin");
-                        add("/page4/perspective_layout");
-                        add("/page4/perspective_layout.plugin");
-                        add("/readme.md");
-                    }}, getFiles(perspectivesFS));
+        assertArrayEquals(expected, filesImported.toArray());
 
-        assertEquals(new ArrayList<String>() {{
-                        add("/navigation/navtree.json");
-                        add("/readme.md");
-                    }}, getFiles(navigationFS));
+        assertTrue(projectStorageServices.getDataSet("7e68d20d-6807-4b86-8737-1d429afe9dbc").isPresent());
+        assertTrue(projectStorageServices.getDataSet("8060a7f1-ef03-4ce9-a0a8-266301e79ff6").isPresent());
+        assertTrue(projectStorageServices.getDataSet("d1b24449-fe90-40d4-8cd7-f175b498c0bb").isPresent());
+        assertTrue(projectStorageServices.getDataSet("eb241039-1792-4d08-9596-b6c8d27dfe6b").isPresent());
 
-        assertEquals(new ArrayList<String>() {{
-                        add("/readme.md");
-                    }}, getFiles(systemFS));
-        
-        List<String> expectedComponents = new ArrayList<String>() {{
-            add("c1/index.html");
-            add("c1/scripts/index.js");
-            add("c1/images/db_logo.png");
-            add("c1/manifest.json");
-            add("c2/index.html");
-            add("c2/styles/level/styles.css");
-            add("c2/manifest.json");
-        }};
-        expectedComponents.removeAll(getFiles(componentsDir));
-        assertTrue(expectedComponents.isEmpty());
+        assertTrue(projectStorageServices.getDataSetContent("7e68d20d-6807-4b86-8737-1d429afe9dbc.csv").isPresent());
+        assertTrue(projectStorageServices.getDataSetContent("8060a7f1-ef03-4ce9-a0a8-266301e79ff6.csv").isPresent());
+        assertTrue(projectStorageServices.getDataSetContent("d1b24449-fe90-40d4-8cd7-f175b498c0bb.csv").isPresent());
+        assertTrue(projectStorageServices.getDataSetContent("eb241039-1792-4d08-9596-b6c8d27dfe6b.csv").isPresent());
+
+        assertTrue(projectStorageServices.getPerspective("page1").isPresent());
+        assertTrue(projectStorageServices.getPerspective("page2").isPresent());
+        assertTrue(projectStorageServices.getPerspective("page3").isPresent());
+        assertTrue(projectStorageServices.getPerspective("page4").isPresent());
+
+        assertTrue(projectStorageServices.getNavigation().isPresent());
+
+        String[] expectedComponentsFiles = {"c1/index.html",
+                                            "c1/scripts/index.js",
+                                            "c1/images/db_logo.png",
+                                            "c1/manifest.json",
+                                            "c2/index.html",
+                                            "c2/styles/level/styles.css",
+                                            "c2/manifest.json"};
+        var allComponentsFiles = getComponentsFiles(componentsDir).toArray();
+
+        Arrays.sort(expectedComponentsFiles);
+        Arrays.sort(allComponentsFiles);
+
+        assertArrayEquals(expectedComponentsFiles, allComponentsFiles);
 
         verify(dataSetDefRegisteredEvent, times(4)).fire(any());
         verify(pluginAddedEvent, times(4)).fire(any());
@@ -553,32 +451,27 @@ public class DataTransferServicesTest {
     public void testAssetsToImport() throws Exception {
         final String PAGE_ID = "page";
         final String DS_CSV = "ds.csv";
-        final String DS = "ds.dset";
         final String DS_CONTENT = "TEST_CONTENT";
         final String DS_NAME = "test_dataset";
-        final String PAGE = PAGE_ID + "/perspective_layout";
-        final String PAGE_PLUGIN = PAGE_ID + "/perspective_layout.plugin";
-        
-        DataSetDef dataSetDef = mock(DataSetDef.class);
+
+        var dataSetDef = mock(DataSetDef.class);
         when(dataSetDef.isPublic()).thenReturn(true);
         when(dataSetDef.getName()).thenReturn(DS_NAME);
+        when(dataSetDefRegistryCDI.getDataSetDefJsonMarshaller()).thenReturn(dataSetDefJSONMarshaller);
         when(dataSetDefJSONMarshaller.fromJson(DS_CONTENT)).thenReturn(dataSetDef);
 
-        createFile(datasetsFS, DS, DS_CONTENT);
-        createFile(datasetsFS, DS_CSV, "");
-        createFile(perspectivesFS, PAGE, "");
-        createFile(perspectivesFS, PAGE_PLUGIN, "");
+        projectStorageServices.saveDataSet(DS_NAME, DS_CONTENT);
+        projectStorageServices.saveDataSetContent(DS_CSV, "");
+        projectStorageServices.savePerspective(PAGE_ID, "");
 
-        ExportInfo exportInfo = dataTransferServices.exportInfo();
+        var exportInfo = dataTransferServices.exportInfo();
 
         assertEquals(1, exportInfo.getDatasetsDefinitions().size());
         assertEquals(DS_NAME, exportInfo.getDatasetsDefinitions().get(0).getName());
         assertEquals(1, exportInfo.getPages().size());
         assertEquals(PAGE_ID, exportInfo.getPages().get(0));
-        
-        cleanFileSystems();
     }
-    
+
     @Test
     public void testAssetsToImportNoFiles() {
         ExportInfo assetsToExport = dataTransferServices.exportInfo();
@@ -586,88 +479,37 @@ public class DataTransferServicesTest {
         assertTrue(assetsToExport.getPages().isEmpty());
     }
 
-    @SuppressWarnings("serial")
-    private FileSystem createFileSystem(String name) {
-        String path = new StringBuilder().append("git://dashbuilder")
-                                         .append(File.separator)
-                                         .append(name)
-                                         .toString();
-
-        try {
-            return ioService.newFileSystem(URI.create(path),
-                                           new HashMap<String, Object>() {{
-                                                   put("init", Boolean.TRUE);
-                                               }});
-
-        } catch (Exception e) {
-            return ioService.getFileSystem(URI.create(path));
-        }
-    }
-    
     @Test
     public void testShouldNotExposePrivateDS() throws Exception {
-        final String DS = "ds.dset";
         final String DS_CONTENT = "TEST_CONTENT";
         final String DS_NAME = "test_dataset";
-        
-        DataSetDef dataSetDef = mock(DataSetDef.class);
+
+        var dataSetDef = mock(DataSetDef.class);
         when(dataSetDef.isPublic()).thenReturn(false);
         when(dataSetDef.getName()).thenReturn(DS_NAME);
         when(dataSetDefJSONMarshaller.fromJson(DS_CONTENT)).thenReturn(dataSetDef);
 
-        createFile(datasetsFS, DS, DS_CONTENT);
+        projectStorageServices.saveDataSetContent(DS_NAME, DS_CONTENT);
 
-        ExportInfo assetsToExport = dataTransferServices.exportInfo();
+        var assetsToExport = dataTransferServices.exportInfo();
 
         assertTrue(assetsToExport.getDatasetsDefinitions().isEmpty());
-        
-        cleanFileSystems();
     }
 
-    private Path createFile(FileSystem fs, String filename, String data) {
-        Path path = fs.getRootDirectories().iterator().next();
-        Path filePath = path.resolve(filename);
-        ioService.write(filePath, data);
-        return filePath;
-    }
-    
-    private Path createComponentFile(String componentId, String filename, String data) {
+    private Path createComponentFile(String componentId, String filename, String data) throws IOException {
         Path componentPath = componentsDir.resolve(componentId);
         Path componentFile = componentPath.resolve(filename);
         componentFile.getParent().toFile().mkdirs();
-        ioService.write(componentFile, data);
+        Files.write(componentFile, data.getBytes());
         return componentFile;
     }
-    
-    private List<String> getFiles(Path root) {
-        List<String> files = new ArrayList<>();
 
-        Files.walkFileTree(root, new SimpleFileVisitor<Path>() {
+    private List<String> getComponentsFiles(Path root) throws IOException {
+        return Files.walk(root)
+                .filter(p -> p.toFile().isFile())
+                .map(p -> p.toString().replaceAll(componentsDir.toString() + "/", ""))
+                .collect(Collectors.toList());
 
-            @Override
-            public FileVisitResult visitFile(final Path path, final BasicFileAttributes attrs) throws IOException {
-                files.add(path.toString().replaceAll(componentsDir.toString() + "/", ""));
-                return FileVisitResult.CONTINUE;
-            }
-        });
-
-        return files;
-    }
-
-    private List<String> getFiles(FileSystem fs) {
-        List<String> files = new ArrayList<>();
-        Path root = fs.getRootDirectories().iterator().next();
-
-        Files.walkFileTree(root, new SimpleFileVisitor<Path>() {
-
-            @Override
-            public FileVisitResult visitFile(final Path path, final BasicFileAttributes attrs) throws IOException {
-                files.add(path.toString());
-                return FileVisitResult.CONTINUE;
-            }
-        });
-
-        return files;
     }
 
     private List<String> getFiles(ZipInputStream zis) {
@@ -682,78 +524,11 @@ public class DataTransferServicesTest {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return files;
     }
 
-    private String getExpectedExportFilePath() {
-        return new StringBuilder().append(File.separator)
-                                  .append(DataTransferServices.FILE_PATH)
-                                  .append(File.separator)
-                                  .append(DataTransferServices.EXPORT_FILE_NAME)
-                                  .toString();
-    }
-
-    private String getExpectedImportFilePath() {
-        return new StringBuilder().append(File.separator)
-                                  .append(DataTransferServices.FILE_PATH)
-                                  .append(File.separator)
-                                  .append(DataTransferServices.IMPORT_FILE_NAME)
-                                  .toString();
-    }
-
-    private String getExpectedExportFileSystemPath() {
-        return new StringBuilder().append("git://")
-                                  .append(systemFS.getName())
-                                  .append(getExpectedExportFilePath())
-                                  .toString();
-    }
-
-    private void moveZipToFileSystem(String path) {
-        URL url = DataTransferServicesTest.class.getResource(path);
-
-        String sourceLocation = new StringBuilder().append(SpacesAPI.Scheme.FILE)
-                                                   .append("://")
-                                                   .append(url.toString())
-                                                   .toString();
-
-        Path source = Paths.get(URI.create(sourceLocation));
-
-        Path target = systemFS.getRootDirectories()
-                              .iterator()
-                              .next()
-                              .resolve(DataTransferServices.FILE_PATH)
-                              .resolve(DataTransferServices.IMPORT_FILE_NAME);
-
-        ioService.write(target, Files.readAllBytes(source));
-    }
-
-    private void cleanFileSystem(FileSystem fs) {
-        for (String file : getFiles(fs)) {
-            if (file.endsWith("readme.md")) {
-                continue;
-            }
-
-            String path = new StringBuilder().append("git://")
-                                             .append(fs.getName())
-                                             .append(file)
-                                             .toString();
-
-            ioService.delete(Paths.get(URI.create(path)));
-        }
-    }
-
-    private ZipInputStream getZipInputStream() {
-        Path path = Paths.get(URI.create(new StringBuilder().append("git://")
-                                                            .append(systemFS.getName())
-                                                            .append(getExpectedExportFilePath())
-                                                            .toString()));
-        return new ZipInputStream(new ByteArrayInputStream(ioService.readAllBytes(path)));
-    }
-    
-    
     public ExternalComponent component(String id) {
         return new ExternalComponent(id, id, "", false, Collections.emptyList());
     }
-    
+
 }

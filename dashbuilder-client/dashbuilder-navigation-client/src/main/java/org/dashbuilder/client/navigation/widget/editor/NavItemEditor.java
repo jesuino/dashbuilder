@@ -17,19 +17,19 @@ package org.dashbuilder.client.navigation.widget.editor;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import javax.enterprise.event.Event;
 
-import com.google.gwt.core.client.GWT;
 import org.dashbuilder.client.navigation.event.NavItemEditCancelledEvent;
 import org.dashbuilder.client.navigation.event.NavItemEditStartedEvent;
 import org.dashbuilder.client.navigation.plugin.PerspectivePluginManager;
 import org.dashbuilder.client.navigation.resources.i18n.NavigationConstants;
-import org.dashbuilder.common.client.StringUtils;
 import org.dashbuilder.navigation.NavDivider;
 import org.dashbuilder.navigation.NavFactory;
 import org.dashbuilder.navigation.NavGroup;
@@ -39,7 +39,6 @@ import org.jboss.errai.common.client.api.IsElement;
 import org.jboss.errai.common.client.dom.HTMLElement;
 import org.jboss.errai.ioc.client.container.SyncBeanDef;
 import org.jboss.errai.ioc.client.container.SyncBeanManager;
-import org.uberfire.client.authz.PerspectiveTreeProvider;
 import org.uberfire.client.mvp.AbstractWorkbenchPerspectiveActivity;
 import org.uberfire.client.mvp.PlaceManager;
 import org.uberfire.client.mvp.UberElement;
@@ -115,7 +114,6 @@ public abstract class NavItemEditor implements IsElement {
     View view;
     SyncBeanManager beanManager;
     PlaceManager placeManager;
-    PerspectiveTreeProvider perspectiveTreeProvider;
     TargetPerspectiveEditor targetPerspectiveEditor;
     PerspectivePluginManager perspectivePluginManager;
     Event<NavItemEditStartedEvent> navItemEditStartedEvent;
@@ -154,14 +152,12 @@ public abstract class NavItemEditor implements IsElement {
     public NavItemEditor(View view,
                          SyncBeanManager beanManager,
                          PlaceManager placeManager,
-                         PerspectiveTreeProvider perspectiveTreeProvider,
                          TargetPerspectiveEditor targetPerspectiveEditor,
                          PerspectivePluginManager perspectivePluginManager,
                          Event<NavItemEditStartedEvent> navItemEditStartedEvent,
                          Event<NavItemEditCancelledEvent> navItemEditCancelledEvent) {
         this.beanManager = beanManager;
         this.placeManager = placeManager;
-        this.perspectiveTreeProvider = perspectiveTreeProvider;
         this.targetPerspectiveEditor = targetPerspectiveEditor;
         this.targetPerspectiveEditor.setOnUpdateCommand(this::onTargetPerspectiveUpdated);
         this.perspectivePluginManager = perspectivePluginManager;
@@ -246,9 +242,8 @@ public abstract class NavItemEditor implements IsElement {
     }
 
     public boolean isNewPerspectiveEnabled() {
-        return (settings == null || settings.isNewPerspectiveEnabled(navItem))
-                && areChildrenAllowed()
-                && (!getPerspectiveIds(navItem, true).isEmpty());
+        return (settings == null || settings.isNewPerspectiveEnabled(navItem)) && areChildrenAllowed() &&
+               (!getPerspectiveIds(navItem, true).isEmpty());
     }
 
     public boolean isNewDividerEnabled() {
@@ -422,8 +417,7 @@ public abstract class NavItemEditor implements IsElement {
             view.setItemType(itemType = ItemType.DIVIDER);
             view.setItemName("--------------");
             editEnabled = false;
-        }
-        else {
+        } else {
             if (navCtx.getResourceId() != null) {
 
                 // Nav perspective item
@@ -447,7 +441,8 @@ public abstract class NavItemEditor implements IsElement {
                     targetPerspectiveEditor.setPerspectiveIdsExcluded(hiddenPerspectiveIds);
                     targetPerspectiveEditor.show();
 
-                    view.setItemType(itemType = isRuntimePerspective ? ItemType.RUNTIME_PERSPECTIVE : ItemType.PERSPECTIVE);
+                    view.setItemType(itemType = isRuntimePerspective ? ItemType.RUNTIME_PERSPECTIVE
+                            : ItemType.PERSPECTIVE);
                     view.setContextWidget(targetPerspectiveEditor);
                 }
             } else {
@@ -480,7 +475,8 @@ public abstract class NavItemEditor implements IsElement {
             return settings == null || settings.getMaxLevels() < 0 || levels < settings.getMaxLevels();
         } else {
             int itemMaxLevels = settings != null ? settings.getMaxLevels(editor.getNavItem().getId()) : -1;
-            return itemMaxLevels != -1 ? levels < itemMaxLevels : areChildrenAllowed(levels+1, editor.getParentEditor());
+            return itemMaxLevels != -1 ? levels < itemMaxLevels : areChildrenAllowed(levels + 1, editor
+                    .getParentEditor());
         }
     }
 
@@ -489,7 +485,8 @@ public abstract class NavItemEditor implements IsElement {
             return settings == null || settings.getMaxLevels() < 0 || levels < settings.getMaxLevels() - 1;
         } else {
             int itemMaxLevels = settings != null ? settings.getMaxLevels(editor.getNavItem().getId()) - 1 : -1;
-            return itemMaxLevels > -1 ? levels < itemMaxLevels : areSubgroupsAllowed(levels+1, editor.getParentEditor());
+            return itemMaxLevels > -1 ? levels < itemMaxLevels : areSubgroupsAllowed(levels + 1, editor
+                    .getParentEditor());
         }
     }
 
@@ -512,21 +509,18 @@ public abstract class NavItemEditor implements IsElement {
         boolean onlyRuntime = settings == null || settings.onlyRuntimePerspectives(navItem);
         Set<String> runtimeIds = getRuntimePerspectiveIds();
         Set<String> hardCodedIds = getHardCodedPerspectiveIds();
-        Set<String> excludedIds = perspectiveTreeProvider.getPerspectiveIdsExcluded();
 
         if (visible) {
             if (!onlyRuntime) {
                 runtimeIds.addAll(hardCodedIds);
             }
             return runtimeIds.stream()
-                    .filter(id -> !excludedIds.contains(id))
                     .collect(Collectors.toSet());
         } else {
             if (onlyRuntime) {
-                hardCodedIds.addAll(excludedIds);
                 return hardCodedIds;
             }
-            return excludedIds;
+            return Collections.emptySet();
         }
     }
 
@@ -543,7 +537,8 @@ public abstract class NavItemEditor implements IsElement {
 
     private Set<String> getHardCodedPerspectiveIds() {
         Set<String> result = new HashSet<>();
-        Collection<SyncBeanDef<AbstractWorkbenchPerspectiveActivity>> beanDefs =  beanManager.lookupBeans(AbstractWorkbenchPerspectiveActivity.class);
+        Collection<SyncBeanDef<AbstractWorkbenchPerspectiveActivity>> beanDefs = beanManager.lookupBeans(
+                AbstractWorkbenchPerspectiveActivity.class);
         beanDefs.forEach(beanDef -> {
             AbstractWorkbenchPerspectiveActivity bean = beanDef.getInstance();
             String perspectiveId = bean.getIdentifier();
@@ -552,7 +547,6 @@ public abstract class NavItemEditor implements IsElement {
         });
         return result;
     }
-
 
     // Item commands
 
@@ -719,12 +713,12 @@ public abstract class NavItemEditor implements IsElement {
             int idx = childEditorList.indexOf(navItemEditor);
             if (idx > 0 && idx < childEditorList.size()) {
                 childEditorList.remove(idx);
-                childEditorList.add(idx-1, navItemEditor);
+                childEditorList.add(idx - 1, navItemEditor);
                 refreshChildren();
 
                 NavGroup navGroup = (NavGroup) navItem;
                 navGroup.getChildren().remove(idx);
-                navGroup.getChildren().add(idx-1, navItemEditor.getNavItem());
+                navGroup.getChildren().add(idx - 1, navItemEditor.getNavItem());
                 onItemUpdated();
             }
         }
@@ -733,14 +727,14 @@ public abstract class NavItemEditor implements IsElement {
     void onMoveDownChild(NavItemEditor navItemEditor) {
         if (childEditorList.size() > 1) {
             int idx = childEditorList.indexOf(navItemEditor);
-            if (idx > -1 && idx < childEditorList.size()-1) {
+            if (idx > -1 && idx < childEditorList.size() - 1) {
                 childEditorList.remove(idx);
-                childEditorList.add(idx+1, navItemEditor);
+                childEditorList.add(idx + 1, navItemEditor);
                 refreshChildren();
 
                 NavGroup navGroup = (NavGroup) navItem;
                 navGroup.getChildren().remove(idx);
-                navGroup.getChildren().add(idx+1, navItemEditor.getNavItem());
+                navGroup.getChildren().add(idx + 1, navItemEditor.getNavItem());
                 onItemUpdated();
             }
         }
@@ -765,7 +759,7 @@ public abstract class NavItemEditor implements IsElement {
     void onMoveLastChild(NavItemEditor navItemEditor) {
         if (childEditorList.size() > 1) {
             int idx = childEditorList.indexOf(navItemEditor);
-            if (idx > -1 && idx < childEditorList.size()-1) {
+            if (idx > -1 && idx < childEditorList.size() - 1) {
                 childEditorList.remove(idx);
                 childEditorList.add(navItemEditor);
                 refreshChildren();
@@ -786,8 +780,7 @@ public abstract class NavItemEditor implements IsElement {
             navGroup.getChildren().remove(idx);
             navGroup.getChildren().add(idx, newItem);
             onItemUpdated();
-        }
-        else {
+        } else {
             // Creation of a brand new child
             navGroup.getChildren().add(newItem);
             onItemUpdated();
@@ -817,7 +810,7 @@ public abstract class NavItemEditor implements IsElement {
         childEditorList.clear();
 
         List<NavItem> childList = navGroup.getChildren();
-        for (int i=0; i<childList.size(); i++) {
+        for (int i = 0; i < childList.size(); i++) {
             NavItem childItem = childList.get(i);
             if ((childItem instanceof NavGroup) && !areSubgroupsAllowed()) {
                 continue;
@@ -857,10 +850,10 @@ public abstract class NavItemEditor implements IsElement {
             view.setExpanded(false);
         }
 
-        for (int i = 0; i< childEditorList.size(); i++) {
+        for (int i = 0; i < childEditorList.size(); i++) {
             NavItemEditor childEditor = childEditorList.get(i);
             childEditor.setMoveUpEnabled(i > 0);
-            childEditor.setMoveDownEnabled(i < childEditorList.size()-1);
+            childEditor.setMoveDownEnabled(i < childEditorList.size() - 1);
             childEditor.refreshCommands();
             view.addChild(childEditor);
         }
@@ -891,7 +884,7 @@ public abstract class NavItemEditor implements IsElement {
             String oldPerspectiveId = navCtx.getResourceId();
             String newPerspectiveId = targetPerspectiveEditor.getPerspectiveId();
             if (newPerspectiveId != null && !newPerspectiveId.trim().isEmpty()) {
-                if (oldPerspectiveId != null && !oldPerspectiveId.equals(newPerspectiveId)){
+                if (oldPerspectiveId != null && !oldPerspectiveId.equals(newPerspectiveId)) {
                     navCtx.setResourceId(perspectiveId = newPerspectiveId);
                     navItem.setContext(navCtx.toString());
                 }
@@ -899,7 +892,7 @@ public abstract class NavItemEditor implements IsElement {
                 error = true;
             }
             boolean isRuntimePerspective = perspectivePluginManager.isRuntimePerspective(newPerspectiveId);
-            String newGroupId =  isRuntimePerspective ? targetPerspectiveEditor.getNavGroupId() : null;
+            String newGroupId = isRuntimePerspective ? targetPerspectiveEditor.getNavGroupId() : null;
             String oldGroupId = navCtx.getNavGroupId();
             if ((oldGroupId == null && newGroupId != null) || oldGroupId != null && !oldGroupId.equals(newGroupId)) {
                 navCtx.setNavGroupId(newGroupId);

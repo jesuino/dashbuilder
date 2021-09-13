@@ -15,18 +15,54 @@
  */
 package org.uberfire.client.views.pfly.listbar;
 
+import static com.google.gwt.dom.client.Style.Display.BLOCK;
+import static com.google.gwt.dom.client.Style.Display.NONE;
+import static org.uberfire.plugin.PluginUtil.ensureIterable;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
+
+import org.gwtbootstrap3.client.ui.AnchorListItem;
+import org.gwtbootstrap3.client.ui.Button;
+import org.gwtbootstrap3.client.ui.ButtonGroup;
+import org.gwtbootstrap3.client.ui.DropDownMenu;
+import org.gwtbootstrap3.client.ui.Panel;
+import org.gwtbootstrap3.client.ui.PanelBody;
+import org.gwtbootstrap3.client.ui.PanelHeader;
+import org.gwtbootstrap3.client.ui.constants.ButtonSize;
+import org.gwtbootstrap3.client.ui.constants.Pull;
+import org.gwtbootstrap3.client.ui.constants.Toggle;
+import org.jboss.errai.common.client.ui.ElementWrapperWidget;
+import org.jboss.errai.ioc.client.container.IOCResolutionException;
+import org.uberfire.client.util.CSSLocatorsUtils;
+import org.uberfire.client.util.Layouts;
+import org.uberfire.client.views.pfly.maximize.MaximizeToggleButton;
+import org.uberfire.client.workbench.PanelManager;
+import org.uberfire.client.workbench.panels.MaximizeToggleButtonPresenter;
+import org.uberfire.client.workbench.panels.WorkbenchPanelPresenter;
+import org.uberfire.client.workbench.part.WorkbenchPartPresenter;
+import org.uberfire.client.workbench.widgets.dnd.WorkbenchDragAndDropManager;
+import org.uberfire.client.workbench.widgets.listbar.ListBarWidget;
+import org.uberfire.client.workbench.widgets.listbar.ListbarPreferences;
+import org.uberfire.client.workbench.widgets.listbar.ResizeFocusPanel;
+import org.uberfire.commons.data.Pair;
+import org.uberfire.mvp.Command;
+import org.uberfire.workbench.model.PartDefinition;
+import org.uberfire.workbench.model.menu.MenuCustom;
+import org.uberfire.workbench.model.menu.MenuGroup;
+import org.uberfire.workbench.model.menu.MenuItem;
+import org.uberfire.workbench.model.menu.MenuItemCommand;
+import org.uberfire.workbench.model.menu.impl.BaseMenuVisitor;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
@@ -43,53 +79,15 @@ import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.ResizeComposite;
 import com.google.gwt.user.client.ui.Widget;
-import elemental2.dom.HTMLElement;
-import org.gwtbootstrap3.client.ui.AnchorListItem;
-import org.gwtbootstrap3.client.ui.Button;
-import org.gwtbootstrap3.client.ui.ButtonGroup;
-import org.gwtbootstrap3.client.ui.DropDownMenu;
-import org.gwtbootstrap3.client.ui.Panel;
-import org.gwtbootstrap3.client.ui.PanelBody;
-import org.gwtbootstrap3.client.ui.PanelHeader;
-import org.gwtbootstrap3.client.ui.constants.ButtonSize;
-import org.gwtbootstrap3.client.ui.constants.Pull;
-import org.gwtbootstrap3.client.ui.constants.Toggle;
-import org.jboss.errai.common.client.api.elemental2.IsElement;
-import org.jboss.errai.common.client.ui.ElementWrapperWidget;
-import org.jboss.errai.ioc.client.container.IOCResolutionException;
-import org.jboss.errai.security.shared.api.identity.User;
-import org.uberfire.client.menu.AuthFilterMenuVisitor;
-import org.uberfire.client.util.CSSLocatorsUtils;
-import org.uberfire.client.util.Layouts;
-import org.uberfire.client.views.pfly.maximize.MaximizeToggleButton;
-import org.uberfire.client.workbench.PanelManager;
-import org.uberfire.client.workbench.panels.MaximizeToggleButtonPresenter;
-import org.uberfire.client.workbench.panels.WorkbenchPanelPresenter;
-import org.uberfire.client.workbench.part.WorkbenchPartPresenter;
-import org.uberfire.client.workbench.widgets.dnd.WorkbenchDragAndDropManager;
-import org.uberfire.client.workbench.widgets.listbar.ListBarWidget;
-import org.uberfire.client.workbench.widgets.listbar.ListbarPreferences;
-import org.uberfire.client.workbench.widgets.listbar.ResizeFocusPanel;
-import org.uberfire.commons.data.Pair;
-import org.uberfire.mvp.Command;
-import org.uberfire.security.authz.AuthorizationManager;
-import org.uberfire.workbench.model.PartDefinition;
-import org.uberfire.workbench.model.menu.MenuCustom;
-import org.uberfire.workbench.model.menu.MenuGroup;
-import org.uberfire.workbench.model.menu.MenuItem;
-import org.uberfire.workbench.model.menu.MenuItemCommand;
-import org.uberfire.workbench.model.menu.impl.BaseMenuVisitor;
 
-import static com.google.gwt.dom.client.Style.Display.BLOCK;
-import static com.google.gwt.dom.client.Style.Display.NONE;
-import static org.uberfire.plugin.PluginUtil.ensureIterable;
+import elemental2.dom.HTMLElement;
 
 /**
  * Implementation of ListBarWidget based on PatternFly components.
  */
 @Dependent
 public class ListBarWidgetImpl
-        extends ResizeComposite implements ListBarWidget {
+                               extends ResizeComposite implements ListBarWidget {
 
     private static ListBarWidgetBinder uiBinder = GWT.create(ListBarWidgetBinder.class);
     final Map<PartDefinition, FlowPanel> partContentView = new HashMap<PartDefinition, FlowPanel>();
@@ -126,10 +124,6 @@ public class ListBarWidgetImpl
     WorkbenchPanelPresenter presenter;
     LinkedList<PartDefinition> parts = new LinkedList<>();
     Pair<PartDefinition, FlowPanel> currentPart;
-    @Inject
-    private AuthorizationManager authzManager;
-    @Inject
-    private User identity;
 
     @PostConstruct
     void postConstruct() {
@@ -225,14 +219,14 @@ public class ListBarWidgetImpl
 
         final FlowPanel panel = new FlowPanel();
         setupCSSLocators(view,
-                         panel);
+                panel);
         Layouts.setToFillParent(panel);
         panel.add(view);
         content.add(panel);
 
         // IMPORTANT! if you change what goes in this map, update the remove(PartDefinition) method
         partContentView.put(partDefinition,
-                            panel);
+                panel);
 
         if (partDefinition.isSelectable()) {
             titleDropDown.addPart(view);
@@ -245,10 +239,10 @@ public class ListBarWidgetImpl
     }
 
     void setupCSSLocators(WorkbenchPartPresenter.View view,
-                                  FlowPanel panel) {
+                          FlowPanel panel) {
         if (view.getPresenter() != null || view.getPresenter().getTitle() != null) {
             panel.getElement().addClassName(CSSLocatorsUtils.buildLocator("qe-list-bar-content",
-                                                                          view.getPresenter().getTitle()));
+                    view.getPresenter().getTitle()));
         }
     }
 
@@ -258,8 +252,8 @@ public class ListBarWidgetImpl
                             final IsWidget titleDecoration) {
         if (part.isSelectable()) {
             titleDropDown.changeTitle(part,
-                                      title,
-                                      titleDecoration);
+                    title,
+                    titleDecoration);
         }
     }
 
@@ -280,7 +274,7 @@ public class ListBarWidgetImpl
         }
 
         currentPart = Pair.newPair(part,
-                                   partContentView.get(part));
+                partContentView.get(part));
         currentPart.getK2().getElement().getStyle().setDisplay(BLOCK);
         parts.remove(currentPart.getK1());
 
@@ -296,7 +290,7 @@ public class ListBarWidgetImpl
         resizePanelBody();
 
         SelectionEvent.fire(ListBarWidgetImpl.this,
-                            part);
+                part);
 
         return true;
     }
@@ -308,7 +302,7 @@ public class ListBarWidgetImpl
             if (menus != null && menus.getItems().size() > 0) {
                 for (final MenuItem menuItem : menus.getItems()) {
                     final Widget result = makeItem(menuItem,
-                                                   true);
+                            true);
                     if (result != null) {
                         contextMenu.add(result);
                     }
@@ -369,12 +363,10 @@ public class ListBarWidgetImpl
     }
 
     @Override
-    public void setFocus(final boolean hasFocus) {
-    }
+    public void setFocus(final boolean hasFocus) {}
 
     @Override
-    public void addOnFocusHandler(final Command command) {
-    }
+    public void addOnFocusHandler(final Command command) {}
 
     @Override
     public int getPartsSize() {
@@ -400,13 +392,13 @@ public class ListBarWidgetImpl
     @Override
     public HandlerRegistration addBeforeSelectionHandler(final BeforeSelectionHandler<PartDefinition> handler) {
         return addHandler(handler,
-                          BeforeSelectionEvent.getType());
+                BeforeSelectionEvent.getType());
     }
 
     @Override
     public HandlerRegistration addSelectionHandler(final SelectionHandler<PartDefinition> handler) {
         return addHandler(handler,
-                          SelectionEvent.getType());
+                SelectionEvent.getType());
     }
 
     @Override
@@ -431,28 +423,27 @@ public class ListBarWidgetImpl
                               boolean isRoot) {
 
         Widget[] menuWidget = new Widget[]{null};
-        item.accept(new AuthFilterMenuVisitor(authzManager,
-                                              identity,
-                                              new BaseMenuVisitor() {
+        item.accept(
+                new BaseMenuVisitor() {
 
-                                                  @Override
-                                                  public boolean visitEnter(MenuGroup menuGroup) {
-                                                      menuWidget[0] = makeMenuGroup(menuGroup,
-                                                                                    isRoot);
-                                                      return false;
-                                                  }
+                    @Override
+                    public boolean visitEnter(MenuGroup menuGroup) {
+                        menuWidget[0] = makeMenuGroup(menuGroup,
+                                isRoot);
+                        return false;
+                    }
 
-                                                  @Override
-                                                  public void visit(MenuItemCommand menuItemCommand) {
-                                                      menuWidget[0] = makeMenuItemCommand(menuItemCommand,
-                                                                                          isRoot);
-                                                  }
+                    @Override
+                    public void visit(MenuItemCommand menuItemCommand) {
+                        menuWidget[0] = makeMenuItemCommand(menuItemCommand,
+                                isRoot);
+                    }
 
-                                                  @Override
-                                                  public void visit(MenuCustom<?> menuCustom) {
-                                                      menuWidget[0] = makeMenuCustom(menuCustom);
-                                                  }
-                                              }));
+                    @Override
+                    public void visit(MenuCustom<?> menuCustom) {
+                        menuWidget[0] = makeMenuCustom(menuCustom);
+                    }
+                });
         return menuWidget[0];
     }
 
@@ -490,7 +481,7 @@ public class ListBarWidgetImpl
             final List<Widget> widgetList = new ArrayList<>();
             for (final MenuItem _item : ensureIterable(groups.getItems())) {
                 final Widget widget = makeItem(_item,
-                                               false);
+                        false);
                 if (widget != null) {
                     widgetList.add(widget);
                 }
@@ -499,12 +490,12 @@ public class ListBarWidgetImpl
                 return null;
             }
             return makeDropDownMenuButton(groups.getCaption(),
-                                          widgetList);
+                    widgetList);
         } else {
             final List<Widget> widgetList = new ArrayList<>();
             for (final MenuItem _item : groups.getItems()) {
                 final Widget result = makeItem(_item,
-                                               false);
+                        false);
                 if (result != null) {
                     widgetList.add(result);
                 }
@@ -513,7 +504,7 @@ public class ListBarWidgetImpl
                 return null;
             }
             return makeDropDownMenuButton(groups.getCaption(),
-                                          widgetList);
+                    widgetList);
         }
     }
 
@@ -547,6 +538,7 @@ public class ListBarWidgetImpl
 
     private void scheduleResize() {
         Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+
             @Override
             public void execute() {
                 onResize();
@@ -560,10 +552,10 @@ public class ListBarWidgetImpl
         //these times the PanelHeader may not have any content and hence have no size.
         if (currentPart != null && !currentPart.getK1().isSelectable()) {
             content.getElement().getStyle().setProperty("height",
-                                                        "100%");
+                    "100%");
         } else {
             content.getElement().getStyle().setProperty("height",
-                                                        "calc(100% - " + header.getOffsetHeight() + "px)");
+                    "calc(100% - " + header.getOffsetHeight() + "px)");
         }
     }
 
@@ -603,8 +595,8 @@ public class ListBarWidgetImpl
     }
 
     interface ListBarWidgetBinder
-            extends
-            UiBinder<ResizeFocusPanel, ListBarWidgetImpl> {
+                                  extends
+                                  UiBinder<ResizeFocusPanel, ListBarWidgetImpl> {
 
     }
 }

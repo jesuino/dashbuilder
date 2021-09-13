@@ -19,28 +19,22 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import elemental2.dom.HTMLDivElement;
-import jsinterop.base.Js;
 import org.dashbuilder.client.navigation.NavBarHelper;
-import org.dashbuilder.client.navigation.NavTreeDefinitions;
 import org.dashbuilder.client.resources.i18n.AppConstants;
 import org.dashbuilder.navigation.NavTree;
-import org.jboss.errai.security.shared.api.identity.User;
 import org.jboss.errai.ui.shared.api.annotations.DataField;
 import org.jboss.errai.ui.shared.api.annotations.Templated;
-import org.uberfire.client.views.pfly.menu.UserMenu;
 import org.uberfire.client.workbench.Header;
-import org.uberfire.client.workbench.Workbench;
 import org.uberfire.client.workbench.widgets.menu.megamenu.WorkbenchMegaMenuPresenter;
 import org.uberfire.mvp.Command;
-import org.uberfire.workbench.model.menu.MenuFactory;
 import org.uberfire.workbench.model.menu.Menus;
+
+import elemental2.dom.HTMLDivElement;
+import jsinterop.base.Js;
 
 @Templated
 @ApplicationScoped
 public class AppHeader implements Header {
-
-    private AppConstants i18n = AppConstants.INSTANCE;
 
     @Inject
     @DataField
@@ -50,36 +44,18 @@ public class AppHeader implements Header {
     private WorkbenchMegaMenuPresenter menuBarPresenter;
 
     @Inject
-    UserMenu userMenu;
-
-    @Inject
     private NavBarHelper navBarHelper;
 
-    User user;
     Command onItemSelectedCommand;
     Command onLogoutCommand;
     NavTree navTree;
     String currentPerspectiveId;
 
-    private Menus userMenus;
-
     public AppHeader() {}
-
-    @Inject
-    public AppHeader(User user) {
-        this.user = user;
-    }
 
     @PostConstruct
     private void init() {
         header.appendChild(Js.cast(menuBarPresenter.getView().getElement()));
-
-        userMenu.clear();
-        userMenu.addMenus(MenuFactory.newTopLevelMenu(i18n.logOut())
-                                     .respondsWith(this::onLogoutClicked)
-                                     .endMenu()
-                                     .build());
-        userMenus = MenuFactory.newTopLevelCustomMenu(userMenu).endMenu().build();
     }
 
     @Override
@@ -92,22 +68,10 @@ public class AppHeader implements Header {
         return 2;
     }
 
-    public void setOnLogoutCommand(Command command) {
-        this.onLogoutCommand = command;
-        menuBarPresenter.addMenus(userMenus);
-    }
-
-    public void onLogoutClicked() {
-        if (onLogoutCommand != null) {
-            onLogoutCommand.execute();
-        }
-    }
-
     public void setupMenu(NavTree navTree) {
         Menus menus = navBarHelper.buildMenusFromNavTree(navTree).build();
         menuBarPresenter.clear();
         menuBarPresenter.addMenus(menus);
-        menuBarPresenter.addMenus(userMenus);
     }
 
 }

@@ -16,191 +16,174 @@
 
 package org.uberfire.ext.layout.editor.impl;
 
-import java.util.Collection;
-import java.util.Collections;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
+import javax.enterprise.event.Event;
+
+import org.dashbuilder.project.storage.impl.ProjectStorageServicesImpl;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.uberfire.backend.vfs.Path;
+import org.uberfire.backend.vfs.PathFactory;
 import org.uberfire.ext.editor.commons.backend.service.SaveAndRenameServiceImpl;
 import org.uberfire.ext.editor.commons.file.DefaultMetadata;
 import org.uberfire.ext.layout.editor.api.editor.LayoutTemplate;
-import org.uberfire.ext.plugin.backend.PluginServicesImpl;
-import org.uberfire.ext.plugin.model.LayoutEditorModel;
-import org.uberfire.ext.plugin.model.Plugin;
-import org.uberfire.ext.plugin.model.PluginType;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import org.uberfire.ext.plugin.event.PluginAdded;
+import org.uberfire.ext.plugin.event.PluginDeleted;
+import org.uberfire.ext.plugin.event.PluginRenamed;
+import org.uberfire.ext.plugin.event.PluginSaved;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PerspectiveServicesImplTest {
 
     @Mock
-    PluginServicesImpl pluginServices;
-
-    @Mock
-    LayoutServicesImpl layoutServices;
-
-    @Mock
     SaveAndRenameServiceImpl<LayoutTemplate, DefaultMetadata> saveAndRenameService;
-
-    @Mock
-    Path path;
-
-    @Mock
-    Path path2;
 
     @Mock
     DefaultMetadata metadata;
 
     @Mock
-    Plugin plugin;
+    private Event<PluginAdded> pluginAddedEvent;
+
+    @Mock
+    private Event<PluginDeleted> pluginDeletedEvent;
+
+    @Mock
+    private Event<PluginSaved> pluginSavedEvent;
+
+    @Mock
+    private Event<PluginRenamed> pluginRenamedEvent;
 
     PerspectiveServicesImpl perspectiveServices;
 
+    ProjectStorageServicesImpl projectStorageServices;
+
+    private LayoutServicesImpl layoutServices;
+
     @Before
     public void setup() {
-        LayoutEditorModel layoutEditorModel = new LayoutEditorModel("layout", PluginType.PERSPECTIVE_LAYOUT, path2, "").emptyLayout();
 
-        when(pluginServices.createNewPlugin(anyString(), any())).thenReturn(plugin);
-        when(plugin.getPath()).thenReturn(path);
-        when(plugin.getName()).thenReturn("plugin1");
-        when(pluginServices.copy(any(), anyString(), anyString())).thenReturn(path2);
-        when(pluginServices.copy(any(), anyString(), any(), anyString())).thenReturn(path2);
-        when(pluginServices.rename(any(), anyString(), anyString())).thenReturn(path2);
-        when(pluginServices.getLayoutEditor(eq(path2), eq(PluginType.PERSPECTIVE_LAYOUT))).thenReturn(layoutEditorModel);
+        layoutServices = new LayoutServicesImpl();
+        layoutServices.init();
 
-        perspectiveServices = spy(new PerspectiveServicesImpl(pluginServices, layoutServices, saveAndRenameService));
+        projectStorageServices = new ProjectStorageServicesImpl();
+        projectStorageServices.clear();
+        projectStorageServices.createStructure();
+
+        perspectiveServices = spy(new PerspectiveServicesImpl(projectStorageServices,
+                                                              layoutServices,
+                                                              saveAndRenameService,
+                                                              pluginAddedEvent,
+                                                              pluginDeletedEvent,
+                                                              pluginSavedEvent,
+                                                              pluginRenamedEvent));
     }
 
     @Test
     public void testCreate() {
-        perspectiveServices.createNewPerspective("test", LayoutTemplate.Style.FLUID);
-        ArgumentCaptor<LayoutEditorModel> arg1 = ArgumentCaptor.forClass(LayoutEditorModel.class);
-        verify(pluginServices).createNewPlugin("test", PluginType.PERSPECTIVE_LAYOUT);
-        verify(pluginServices).saveLayout(arg1.capture(), eq("Perspective 'test' check-in"));
-        LayoutEditorModel layoutEditorModel = arg1.getValue();
-        assertEquals(layoutEditorModel.getName(), "test");
+        var plugin = perspectiveServices.createNewPerspective("test", LayoutTemplate.Style.FLUID);
+        var lt = layoutServices.fromJson(projectStorageServices.getPerspective(plugin.getName()).get());
+        
+        verify(pluginAddedEvent).fire(any());
+        assertEquals(lt.getName(), "test");
+        assertEquals(lt.getStyle(), LayoutTemplate.Style.FLUID);
     }
 
     @Test
     public void testList() {
-        Plugin layoutPlugin = new Plugin("layout", PluginType.PERSPECTIVE_LAYOUT, path2);
-        when(pluginServices.listPlugins(PluginType.PERSPECTIVE_LAYOUT))
-            .thenReturn(Collections.singletonList(layoutPlugin));
-
-        Collection<LayoutTemplate> layouts = perspectiveServices.listLayoutTemplates();
-        assertEquals(layouts.size(), 1);
-        LayoutTemplate layoutTemplate = layouts.iterator().next();
-        assertEquals(layoutTemplate.getName(), "layout");
-        verify(pluginServices).listPlugins(PluginType.PERSPECTIVE_LAYOUT);
+        var layout = "layout";
+        perspectiveServices.saveLayoutTemplate(new LayoutTemplate(layout));
+        var layouts = perspectiveServices.listLayoutTemplates();
+        assertEquals(1, layouts.size());
+        verify(pluginSavedEvent).fire(any());
+        
+        var layoutTemplate = layouts.iterator().next();
+        assertEquals(layoutTemplate.getName(), layout);
     }
 
     @Test
     public void testSave() {
-        LayoutTemplate layoutTemplate = new LayoutTemplate("newName");
-        Path savedPath = perspectiveServices.saveLayoutTemplate(path, layoutTemplate, "save");
-        assertEquals(savedPath, path);
-        ArgumentCaptor<LayoutEditorModel> layoutModelArg = ArgumentCaptor.forClass(LayoutEditorModel.class);
-        ArgumentCaptor<String> commitArg = ArgumentCaptor.forClass(String.class);
-        verify(pluginServices).saveLayout(layoutModelArg.capture(), commitArg.capture());
-
-        LayoutEditorModel layoutModelCopy = layoutModelArg.getValue();
-        assertEquals(layoutModelCopy.getName(), "newName");
-        assertEquals(commitArg.getValue(), "save");
+        var layoutTemplate = new LayoutTemplate("name");
+        perspectiveServices.saveLayoutTemplate(layoutTemplate);
+        var content = projectStorageServices.getPerspective(layoutTemplate.getName());
+        assertEquals(layoutServices.toJson(layoutTemplate), content.get());
     }
 
     @Test
     public void testCopy() {
-        Path result = perspectiveServices.copy(path, "newName", "");
-        ArgumentCaptor<LayoutEditorModel> layoutModelArg = ArgumentCaptor.forClass(LayoutEditorModel.class);
-        verify(pluginServices).saveLayout(layoutModelArg.capture(), anyString());
-        LayoutEditorModel layoutModelCopy = layoutModelArg.getValue();
-
-        assertEquals(layoutModelCopy.getName(), "newName");
-        assertEquals(layoutModelCopy.getPath(), result);
-    }
-
-    @Test
-    public void testCopyToTarget() {
-        Path result = perspectiveServices.copy(path, "newName", path2, "");
-        ArgumentCaptor<LayoutEditorModel> layoutModelArg = ArgumentCaptor.forClass(LayoutEditorModel.class);
-        verify(pluginServices).saveLayout(layoutModelArg.capture(), anyString());
-        LayoutEditorModel layoutModelCopy = layoutModelArg.getValue();
-
-        assertEquals(layoutModelCopy.getName(), "newName");
-        assertEquals(layoutModelCopy.getPath(), result);
-        assertEquals(result, path2);
+        var newName = "newName";
+        var layoutTemplate = new LayoutTemplate("name");
+        var path = perspectiveServices.saveLayoutTemplate(layoutTemplate);
+        var result = perspectiveServices.copy(path, newName, "");
+        assertEquals(newName, result.getFileName());
+        assertEquals(newName, result.toURI());
+        assertTrue(projectStorageServices.getPerspective(layoutTemplate.getName()).isPresent());
+        assertTrue(projectStorageServices.getPerspective(newName).isPresent());
+        verify(pluginAddedEvent).fire(any());
     }
 
     @Test
     public void testRename() {
-        Path result = perspectiveServices.rename(path, "newName", "");
-        ArgumentCaptor<LayoutEditorModel> layoutModelArg = ArgumentCaptor.forClass(LayoutEditorModel.class);
-        verify(pluginServices).saveLayout(layoutModelArg.capture(), anyString());
-        LayoutEditorModel layoutModelCopy = layoutModelArg.getValue();
+        final var content = new LayoutTemplate("name");
+        final var newName = "newName";
+        final var path = PathFactory.newPath(content.getName(), content.getName());
 
-        assertEquals(layoutModelCopy.getName(), "newName");
-        assertEquals(layoutModelCopy.getPath(), result);
+        perspectiveServices.saveLayoutTemplate(content);
+
+        var result = perspectiveServices.rename(path, newName, "");
+
+        assertFalse(projectStorageServices.getPerspective(content.getName()).isPresent());
+        assertEquals(newName, result.getFileName());
+        assertEquals(newName, result.toURI());
+
+        var renamedContent = projectStorageServices.getPerspective(newName);
+        assertEquals(layoutServices.toJson(content), renamedContent.get());
+        verify(pluginRenamedEvent).fire(any());
     }
 
     @Test
     public void testDelete() {
-        perspectiveServices.delete(path, "");
-        verify(pluginServices).delete(path, "");
-    }
-
-    @Test
-    public void testInit() {
-        perspectiveServices.init();
-
-        verify(saveAndRenameService).init(perspectiveServices);
-    }
-
-    @Test
-    public void testSaveFromSupportsUpdate() {
-
-        final String comment = "comment";
-        final LayoutTemplate content = new LayoutTemplate("name");
-
-        perspectiveServices.save(path, content, metadata, comment);
-
-        verify(perspectiveServices).saveLayoutTemplate(path, content, comment);
+        final var content = new LayoutTemplate("name");
+        var p = perspectiveServices.saveLayoutTemplate(content);
+        assertNotNull(perspectiveServices.getLayoutTemplate(content.getName()));
+        perspectiveServices.delete(p, "");
+        assertNull(perspectiveServices.getLayoutTemplate(content.getName()));
+        verify(pluginDeletedEvent).fire(any());
     }
 
     @Test
     public void testSaveAndRename() {
+        final var comment = "comment";
+        final var newFileName = "newFileName";
+        final var name = "layout";
+        final var content = new LayoutTemplate(name);
+        final var path = PathFactory.newPath(name, name);
 
-        final String comment = "comment";
-        final String newFileName = "newFileName";
-        final LayoutTemplate content = new LayoutTemplate("name");
+        perspectiveServices.save(path, content, metadata, comment);
+        assertTrue(projectStorageServices.getPerspective(name).isPresent());
 
         perspectiveServices.saveAndRename(path, newFileName, metadata, content, comment);
+        assertFalse(projectStorageServices.getPerspective(name).isPresent());
+        assertTrue(projectStorageServices.getPerspective(newFileName).isPresent());
 
         verify(saveAndRenameService).saveAndRename(path, newFileName, metadata, content, comment);
     }
 
     @Test
     public void testGetLayoutTemplate() {
-        LayoutTemplate layoutTemplate = perspectiveServices.getLayoutTemplate(path2);
-        verify(pluginServices).getLayoutEditor(path2, PluginType.PERSPECTIVE_LAYOUT);
-        assertTrue(layoutTemplate.getName().equals("layout"));
+        var layout = "layout";
+        var path = PathFactory.newPath(layout, layout);
+        perspectiveServices.saveLayoutTemplate(new LayoutTemplate(layout));
+        assertTrue(perspectiveServices.getLayoutTemplate(path).getName().equals(layout));
     }
 
-    @Test
-    public void testGetLayoutTemplatePlugin() {
-        Plugin retPlugin = perspectiveServices.getLayoutTemplatePlugin(plugin.getName());
-        verify(pluginServices).listPlugins(PluginType.PERSPECTIVE_LAYOUT);
-    }
 }

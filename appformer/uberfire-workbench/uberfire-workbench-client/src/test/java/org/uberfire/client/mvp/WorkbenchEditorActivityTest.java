@@ -16,10 +16,12 @@
 
 package org.uberfire.client.mvp;
 
-import javax.enterprise.inject.Instance;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.uberfire.client.annotations.WorkbenchEditor.LockingStrategy.EDITOR_PROVIDED;
 
-import com.google.gwt.user.client.ui.IsWidget;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -34,19 +36,10 @@ import org.uberfire.mvp.PlaceRequest;
 import org.uberfire.mvp.impl.ExternalPathPlaceRequest;
 import org.uberfire.mvp.impl.PathPlaceRequest;
 
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
-import static org.uberfire.client.annotations.WorkbenchEditor.LockingStrategy.EDITOR_PROVIDED;
-import static org.uberfire.client.annotations.WorkbenchEditor.LockingStrategy.FRAMEWORK_PESSIMISTIC;
+import com.google.gwt.user.client.ui.IsWidget;
 
 @RunWith(MockitoJUnitRunner.class)
 public class WorkbenchEditorActivityTest {
-
-    @Mock
-    private Instance<LockManager> lockManagerProvider;
-
-    @Mock
-    private LockManager lockManager;
 
     @Mock
     private PathPlaceRequest place;
@@ -66,79 +59,9 @@ public class WorkbenchEditorActivityTest {
     @Mock
     private PlaceManager placeManager;
 
-    @Before
-    public void setup() {
-        when(lockManagerProvider.get()).thenReturn(lockManager);
-        when(place.getPath()).thenReturn(path);
-    }
-
-    @Test
-    public void editorProvidedLockingDoesNotAcquireLocks() {
-        EditorTestActivity activity = new EditorTestActivity(lockManagerProvider,
-                                                             placeManager,
-                                                             EDITOR_PROVIDED);
-
-        activity.onStartup(place);
-        activity.onOpen();
-
-        verify(lockManagerProvider,
-               never()).get();
-        verify(lockManager,
-               never()).acquireLockOnDemand();
-    }
-
-    @Test
-    public void editorProvidedLockingDoesNotReleasesLocks() {
-        EditorTestActivity activity = new EditorTestActivity(lockManagerProvider,
-                                                             placeManager,
-                                                             EDITOR_PROVIDED);
-
-        activity.onStartup(place);
-        activity.onOpen();
-        activity.onClose();
-
-        verify(lockManagerProvider,
-               never()).destroy(eq(lockManager));
-        verify(lockManager,
-               never()).releaseLock();
-    }
-
-    @Test
-    public void frameworkProvidedLockingAcquiresLocks() {
-        EditorTestActivity activity = new EditorTestActivity(lockManagerProvider,
-                                                             placeManager,
-                                                             FRAMEWORK_PESSIMISTIC);
-
-        activity.onStartup(place);
-        activity.onOpen();
-
-        verify(lockManagerProvider,
-               times(1)).get();
-        verify(lockManager,
-               times(1)).acquireLockOnDemand();
-    }
-
-    @Test
-    public void frameworkProvidedLockingReleasesLocks() {
-        EditorTestActivity activity = new EditorTestActivity(lockManagerProvider,
-                                                             placeManager,
-                                                             FRAMEWORK_PESSIMISTIC);
-
-        activity.onStartup(place);
-        activity.onOpen();
-        activity.onClose();
-
-        verify(lockManagerProvider,
-               times(1)).destroy(eq(lockManager));
-        verify(lockManager,
-               times(1)).releaseLock();
-    }
-
     @Test
     public void editorCreatesObservablePathForExternalPlaceRequest() {
-        EditorTestActivity activity = Mockito.spy(new EditorTestActivity(lockManagerProvider,
-                                                                         placeManager,
-                                                                         EDITOR_PROVIDED));
+        var activity = Mockito.spy(new EditorTestActivity(placeManager, EDITOR_PROVIDED));
 
         doAnswer(new Answer<Void>() {
             public Void answer(InvocationOnMock invocation) {
@@ -158,11 +81,9 @@ public class WorkbenchEditorActivityTest {
 
         private LockingStrategy strategy;
 
-        public EditorTestActivity(Instance<LockManager> lockManagerProvider,
-                                  PlaceManager placeManager,
+        public EditorTestActivity(PlaceManager placeManager,
                                   LockingStrategy strategy) {
             super(placeManager);
-            this.lockManagerProvider = lockManagerProvider;
             this.strategy = strategy;
         }
 

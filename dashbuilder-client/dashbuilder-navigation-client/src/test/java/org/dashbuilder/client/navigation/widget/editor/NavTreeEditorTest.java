@@ -1,14 +1,29 @@
 package org.dashbuilder.client.navigation.widget.editor;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import java.util.Collection;
 import java.util.HashSet;
 
-import com.google.gwtmockito.GwtMockitoTestRunner;
 import org.dashbuilder.client.navigation.NavigationManager;
 import org.dashbuilder.client.navigation.event.NavItemEditCancelledEvent;
 import org.dashbuilder.client.navigation.event.NavItemEditStartedEvent;
 import org.dashbuilder.client.navigation.event.NavItemGotoEvent;
-import org.dashbuilder.navigation.event.NavTreeChangedEvent;
 import org.dashbuilder.client.navigation.event.NavTreeLoadedEvent;
 import org.dashbuilder.client.navigation.impl.NavigationManagerImpl;
 import org.dashbuilder.client.navigation.plugin.PerspectivePluginManager;
@@ -17,16 +32,15 @@ import org.dashbuilder.navigation.NavFactory;
 import org.dashbuilder.navigation.NavGroup;
 import org.dashbuilder.navigation.NavItem;
 import org.dashbuilder.navigation.NavTree;
+import org.dashbuilder.navigation.event.NavTreeChangedEvent;
 import org.dashbuilder.navigation.impl.NavTreeBuilder;
 import org.dashbuilder.navigation.service.NavigationServices;
-import org.dashbuilder.navigation.workbench.NavSecurityController;
 import org.jboss.errai.ioc.client.container.SyncBeanDef;
 import org.jboss.errai.ioc.client.container.SyncBeanManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.uberfire.client.authz.PerspectiveTreeProvider;
 import org.uberfire.client.mvp.PlaceManager;
 import org.uberfire.ext.plugin.model.Plugin;
 import org.uberfire.mocks.CallerMock;
@@ -34,22 +48,7 @@ import org.uberfire.mocks.EventSourceMock;
 import org.uberfire.mvp.Command;
 import org.uberfire.mvp.ParameterizedCommand;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.google.gwtmockito.GwtMockitoTestRunner;
 
 @RunWith(GwtMockitoTestRunner.class)
 public class NavTreeEditorTest {
@@ -59,9 +58,6 @@ public class NavTreeEditorTest {
 
     @Mock
     SyncBeanManager beanManager;
-
-    @Mock
-    PerspectiveTreeProvider perspectiveTreeProvider;
 
     @Mock
     EventSourceMock<NavItemEditStartedEvent> navItemEditStartedEvent;
@@ -83,9 +79,6 @@ public class NavTreeEditorTest {
 
     @Mock
     NavigationServices navServices;
-
-    @Mock
-    NavSecurityController navController;
 
     @Mock
     PlaceManager placeManager;
@@ -134,7 +127,6 @@ public class NavTreeEditorTest {
     @Before
     public void setUp() {
         navigationManager = spy(new NavigationManagerImpl(new CallerMock<>(navServices),
-                                                          navController,
                                                           navTreeLoadedEvent,
                                                           navTreeChangedEvent,
                                                           navItemGotoEvent));
@@ -143,7 +135,6 @@ public class NavTreeEditorTest {
                                               navigationManager,
                                               beanManager,
                                               placeManager,
-                                              perspectiveTreeProvider,
                                               targetPerspectiveEditor,
                                               perspectivePluginManager,
                                               navItemEditStartedEvent,
@@ -153,11 +144,11 @@ public class NavTreeEditorTest {
         navTreeEditor.setChildEditorClass(NavRootNodeEditor.class);
 
         navItemEditor = spy(new NavItemDefaultEditor(navItemEditorView, beanManager, placeManager,
-                                                     perspectiveTreeProvider, targetPerspectiveEditor, perspectivePluginManager,
+                                                     targetPerspectiveEditor, perspectivePluginManager,
                                                      navItemEditStartedEvent, navItemEditCancelledEvent));
 
         navRootNodeEditor = spy(new NavRootNodeEditor(navRootNodeEditorView, beanManager, placeManager,
-                                                      perspectiveTreeProvider, targetPerspectiveEditor, perspectivePluginManager,
+                                                      targetPerspectiveEditor, perspectivePluginManager,
                                                       navItemEditStartedEvent, navItemEditCancelledEvent));
 
         when(beanManager.lookupBean(NavItemDefaultEditor.class)).thenReturn(navItemEditorBeanDef);

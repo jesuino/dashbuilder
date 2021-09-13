@@ -1,26 +1,21 @@
 package org.dashbuilder.backend;
 
-import org.jboss.errai.security.shared.api.identity.User;
-import org.jboss.errai.security.shared.service.AuthenticationService;
+import javax.annotation.PostConstruct;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Produces;
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import org.uberfire.backend.server.IOWatchServiceAllImpl;
 import org.uberfire.commons.services.cdi.Startup;
 import org.uberfire.commons.services.cdi.StartupType;
 import org.uberfire.io.IOService;
 import org.uberfire.io.impl.IOServiceNio2WrapperImpl;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.RequestScoped;
-import javax.enterprise.inject.Produces;
-import javax.inject.Inject;
-import javax.inject.Named;
-
 @Startup(value = StartupType.BOOTSTRAP)
 @ApplicationScoped
 public class ApplicationScopedProducer {
 
-    @Inject
-    private AuthenticationService authenticationService;
 
     @Inject
     private IOWatchServiceAllImpl watchService;
@@ -38,9 +33,4 @@ public class ApplicationScopedProducer {
         return ioService;
     }
 
-    @Produces
-    @RequestScoped
-    public User getIdentity() {
-        return authenticationService.getUser();
-    }
 }

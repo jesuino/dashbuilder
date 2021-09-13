@@ -16,12 +16,9 @@
 
 package org.uberfire.backend.server;
 
-import java.net.URI;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -79,7 +76,7 @@ public class VFSLockServiceImpl implements VFSLockService {
         try {
             ioService.startBatch(fileSystem);
 
-            final String userId = sessionInfo.getIdentity().getIdentifier();
+            final String userId = "system";
             final LockInfo lockInfo = retrieveLockInfo(path);
             final LockResult result;
             if (lockInfo.isLocked() && !lockInfo.lockedBy().equals(userId)) {
@@ -109,7 +106,7 @@ public class VFSLockServiceImpl implements VFSLockService {
     public LockResult forceReleaseLock(final Path path)
             throws IllegalArgumentException, IOException {
 
-        final String userId = sessionInfo.getIdentity().getIdentifier();
+        final String userId = "system";
         logger.info("User " + userId + " forced a lock release of: " + path.toURI());
 
         return releaseLock(path,
@@ -119,29 +116,7 @@ public class VFSLockServiceImpl implements VFSLockService {
     private LockResult releaseLock(final Path path,
                                    final boolean force)
             throws IllegalArgumentException, IOException {
-
-        try {
-            ioService.startBatch(fileSystem);
-
-            final LockInfo lockInfo = retrieveLockInfo(path);
-            final LockResult result;
-            if (lockInfo.isLocked()) {
-                if (sessionInfo.getIdentity().getIdentifier().equals(lockInfo.lockedBy()) || force) {
-                    ioService.delete(Paths.convert(lockInfo.getLock()));
-                    updateSession(lockInfo,
-                                  true);
-                    result = LockResult.released(path);
-                } else {
-                    logger.error("Client requested to release a lock it doesn't hold: " + path.toURI());
-                    throw new IOException("Not allowed");
-                }
-            } else {
-                result = LockResult.failed(lockInfo);
-            }
-            return result;
-        } finally {
-            ioService.endBatch();
-        }
+        return LockResult.released(path);
     }
 
     @Override
@@ -176,28 +151,7 @@ public class VFSLockServiceImpl implements VFSLockService {
                                             boolean excludeOwnedLocks)
             throws IllegalArgumentException, IOException {
 
-        if (!Files.isDirectory(Paths.convert(path))) {
-            return Collections.emptyList();
-        }
-
-        final Path lockPath = PathFactory.newLockPath(path);
-
-        final List<Path> locks = new ArrayList<Path>();
-        retrieveLocks(ioService.get(URI.create(lockPath.toURI())),
-                      locks);
-
-        final List<LockInfo> lockInfos = new LinkedList<LockInfo>();
-        for (Path lock : locks) {
-            final LockInfo lockInfo = retrieveLockInfo(PathFactory.fromLock(lock));
-
-            if (!excludeOwnedLocks || !sessionInfo.getIdentity().getIdentifier().equals(lockInfo.lockedBy())) {
-                if (Files.exists(Paths.convert(lockInfo.getFile()))) {
-                    lockInfos.add(lockInfo);
-                }
-            }
-        }
-
-        return lockInfos;
+        return Collections.emptyList();
     }
 
     private void retrieveLocks(final org.uberfire.java.nio.file.Path path,

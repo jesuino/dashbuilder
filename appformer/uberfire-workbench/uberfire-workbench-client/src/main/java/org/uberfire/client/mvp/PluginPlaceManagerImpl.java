@@ -17,10 +17,10 @@ package org.uberfire.client.mvp;
 
 import java.util.Collection;
 import java.util.List;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import com.google.gwt.user.client.ui.HasWidgets;
 import org.jboss.errai.common.client.dom.HTMLElement;
 import org.jboss.errai.ioc.client.api.EnabledByProperty;
 import org.jboss.errai.ioc.client.api.Shared;
@@ -36,6 +36,8 @@ import org.uberfire.mvp.impl.PathPlaceRequest;
 import org.uberfire.workbench.model.PanelDefinition;
 import org.uberfire.workbench.model.PartDefinition;
 import org.uberfire.workbench.type.ResourceTypeDefinition;
+
+import com.google.gwt.user.client.ui.HasWidgets;
 
 /**
  * This {@link PlaceManager} implementation is active for plugins only, to
@@ -63,11 +65,6 @@ public class PluginPlaceManagerImpl implements PlaceManager {
     @SuppressWarnings("unused")
     @Inject
     private ObservablePath path;
-
-    // Avoid pruning by aggressive reachability analysis in Errai
-    @SuppressWarnings("unused")
-    @Inject
-    private LockManager lockManager;
 
     private void fail() {
         throw new RuntimeException("Invalid use of standard PlaceManager in plugin. " +

@@ -16,30 +16,38 @@
 
 package org.uberfire.client.workbench.widgets.menu.megamenu;
 
-import java.util.ArrayList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import java.util.HashMap;
-import java.util.List;
 import java.util.function.Consumer;
 
-import com.google.gwt.user.client.ui.IsWidget;
 import org.jboss.errai.ioc.client.api.ManagedInstance;
-import org.jboss.errai.security.shared.api.identity.User;
 import org.jboss.errai.ui.client.local.api.IsElement;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
 import org.uberfire.client.mvp.ActivityManager;
 import org.uberfire.client.mvp.PerspectiveActivity;
 import org.uberfire.client.mvp.PerspectiveManager;
 import org.uberfire.client.mvp.PlaceManager;
 import org.uberfire.client.workbench.Workbench;
 import org.uberfire.client.workbench.events.PerspectiveChange;
-import org.uberfire.client.workbench.widgets.menu.events.PerspectiveVisibiltiyChangeEvent;
 import org.uberfire.client.workbench.widgets.menu.megamenu.base.CanBeDisabled;
 import org.uberfire.client.workbench.widgets.menu.megamenu.base.HasChildren;
 import org.uberfire.client.workbench.widgets.menu.megamenu.brand.MegaMenuBrand;
@@ -51,40 +59,18 @@ import org.uberfire.mvp.Command;
 import org.uberfire.mvp.PlaceRequest;
 import org.uberfire.mvp.impl.DefaultPlaceRequest;
 import org.uberfire.rpc.SessionInfo;
-import org.uberfire.security.Resource;
-import org.uberfire.security.authz.AuthorizationManager;
 import org.uberfire.workbench.model.ActivityResourceType;
 import org.uberfire.workbench.model.menu.MenuFactory;
-import org.uberfire.workbench.model.menu.MenuItem;
 import org.uberfire.workbench.model.menu.MenuPosition;
 import org.uberfire.workbench.model.menu.Menus;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.google.gwt.user.client.ui.IsWidget;
 
 @RunWith(MockitoJUnitRunner.class)
 public class WorkbenchMegaMenuPresenterTest {
 
     private static final String NAME = "testName";
     private static final String PERSPECTIVE_ID = "perspectiveId";
-    private static final String SECOND_PERSPECTIVE_ID = "secondPerspectiveId";
-    private static final String THIRD_PERSPECTIVE_ID = "thirdPerspectiveId";
-
-    @Mock
-    protected AuthorizationManager authzManager;
 
     @Mock
     private PerspectiveManager perspectiveManager;
@@ -93,16 +79,10 @@ public class WorkbenchMegaMenuPresenterTest {
     private ActivityManager activityManager;
 
     @Mock
-    protected User identity;
-
-    @Mock
     private ManagedInstance<MegaMenuBrand> megaMenuBrands;
 
     @Mock
     private PlaceManager placeManager;
-
-    @Mock
-    private AuthorizationManager authorizationManager;
 
     @Mock
     private SessionInfo sessionInfo;
@@ -130,15 +110,11 @@ public class WorkbenchMegaMenuPresenterTest {
     @Before
     public void setup() {
         doReturn(true).when(megaMenuBrands).isUnsatisfied();
-        presenter = spy(new WorkbenchMegaMenuPresenter(authzManager,
-                                                       perspectiveManager,
+        presenter = spy(new WorkbenchMegaMenuPresenter(perspectiveManager,
                                                        activityManager,
-                                                       identity,
                                                        view,
                                                        megaMenuBrands,
                                                        placeManager,
-                                                       authorizationManager,
-                                                       sessionInfo,
                                                        childMenuItemPresenters,
                                                        groupMenuItemPresenters,
                                                        childContextMenuItemPresenters,
@@ -162,8 +138,6 @@ public class WorkbenchMegaMenuPresenterTest {
 
         when(perspectiveActivity.getPlace()).thenReturn(placeRequest);
         when(perspectiveManager.getCurrentPerspective()).thenReturn(perspectiveActivity);
-        when(authzManager.authorize(any(Resource.class),
-                                    eq(identity))).thenReturn(true);
 
         presenter.addMenus(menus);
         verify(presenter).selectMenuItem(PERSPECTIVE_ID);
@@ -177,8 +151,6 @@ public class WorkbenchMegaMenuPresenterTest {
 
         when(perspectiveActivity.getPlace()).thenReturn(placeRequest);
         when(perspectiveManager.getCurrentPerspective()).thenReturn(perspectiveActivity);
-        when(authzManager.authorize(any(Resource.class),
-                                    eq(identity))).thenReturn(true);
 
         presenter.addMenus(menus);
 
@@ -190,14 +162,10 @@ public class WorkbenchMegaMenuPresenterTest {
     public void testPerspectiveChangeEvent() {
         final Menus menus = MenuFactory.newSimpleItem(NAME).perspective(PERSPECTIVE_ID).endMenu().build();
         final PlaceRequest placeRequest = new DefaultPlaceRequest(PERSPECTIVE_ID);
-        final PerspectiveActivity perspectiveActivity = mock(PerspectiveActivity.class);
         final PerspectiveChange perspectiveChange = new PerspectiveChange(placeRequest,
                                                                           null,
                                                                           null,
                                                                           PERSPECTIVE_ID);
-
-        when(authzManager.authorize(any(Resource.class),
-                                    eq(identity))).thenReturn(true);
 
         presenter.addMenus(menus);
         presenter.onPerspectiveChange(perspectiveChange);
@@ -205,115 +173,12 @@ public class WorkbenchMegaMenuPresenterTest {
         verify(presenter).selectMenuItem(PERSPECTIVE_ID);
     }
 
-    @Test
-    public void testAddMenuWithPermission() {
-        final Menus menus = MenuFactory.newSimpleItem(NAME).perspective(PERSPECTIVE_ID).endMenu().build();
-        when(authzManager.authorize(menus.getItems().get(0),
-                                    identity)).thenReturn(true);
-
-        presenter.addMenus(menus);
-
-        verify(authzManager).authorize(menus.getItems().get(0),
-                                       identity);
-        verify(presenter).addMenuItem(eq(PERSPECTIVE_ID),
-                                      eq(NAME),
-                                      isNull(String.class),
-                                      any(Command.class),
-                                      any(MenuPosition.class));
-    }
-
-    @Test
-    public void testAddMenuWithoutPermission() {
-        final Menus menus = MenuFactory.newSimpleItem(NAME).perspective(PERSPECTIVE_ID).endMenu().build();
-        when(authzManager.authorize(menus.getItems().get(0),
-                                    identity)).thenReturn(false);
-
-        presenter.addMenus(menus);
-
-        verify(authzManager).authorize(menus.getItems().get(0),
-                                       identity);
-        verify(presenter,
-               never()).addMenuItem(eq(PERSPECTIVE_ID),
-                                    eq(NAME),
-                                    isNull(String.class),
-                                    any(Command.class),
-                                    any(MenuPosition.class));
-    }
-
-    @Test
-    public void testAddContextMenuWithPermission() {
-        final MenuPosition position = MenuPosition.LEFT;
-        final Menus contextMenus = MenuFactory.newSimpleItem(NAME).endMenu().build();
-        final PerspectiveActivity activity = mock(PerspectiveActivity.class);
-        final PlaceRequest placeRequest = mock(PlaceRequest.class);
-
-        when(activity.getIdentifier()).thenReturn(PERSPECTIVE_ID);
-        doAnswer(invocationOnMock -> {
-            invocationOnMock.getArgument(0, Consumer.class).accept(contextMenus);
-            return null;
-        }).when(activity).getMenus(any());
-        when(activity.isType(ActivityResourceType.PERSPECTIVE.name())).thenReturn(true);
-        when(authzManager.authorize(contextMenus.getItems().get(0),
-                                    identity)).thenReturn(true);
-        when(activityManager.getActivity(placeRequest)).thenReturn(activity);
-
-        presenter.onPerspectiveChange(new PerspectiveChange(placeRequest,
-                                                            null,
-                                                            contextMenus,
-                                                            PERSPECTIVE_ID));
-
-        verify(authzManager).authorize(contextMenus.getItems().get(0),
-                                       identity);
-        verify(view).clearContextMenu();
-        verify(presenter).addContextMenuItem(eq(PERSPECTIVE_ID),
-                                             anyString(),
-                                             eq(NAME),
-                                             isNull(),
-                                             any(),
-                                             eq(position));
-    }
-
-    @Test
-    public void testAddContextMenuWithoutPermission() {
-        final Menus contextMenus = MenuFactory.newSimpleItem(NAME).endMenu().build();
-        final PerspectiveActivity activity = mock(PerspectiveActivity.class);
-        final PlaceRequest placeRequest = mock(PlaceRequest.class);
-
-        when(activity.getIdentifier()).thenReturn(PERSPECTIVE_ID);
-        doAnswer(invocationOnMock -> {
-            invocationOnMock.getArgument(0, Consumer.class).accept(contextMenus);
-            return null;
-        }).when(activity).getMenus(any());
-        when(activity.isType(ActivityResourceType.PERSPECTIVE.name())).thenReturn(true);
-        when(authzManager.authorize(contextMenus.getItems().get(0),
-                                    identity)).thenReturn(false);
-        when(activityManager.getActivity(placeRequest)).thenReturn(activity);
-
-        presenter.onPerspectiveChange(new PerspectiveChange(placeRequest,
-                                                            null,
-                                                            contextMenus,
-                                                            PERSPECTIVE_ID));
-
-        verify(authzManager).authorize(contextMenus.getItems().get(0),
-                                       identity);
-        verify(view).clearContextMenu();
-        verify(presenter,
-               never()).addContextMenuItem(anyString(),
-                                           anyString(),
-                                           anyString(),
-                                           anyString(),
-                                           any(Command.class),
-                                           any(MenuPosition.class));
-    }
 
     @Test
     public void testSetupEnableDisableMenuItemCommand() {
         final String label = "command";
         final Command command = mock(Command.class);
         final Menus menus = MenuFactory.newSimpleItem(label).respondsWith(command).endMenu().build();
-
-        when(authzManager.authorize(menus.getItems().get(0),
-                                    identity)).thenReturn(true);
 
         presenter.addMenus(menus);
 
@@ -332,9 +197,6 @@ public class WorkbenchMegaMenuPresenterTest {
         final PlaceRequest place = mock(PlaceRequest.class);
         final Menus menus = MenuFactory.newSimpleItem(label).place(place).endMenu().build();
 
-        when(authzManager.authorize(menus.getItems().get(0),
-                                    identity)).thenReturn(true);
-
         presenter.addMenus(menus);
         verify(presenter).enableMenuItem(anyString(), eq(true));
 
@@ -350,9 +212,6 @@ public class WorkbenchMegaMenuPresenterTest {
         final String label = "perspectiveLabel";
         final String perspectiveId = "perspectiveId";
         final Menus menus = MenuFactory.newSimpleItem(label).perspective(perspectiveId).endMenu().build();
-
-        when(authzManager.authorize(menus.getItems().get(0),
-                                    identity)).thenReturn(true);
 
         presenter.addMenus(menus);
         verify(presenter).enableMenuItem(anyString(), eq(true));
@@ -378,8 +237,6 @@ public class WorkbenchMegaMenuPresenterTest {
             return null;
         }).when(activity).getMenus(any());
         when(activity.isType(ActivityResourceType.PERSPECTIVE.name())).thenReturn(true);
-        when(authzManager.authorize(contextMenus.getItems().get(0),
-                                    identity)).thenReturn(true);
         when(activityManager.getActivity(placeRequest)).thenReturn(activity);
 
         presenter.onPerspectiveChange(new PerspectiveChange(placeRequest,
@@ -402,13 +259,6 @@ public class WorkbenchMegaMenuPresenterTest {
         final Menus firstMenus = MenuFactory.newSimpleItem(label).perspective(perspectiveId).endMenu().build();
         final Menus secondMenus = MenuFactory.newSimpleItem(label).orderAll(1).perspective(perspectiveId).endMenu().build();
         final Menus thirdMenus = MenuFactory.newSimpleItem(label).orderAll(2).perspective(perspectiveId).endMenu().build();
-
-        when(authzManager.authorize(firstMenus.getItems().get(0),
-                                    identity)).thenReturn(true);
-        when(authzManager.authorize(secondMenus.getItems().get(0),
-                                    identity)).thenReturn(true);
-        when(authzManager.authorize(thirdMenus.getItems().get(0),
-                                    identity)).thenReturn(true);
 
         presenter.addMenus(thirdMenus);
         presenter.addMenus(firstMenus);
@@ -693,41 +543,6 @@ public class WorkbenchMegaMenuPresenterTest {
 
         verify(placeManager,
                never()).goTo(anyString());
-    }
-
-    @Test
-    public void setupHomeLinkWithNoPermissionToAccessDefaultPerspective() {
-        final PerspectiveActivity homePerspective = mock(PerspectiveActivity.class);
-        doReturn("identifier").when(homePerspective).getIdentifier();
-        doReturn(homePerspective).when(workbench).getHomePerspectiveActivity();
-        doReturn(false).when(presenter).hasAccessToPerspective(any());
-
-        presenter.setupHomeLink();
-
-        ArgumentCaptor<Command> commandCaptor = ArgumentCaptor.forClass(Command.class);
-        verify(view).setHomeLinkAction(commandCaptor.capture());
-        verify(view).setBrandImageAction(commandCaptor.capture());
-        commandCaptor.getValue().execute();
-
-        verify(placeManager,
-               never()).goTo(anyString());
-    }
-
-    @Test
-    public void setupHomeLinkWithPermissionToAccessDefaultPerspective() {
-        final PerspectiveActivity homePerspective = mock(PerspectiveActivity.class);
-        doReturn("identifier").when(homePerspective).getIdentifier();
-        doReturn(homePerspective).when(workbench).getHomePerspectiveActivity();
-        doReturn(true).when(presenter).hasAccessToPerspective(any());
-
-        presenter.setupHomeLink();
-
-        ArgumentCaptor<Command> commandCaptor = ArgumentCaptor.forClass(Command.class);
-        verify(view).setHomeLinkAction(commandCaptor.capture());
-        verify(view).setBrandImageAction(commandCaptor.capture());
-        commandCaptor.getValue().execute();
-
-        verify(placeManager).goTo("identifier");
     }
 
     class MegaMenuBrandMock implements MegaMenuBrand {

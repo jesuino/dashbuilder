@@ -16,7 +16,13 @@
 
 package org.dashbuilder.transfer.rest;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Paths;
 
 import javax.ws.rs.core.Response;
 
@@ -27,10 +33,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.uberfire.io.IOService;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DataTransferResourceTest {
@@ -45,8 +47,10 @@ public class DataTransferResourceTest {
     DataTransferResource dataTransferResource;
 
     @Test
-    public void testSuccessExport() throws IOException {
-        when(dataTransferServices.doExport(any())).thenReturn("file://.");
+    public void testSuccessExport() throws IOException, URISyntaxException {
+        var empty = getClass().getResource("/empty.zip").toURI();
+        
+        when(dataTransferServices.doExport(any())).thenReturn(Paths.get(empty).toString());
         Response response = dataTransferResource.export();
         assertEquals(Response.Status.OK.getStatusCode(),
                      response.getStatus());

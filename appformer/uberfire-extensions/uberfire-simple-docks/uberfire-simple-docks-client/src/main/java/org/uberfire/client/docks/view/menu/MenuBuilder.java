@@ -18,60 +18,35 @@ package org.uberfire.client.docks.view.menu;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.ui.Widget;
+import javax.enterprise.context.ApplicationScoped;
+
 import org.gwtbootstrap3.client.ui.Button;
 import org.gwtbootstrap3.client.ui.ButtonGroup;
 import org.gwtbootstrap3.client.ui.DropDownMenu;
 import org.gwtbootstrap3.client.ui.NavbarLink;
 import org.gwtbootstrap3.client.ui.constants.ButtonSize;
 import org.gwtbootstrap3.client.ui.constants.Toggle;
-import org.jboss.errai.security.shared.api.identity.User;
-import org.uberfire.security.authz.AuthorizationManager;
-import org.uberfire.workbench.model.menu.EnabledStateChangeListener;
 import org.uberfire.workbench.model.menu.MenuCustom;
 import org.uberfire.workbench.model.menu.MenuGroup;
 import org.uberfire.workbench.model.menu.MenuItem;
 import org.uberfire.workbench.model.menu.MenuItemCommand;
 
+import com.google.gwt.user.client.ui.Widget;
+
 @ApplicationScoped
 public class MenuBuilder {
 
-    @Inject
-    private AuthorizationManager authzManager;
-
-    @Inject
-    private User identity;
-
     public Widget makeItem(final MenuItem item,
                            boolean isRoot) {
-        if (!authzManager.authorize(item,
-                                    identity)) {
-            return null;
-        }
-
         if (item instanceof MenuItemCommand) {
             final MenuItemCommand cmdItem = (MenuItemCommand) item;
             if (isRoot) {
                 final Button button = new Button(cmdItem.getCaption());
                 button.setSize(ButtonSize.SMALL);
                 button.setEnabled(item.isEnabled());
-                button.addClickHandler(new ClickHandler() {
-                    @Override
-                    public void onClick(final ClickEvent event) {
-                        cmdItem.getCommand().execute();
-                    }
-                });
-                item.addEnabledStateChangeListener(new EnabledStateChangeListener() {
-                    @Override
-                    public void enabledStateChanged(final boolean enabled) {
-                        button.setEnabled(enabled);
-                    }
-                });
+                button.addClickHandler(e -> cmdItem.getCommand().execute());
+                item.addEnabledStateChangeListener(button::setEnabled);
                 return button;
             } else {
                 final NavbarLink navbarLink = new NavbarLink();
@@ -79,31 +54,23 @@ public class MenuBuilder {
                 if (!item.isEnabled()) {
                     navbarLink.addStyleName("disabled");
                 }
-                navbarLink.addClickHandler(new ClickHandler() {
-                    @Override
-                    public void onClick(final ClickEvent event) {
-                        cmdItem.getCommand().execute();
-                    }
-                });
-                item.addEnabledStateChangeListener(new EnabledStateChangeListener() {
-                    @Override
-                    public void enabledStateChanged(final boolean enabled) {
-                        if (enabled) {
-                            navbarLink.removeStyleName("disabled");
-                        } else {
-                            navbarLink.addStyleName("disabled");
-                        }
+                navbarLink.addClickHandler(e -> cmdItem.getCommand().execute());
+                item.addEnabledStateChangeListener((enabled) -> {
+                    if (enabled) {
+                        navbarLink.removeStyleName("disabled");
+                    } else {
+                        navbarLink.addStyleName("disabled");
                     }
                 });
                 return navbarLink;
             }
         } else if (item instanceof MenuGroup) {
-            final MenuGroup groups = (MenuGroup) item;
+            final var groups = (MenuGroup) item;
             if (isRoot) {
                 final List<Widget> widgetList = new ArrayList<Widget>();
                 for (final MenuItem _item : groups.getItems()) {
                     final Widget widget = makeItem(_item,
-                                                   false);
+                            false);
                     if (widget != null) {
                         widgetList.add(widget);
                     }
@@ -114,12 +81,11 @@ public class MenuBuilder {
                 }
 
                 return makeDropDownMenuButton(groups.getCaption(),
-                                              widgetList);
+                        widgetList);
             } else {
-                final List<Widget> widgetList = new ArrayList<Widget>();
-                for (final MenuItem _item : groups.getItems()) {
-                    final Widget result = makeItem(_item,
-                                                   false);
+                final var widgetList = new ArrayList<Widget>();
+                for (final var _item : groups.getItems()) {
+                    final var result = makeItem(_item, false);
                     if (result != null) {
                         widgetList.add(result);
                     }
@@ -130,10 +96,10 @@ public class MenuBuilder {
                 }
 
                 return makeDropDownMenuButton(groups.getCaption(),
-                                              widgetList);
+                        widgetList);
             }
         } else if (item instanceof MenuCustom) {
-            final Object result = ((MenuCustom) item).build();
+            final var result = ((MenuCustom) item).build();
             if (result instanceof Widget) {
                 return (Widget) result;
             }
@@ -144,12 +110,12 @@ public class MenuBuilder {
 
     private Widget makeDropDownMenuButton(final String caption,
                                           final List<Widget> widgetList) {
-        final ButtonGroup buttonGroup = new ButtonGroup();
-        final Button dropdownButton = new Button(caption);
+        final var buttonGroup = new ButtonGroup();
+        final var dropdownButton = new Button(caption);
         dropdownButton.setDataToggle(Toggle.DROPDOWN);
         dropdownButton.setSize(ButtonSize.SMALL);
         final DropDownMenu dropDownMenu = new DropDownMenu();
-        for (final Widget _item : widgetList) {
+        for (final var _item : widgetList) {
             dropDownMenu.add(_item);
         }
         buttonGroup.add(dropdownButton);

@@ -32,7 +32,6 @@
   <description>Dashbuilder Navigation Client</description>
 
   <dependencies>
-
     <dependency>
       <groupId>org.dashbuilder</groupId>
       <artifactId>dashbuilder-common-client</artifactId>
@@ -84,18 +83,6 @@
       <groupId>org.uberfire</groupId>
       <artifactId>uberfire-widgets-commons</artifactId>
       <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.uberfire</groupId>
-      <artifactId>uberfire-widgets-security-management</artifactId>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.uberfire</groupId>
-          <artifactId>uberfire-servlet-security</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <dependency>

@@ -47,11 +47,6 @@
       <artifactId>uberfire-js</artifactId>
     </dependency>
 
-    <dependency>
-      <groupId>org.uberfire</groupId>
-      <artifactId>uberfire-security-client</artifactId>
-    </dependency>
-
   </dependencies>
 
 </project>

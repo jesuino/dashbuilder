@@ -55,8 +55,7 @@ public class DataTransferScreen {
     public DataTransferScreen() {}
 
     @Inject
-    public DataTransferScreen(
-                              final View view,
+    public DataTransferScreen(final View view,
                               final DataTransferPopUp popUp,
                               final Caller<DataTransferServices> dataTransferServices,
                               final ExportWizard exportWizard,

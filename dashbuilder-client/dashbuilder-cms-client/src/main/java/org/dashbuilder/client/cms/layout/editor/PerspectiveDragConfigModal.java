@@ -23,7 +23,6 @@ import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Widget;
 import org.dashbuilder.client.cms.resources.i18n.ContentManagerConstants;
 import org.dashbuilder.client.navigation.plugin.PerspectivePluginManager;
-import org.uberfire.client.authz.PerspectiveTreeProvider;
 import org.uberfire.client.mvp.UberView;
 import org.uberfire.ext.plugin.model.Plugin;
 
@@ -47,18 +46,15 @@ public class PerspectiveDragConfigModal implements IsWidget {
 
     View view;
     PerspectivePluginManager perspectivePluginManager;
-    PerspectiveTreeProvider perspectiveTreeProvider;
     Plugin selectedItem = null;
     Command onOk = null;
     Command onCancel = null;
 
     @Inject
     public PerspectiveDragConfigModal(View view,
-                                      PerspectivePluginManager perspectivePluginManager,
-                                      PerspectiveTreeProvider perspectiveTreeProvider) {
+                                      PerspectivePluginManager perspectivePluginManager) {
         this.view = view;
         this.perspectivePluginManager = perspectivePluginManager;
-        this.perspectiveTreeProvider = perspectiveTreeProvider;
         this.view.init(this);
         this.view.setHelpText(ContentManagerConstants.INSTANCE.perspectiveDragComponentHelp());
     }
@@ -93,7 +89,7 @@ public class PerspectiveDragConfigModal implements IsWidget {
     private void addItems(String selectedItemId) {
         perspectivePluginManager.getPerspectivePlugins(plugins -> {
             for (Plugin plugin : plugins) {
-                String perspectiveName = perspectiveTreeProvider.getPerspectiveName(plugin.getName());
+                String perspectiveName = plugin.getName();
                 view.addItem(perspectiveName, () -> onItemSelected(plugin));
 
                 if (selectedItemId != null && plugin.getName().equals(selectedItemId)) {

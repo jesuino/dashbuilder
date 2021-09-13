@@ -23,9 +23,6 @@
 
 	<inherits name="org.uberfire.ext.plugin.RuntimePluginClient" />
 	
-	<!-- Navigation Dependency -->
-	<inherits name="org.uberfire.ext.security.management.UberfireSecurityManagementWidgets"/>
-
 	<!-- Dashbuilder Client Deps -->
 	<inherits name="org.dashbuilder.CommonClient" />
 	<inherits name="org.dashbuilder.CommonWidgets" />

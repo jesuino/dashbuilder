@@ -17,10 +17,6 @@ package org.uberfire.client.workbench.widgets.menu;
 
 import java.util.function.BiConsumer;
 
-import com.google.gwt.user.client.ui.IsWidget;
-import com.google.gwt.user.client.ui.Widget;
-import org.jboss.errai.security.shared.api.identity.User;
-import org.uberfire.client.menu.AuthFilterMenuVisitor;
 import org.uberfire.client.mvp.Activity;
 import org.uberfire.client.mvp.ActivityManager;
 import org.uberfire.client.mvp.PerspectiveActivity;
@@ -33,7 +29,6 @@ import org.uberfire.client.workbench.widgets.menu.base.WorkbenchBaseMenuPresente
 import org.uberfire.client.workbench.widgets.menu.base.WorkbenchBaseMenuView;
 import org.uberfire.mvp.Command;
 import org.uberfire.mvp.PlaceRequest;
-import org.uberfire.security.authz.AuthorizationManager;
 import org.uberfire.workbench.model.ActivityResourceType;
 import org.uberfire.workbench.model.menu.EnabledStateChangeListener;
 import org.uberfire.workbench.model.menu.MenuCustom;
@@ -46,6 +41,9 @@ import org.uberfire.workbench.model.menu.MenuPosition;
 import org.uberfire.workbench.model.menu.Menus;
 import org.uberfire.workbench.model.menu.impl.BaseMenuVisitor;
 
+import com.google.gwt.user.client.ui.IsWidget;
+import com.google.gwt.user.client.ui.Widget;
+
 /**
  * Presenter for WorkbenchMenuBar that mediates changes to the Workbench MenuBar
  * in response to changes to the selected WorkbenchPart. The menu structure is
@@ -55,8 +53,6 @@ import org.uberfire.workbench.model.menu.impl.BaseMenuVisitor;
  */
 public class WorkbenchMenuBarPresenter extends WorkbenchBaseMenuPresenter implements WorkbenchMenuBar {
 
-    protected AuthorizationManager authzManager;
-    protected User identity;
     private boolean useExpandedMode = true;
     private boolean expanded = true;
     private PerspectiveManager perspectiveManager;
@@ -64,17 +60,13 @@ public class WorkbenchMenuBarPresenter extends WorkbenchBaseMenuPresenter implem
     private ActivityManager activityManager;
     private View view;
 
-    WorkbenchMenuBarPresenter(final AuthorizationManager authzManager,
-                              final PerspectiveManager perspectiveManager,
+    WorkbenchMenuBarPresenter(final PerspectiveManager perspectiveManager,
                               final PlaceManager placeManager,
                               final ActivityManager activityManager,
-                              final User identity,
                               final View view) {
-        this.authzManager = authzManager;
         this.perspectiveManager = perspectiveManager;
         this.placeManager = placeManager;
         this.activityManager = activityManager;
-        this.identity = identity;
         this.view = view;
 
         setup();
@@ -82,12 +74,14 @@ public class WorkbenchMenuBarPresenter extends WorkbenchBaseMenuPresenter implem
 
     protected void setup() {
         view.addExpandHandler(new Command() {
+
             @Override
             public void execute() {
                 expanded = true;
             }
         });
         view.addCollapseHandler(new Command() {
+
             @Override
             public void execute() {
                 expanded = false;
@@ -106,93 +100,94 @@ public class WorkbenchMenuBarPresenter extends WorkbenchBaseMenuPresenter implem
 
     @Override
     protected void visitMenus(final Menus addedMenu) {
-        addedMenu.accept(new AuthFilterMenuVisitor(authzManager,
-                                                   identity,
-                                                   new BaseMenuVisitor() {
+        addedMenu.accept(new BaseMenuVisitor() {
 
-                                                       private String parentId = null;
+            private String parentId = null;
 
-                                                       @Override
-                                                       public boolean visitEnter(final MenuGroup menuGroup) {
-                                                           parentId = getMenuItemId(menuGroup);
-                                                           view.addGroupMenuItem(parentId,
-                                                                                 menuGroup.getCaption(),
-                                                                                 menuGroup.getPosition());
-                                                           return true;
-                                                       }
+            @Override
+            public boolean visitEnter(final MenuGroup menuGroup) {
+                parentId = getMenuItemId(menuGroup);
+                view.addGroupMenuItem(parentId,
+                        menuGroup.getCaption(),
+                        menuGroup.getPosition());
+                return true;
+            }
 
-                                                       @Override
-                                                       public void visitLeave(MenuGroup menuGroup) {
-                                                           parentId = null;
-                                                       }
+            @Override
+            public void visitLeave(MenuGroup menuGroup) {
+                parentId = null;
+            }
 
-                                                       @Override
-                                                       public void visit(final MenuItemPlain menuItemPlain) {
-                                                           view.addMenuItem(getMenuItemId(menuItemPlain),
-                                                                            menuItemPlain.getCaption(),
-                                                                            parentId,
-                                                                            null,
-                                                                            menuItemPlain.getPosition());
-                                                           setupEnableDisableMenuItem(menuItemPlain);
-                                                       }
+            @Override
+            public void visit(final MenuItemPlain menuItemPlain) {
+                view.addMenuItem(getMenuItemId(menuItemPlain),
+                        menuItemPlain.getCaption(),
+                        parentId,
+                        null,
+                        menuItemPlain.getPosition());
+                setupEnableDisableMenuItem(menuItemPlain);
+            }
 
-                                                       @Override
-                                                       public void visit(final MenuCustom<?> menuCustom) {
-                                                           final Object build = menuCustom.build();
-                                                           if (build instanceof IsWidget) {
-                                                               view.addCustomMenuItem(((IsWidget) build).asWidget(),
-                                                                                      menuCustom.getPosition());
-                                                           } else {
-                                                               view.addMenuItem(getMenuItemId(menuCustom),
-                                                                                menuCustom.getCaption(),
-                                                                                parentId,
-                                                                                null,
-                                                                                menuCustom.getPosition());
-                                                           }
-                                                           setupEnableDisableMenuItem(menuCustom);
-                                                       }
+            @Override
+            public void visit(final MenuCustom<?> menuCustom) {
+                final Object build = menuCustom.build();
+                if (build instanceof IsWidget) {
+                    view.addCustomMenuItem(((IsWidget) build).asWidget(),
+                            menuCustom.getPosition());
+                } else {
+                    view.addMenuItem(getMenuItemId(menuCustom),
+                            menuCustom.getCaption(),
+                            parentId,
+                            null,
+                            menuCustom.getPosition());
+                }
+                setupEnableDisableMenuItem(menuCustom);
+            }
 
-                                                       @Override
-                                                       public void visit(final MenuItemCommand menuItemCommand) {
-                                                           view.addMenuItem(getMenuItemId(menuItemCommand),
-                                                                            menuItemCommand.getCaption(),
-                                                                            parentId,
-                                                                            menuItemCommand.getCommand(),
-                                                                            menuItemCommand.getPosition());
-                                                           setupEnableDisableMenuItem(menuItemCommand);
-                                                       }
+            @Override
+            public void visit(final MenuItemCommand menuItemCommand) {
+                view.addMenuItem(getMenuItemId(menuItemCommand),
+                        menuItemCommand.getCaption(),
+                        parentId,
+                        menuItemCommand.getCommand(),
+                        menuItemCommand.getPosition());
+                setupEnableDisableMenuItem(menuItemCommand);
+            }
 
-                                                       @Override
-                                                       public void visit(final MenuItemPerspective menuItemPerspective) {
-                                                           final String id = menuItemPerspective.getPlaceRequest().getIdentifier();
-                                                           view.addMenuItem(id,
-                                                                            menuItemPerspective.getCaption(),
-                                                                            parentId,
-                                                                            new Command() {
-                                                                                @Override
-                                                                                public void execute() {
-                                                                                    placeManager.goTo(menuItemPerspective.getPlaceRequest());
-                                                                                }
-                                                                            },
-                                                                            menuItemPerspective.getPosition());
-                                                           setupEnableDisableMenuItem(menuItemPerspective);
-                                                           setupSetVisibleMenuItem(menuItemPerspective);
-                                                           final PlaceRequest placeRequest = menuItemPerspective.getPlaceRequest();
-                                                           if (perspectiveManager.getCurrentPerspective() != null && placeRequest.equals(perspectiveManager.getCurrentPerspective().getPlace())) {
-                                                               view.selectMenuItem(id);
-                                                           }
-                                                       }
+            @Override
+            public void visit(final MenuItemPerspective menuItemPerspective) {
+                final String id = menuItemPerspective.getPlaceRequest().getIdentifier();
+                view.addMenuItem(id,
+                        menuItemPerspective.getCaption(),
+                        parentId,
+                        new Command() {
 
-                                                       private void setupEnableDisableMenuItem(final MenuItem menuItem) {
-                                                           menuItem.addEnabledStateChangeListener(new EnabledStateChangeListener() {
-                                                               @Override
-                                                               public void enabledStateChanged(final boolean enabled) {
-                                                                   view.enableMenuItem(getMenuItemId(menuItem),
-                                                                                       enabled);
-                                                               }
-                                                           });
-                                                       }
-                                                   }));
+                            @Override
+                            public void execute() {
+                                placeManager.goTo(menuItemPerspective.getPlaceRequest());
+                            }
+                        },
+                        menuItemPerspective.getPosition());
+                setupEnableDisableMenuItem(menuItemPerspective);
+                setupSetVisibleMenuItem(menuItemPerspective);
+                final PlaceRequest placeRequest = menuItemPerspective.getPlaceRequest();
+                if (perspectiveManager.getCurrentPerspective() != null && placeRequest.equals(perspectiveManager
+                        .getCurrentPerspective().getPlace())) {
+                    view.selectMenuItem(id);
+                }
+            }
+
+            private void setupEnableDisableMenuItem(final MenuItem menuItem) {
+                menuItem.addEnabledStateChangeListener(new EnabledStateChangeListener() {
+
+                    @Override
+                    public void enabledStateChanged(final boolean enabled) {
+                        view.enableMenuItem(getMenuItemId(menuItem),
+                                enabled);
+                    }
+                });
+            }
+        });
 
         synchronizeUIWithMenus(addedMenu.getItems());
     }
@@ -206,87 +201,87 @@ public class WorkbenchMenuBarPresenter extends WorkbenchBaseMenuPresenter implem
         perspective.getMenus(menus -> {
             view.clearContextMenu();
             if (menus != null) {
-                menus.accept(new AuthFilterMenuVisitor(authzManager,
-                                                       identity,
-                                                       new BaseMenuVisitor() {
+                menus.accept(new BaseMenuVisitor() {
 
-                                                           private String parentId = null;
+                    private String parentId = null;
 
-                                                           @Override
-                                                           public boolean visitEnter(final MenuGroup menuGroup) {
-                                                               parentId = getMenuItemId(menuGroup);
-                                                               view.addContextGroupMenuItem(perspectiveId,
-                                                                                            parentId,
-                                                                                            menuGroup.getCaption(),
-                                                                                            menuGroup.getPosition());
-                                                               return true;
-                                                           }
+                    @Override
+                    public boolean visitEnter(final MenuGroup menuGroup) {
+                        parentId = getMenuItemId(menuGroup);
+                        view.addContextGroupMenuItem(perspectiveId,
+                                parentId,
+                                menuGroup.getCaption(),
+                                menuGroup.getPosition());
+                        return true;
+                    }
 
-                                                           @Override
-                                                           public void visitLeave(MenuGroup menuGroup) {
-                                                               parentId = null;
-                                                           }
+                    @Override
+                    public void visitLeave(MenuGroup menuGroup) {
+                        parentId = null;
+                    }
 
-                                                           @Override
-                                                           public void visit(final MenuItemPlain menuItemPlain) {
-                                                               view.addContextMenuItem(perspectiveId,
-                                                                                       getMenuItemId(menuItemPlain),
-                                                                                       menuItemPlain.getCaption(),
-                                                                                       parentId,
-                                                                                       null,
-                                                                                       menuItemPlain.getPosition());
-                                                               setupEnableDisableContextMenuItem(menuItemPlain);
-                                                           }
+                    @Override
+                    public void visit(final MenuItemPlain menuItemPlain) {
+                        view.addContextMenuItem(perspectiveId,
+                                getMenuItemId(menuItemPlain),
+                                menuItemPlain.getCaption(),
+                                parentId,
+                                null,
+                                menuItemPlain.getPosition());
+                        setupEnableDisableContextMenuItem(menuItemPlain);
+                    }
 
-                                                           @Override
-                                                           public void visit(final MenuCustom<?> menuCustom) {
-                                                               view.addContextMenuItem(perspectiveId,
-                                                                                       getMenuItemId(menuCustom),
-                                                                                       menuCustom.getCaption(),
-                                                                                       parentId,
-                                                                                       null,
-                                                                                       menuCustom.getPosition());
-                                                               setupEnableDisableContextMenuItem(menuCustom);
-                                                           }
+                    @Override
+                    public void visit(final MenuCustom<?> menuCustom) {
+                        view.addContextMenuItem(perspectiveId,
+                                getMenuItemId(menuCustom),
+                                menuCustom.getCaption(),
+                                parentId,
+                                null,
+                                menuCustom.getPosition());
+                        setupEnableDisableContextMenuItem(menuCustom);
+                    }
 
-                                                           @Override
-                                                           public void visit(final MenuItemCommand menuItemCommand) {
-                                                               view.addContextMenuItem(perspectiveId,
-                                                                                       getMenuItemId(menuItemCommand),
-                                                                                       menuItemCommand.getCaption(),
-                                                                                       parentId,
-                                                                                       menuItemCommand.getCommand(),
-                                                                                       menuItemCommand.getPosition());
-                                                               setupEnableDisableContextMenuItem(menuItemCommand);
-                                                           }
+                    @Override
+                    public void visit(final MenuItemCommand menuItemCommand) {
+                        view.addContextMenuItem(perspectiveId,
+                                getMenuItemId(menuItemCommand),
+                                menuItemCommand.getCaption(),
+                                parentId,
+                                menuItemCommand.getCommand(),
+                                menuItemCommand.getPosition());
+                        setupEnableDisableContextMenuItem(menuItemCommand);
+                    }
 
-                                                           @Override
-                                                           public void visit(final MenuItemPerspective menuItemPerspective) {
-                                                               view.addContextMenuItem(perspectiveId,
-                                                                                       menuItemPerspective.getPlaceRequest().getIdentifier(),
-                                                                                       menuItemPerspective.getCaption(),
-                                                                                       parentId,
-                                                                                       new Command() {
-                                                                                           @Override
-                                                                                           public void execute() {
-                                                                                               placeManager.goTo(menuItemPerspective.getPlaceRequest());
-                                                                                           }
-                                                                                       },
-                                                                                       menuItemPerspective.getPosition());
-                                                               setupEnableDisableContextMenuItem(menuItemPerspective);
-                                                               setupSetVisibleContextMenuItem(menuItemPerspective);
-                                                           }
+                    @Override
+                    public void visit(final MenuItemPerspective menuItemPerspective) {
+                        view.addContextMenuItem(perspectiveId,
+                                menuItemPerspective.getPlaceRequest().getIdentifier(),
+                                menuItemPerspective.getCaption(),
+                                parentId,
+                                new Command() {
 
-                                                           private void setupEnableDisableContextMenuItem(final MenuItem menuItem) {
-                                                               menuItem.addEnabledStateChangeListener(new EnabledStateChangeListener() {
-                                                                   @Override
-                                                                   public void enabledStateChanged(final boolean enabled) {
-                                                                       view.enableContextMenuItem(getMenuItemId(menuItem),
-                                                                                                  enabled);
-                                                                   }
-                                                               });
-                                                           }
-                                                       }));
+                                    @Override
+                                    public void execute() {
+                                        placeManager.goTo(menuItemPerspective.getPlaceRequest());
+                                    }
+                                },
+                                menuItemPerspective.getPosition());
+                        setupEnableDisableContextMenuItem(menuItemPerspective);
+                        setupSetVisibleContextMenuItem(menuItemPerspective);
+                    }
+
+                    private void setupEnableDisableContextMenuItem(final MenuItem menuItem) {
+                        menuItem.addEnabledStateChangeListener(new EnabledStateChangeListener() {
+
+                            @Override
+                            public void enabledStateChanged(final boolean enabled) {
+                                view.enableContextMenuItem(getMenuItemId(menuItem),
+                                        enabled);
+                            }
+                        });
+                    }
+                });
 
                 synchronizeUIWithMenus(menus.getItems());
             }
@@ -365,7 +360,7 @@ public class WorkbenchMenuBarPresenter extends WorkbenchBaseMenuPresenter implem
     }
 
     public interface View extends WorkbenchBaseMenuView,
-                                  IsWidget {
+                          IsWidget {
 
         void clear();
 

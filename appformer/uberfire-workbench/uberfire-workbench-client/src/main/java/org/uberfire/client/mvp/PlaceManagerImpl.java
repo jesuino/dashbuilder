@@ -298,14 +298,7 @@ public class PlaceManagerImpl implements PlaceManager {
                 if (workbenchActivity.getOwningPlace() != null && getStatus(workbenchActivity.getOwningPlace()) == PlaceStatus.CLOSE) {
                     goTo(workbenchActivity.getOwningPlace(),
                          null,
-                         new Command() {
-                             @Override
-                             public void execute() {
-                                 goTo(place,
-                                      panel,
-                                      doWhenFinished);
-                             }
-                         });
+                         () -> goTo(place, panel, doWhenFinished));
                     return;
                 }
                 launchWorkbenchActivityAtPosition(resolved.getPlaceRequest(),

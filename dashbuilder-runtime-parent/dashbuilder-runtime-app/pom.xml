@@ -72,10 +72,6 @@
         </exclusion>
         <exclusion>
           <groupId>org.jboss.errai</groupId>
-          <artifactId>errai-security-server</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.jboss.errai</groupId>
           <artifactId>errai-marshalling</artifactId>
         </exclusion>
         <exclusion>
@@ -119,10 +115,6 @@
         </exclusion>
         <exclusion>
           <groupId>org.jboss.errai</groupId>
-          <artifactId>errai-security-server</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.jboss.errai</groupId>
           <artifactId>errai-config</artifactId>
         </exclusion>
       </exclusions>
@@ -158,10 +150,6 @@
         <exclusion>
           <groupId>org.jboss.errai</groupId>
           <artifactId>errai-common</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.jboss.errai</groupId>
-          <artifactId>errai-security-server</artifactId>
         </exclusion>
       </exclusions>
     </dependency>

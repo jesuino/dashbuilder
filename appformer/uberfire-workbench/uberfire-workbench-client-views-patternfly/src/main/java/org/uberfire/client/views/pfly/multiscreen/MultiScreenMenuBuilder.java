@@ -21,33 +21,27 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 
-import elemental2.dom.HTMLDivElement;
-import elemental2.dom.HTMLDocument;
-import elemental2.dom.HTMLElement;
-import elemental2.dom.HTMLLIElement;
 import org.jboss.errai.common.client.api.elemental2.IsElement;
 import org.jboss.errai.ioc.client.api.ManagedInstance;
-import org.jboss.errai.security.shared.api.identity.User;
 import org.uberfire.client.views.pfly.widgets.Button;
 import org.uberfire.client.views.pfly.widgets.KebabMenu;
 import org.uberfire.client.views.pfly.widgets.KebabMenuItem;
-import org.uberfire.security.authz.AuthorizationManager;
 import org.uberfire.workbench.model.menu.MenuCustom;
 import org.uberfire.workbench.model.menu.MenuGroup;
 import org.uberfire.workbench.model.menu.MenuItem;
 import org.uberfire.workbench.model.menu.MenuItemCommand;
 
+import elemental2.dom.HTMLDivElement;
+import elemental2.dom.HTMLDocument;
+import elemental2.dom.HTMLElement;
+import elemental2.dom.HTMLLIElement;
+
 @Dependent
 public class MultiScreenMenuBuilder implements Function<MenuItem, Optional<HTMLElement>> {
-
-    @Inject
-    private AuthorizationManager authManager;
-
-    @Inject
-    private User identity;
 
     @Inject
     private ManagedInstance<KebabMenu> kebabMenus;
@@ -69,11 +63,6 @@ public class MultiScreenMenuBuilder implements Function<MenuItem, Optional<HTMLE
 
     protected HTMLElement makeItem(final MenuItem item,
                                    boolean isRoot) {
-        if (authManager.authorize(item,
-                                  identity) == false) {
-            return null;
-        }
-
         if (item instanceof MenuItemCommand) {
             final MenuItemCommand cmdItem = (MenuItemCommand) item;
             return isRoot ? new RootMenuItemCommandMapper().apply(cmdItem) : new MenuItemCommandMapper().apply(cmdItem);

@@ -17,21 +17,21 @@ package org.dashbuilder.client.navigation.widget.editor;
 
 import java.util.List;
 import java.util.Set;
+
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 
-import com.google.gwt.user.client.ui.IsWidget;
 import org.dashbuilder.client.navigation.plugin.PerspectivePluginManager;
 import org.dashbuilder.navigation.NavGroup;
 import org.dashbuilder.navigation.NavItem;
-import org.dashbuilder.navigation.NavTree;
 import org.jboss.errai.common.client.api.IsElement;
 import org.jboss.errai.common.client.dom.HTMLElement;
-import org.uberfire.client.authz.PerspectiveTreeProvider;
 import org.uberfire.client.mvp.UberElement;
 import org.uberfire.ext.widgets.common.client.dropdown.PerspectiveDropDown;
 import org.uberfire.ext.widgets.common.client.dropdown.PerspectiveNameProvider;
 import org.uberfire.mvp.Command;
+
+import com.google.gwt.user.client.ui.IsWidget;
 
 @Dependent
 public class TargetPerspectiveEditor implements IsElement, PerspectiveNameProvider {
@@ -53,19 +53,16 @@ public class TargetPerspectiveEditor implements IsElement, PerspectiveNameProvid
     String navGroupId;
     PerspectiveDropDown perspectiveDropDown;
     PerspectivePluginManager perspectivePluginManager;
-    PerspectiveTreeProvider perspectiveTreeProvider;
     List<NavItem> navItemList;
     Command onUpdateCommand;
 
     @Inject
     public TargetPerspectiveEditor(View view,
                                    PerspectiveDropDown perspectiveDropDown,
-                                   PerspectivePluginManager perspectivePluginManager,
-                                   PerspectiveTreeProvider perspectiveTreeProvider) {
+                                   PerspectivePluginManager perspectivePluginManager) {
         this.view = view;
         this.perspectiveDropDown = perspectiveDropDown;
         this.perspectivePluginManager = perspectivePluginManager;
-        this.perspectiveTreeProvider = perspectiveTreeProvider;
         this.perspectiveDropDown.setPerspectiveNameProvider(this);
         this.perspectiveDropDown.setMaxItems(50);
         this.perspectiveDropDown.setWidth(150);
@@ -100,10 +97,7 @@ public class TargetPerspectiveEditor implements IsElement, PerspectiveNameProvid
 
     @Override
     public String getPerspectiveName(String perspectiveId) {
-        if (perspectivePluginManager.isRuntimePerspective(perspectiveId)) {
-            return perspectiveId;
-        }
-        return perspectiveTreeProvider.getPerspectiveName(perspectiveId);
+        return perspectiveId;
     }
 
     public void setNavGroupEnabled(boolean enabled) {

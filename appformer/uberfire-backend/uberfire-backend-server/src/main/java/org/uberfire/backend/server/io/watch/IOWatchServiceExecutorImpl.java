@@ -28,7 +28,6 @@ import javax.ejb.TransactionAttribute;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 
-import org.jboss.errai.security.shared.api.identity.UserImpl;
 import org.uberfire.backend.server.util.Filter;
 import org.uberfire.backend.vfs.Path;
 import org.uberfire.commons.data.Pair;
@@ -267,7 +266,6 @@ public class IOWatchServiceExecutorImpl implements IOWatchServiceExecutor {
             user = context.getUser();
         }
 
-        return new SessionInfoImpl(sessionId,
-                                   new UserImpl(user));
+        return new SessionInfoImpl(sessionId);
     }
 }

@@ -15,6 +15,17 @@
  */
 package org.dashbuilder.client.cms.widget;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.verify;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+
 import org.dashbuilder.client.cms.resources.i18n.ContentManagerI18n;
 import org.dashbuilder.client.navigation.plugin.PerspectivePluginManager;
 import org.junit.Before;
@@ -24,19 +35,9 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.uberfire.client.mvp.PlaceManager;
-import org.uberfire.ext.plugin.client.security.PluginController;
 import org.uberfire.ext.plugin.model.Plugin;
 import org.uberfire.ext.plugin.model.PluginType;
 import org.uberfire.mvp.ParameterizedCommand;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PerspectivesExplorerTest {
@@ -49,9 +50,6 @@ public class PerspectivesExplorerTest {
 
     @Mock
     PlaceManager placeManagerM;
-
-    @Mock
-    PluginController pluginControllerM;
 
     @Mock
     ContentManagerI18n i18nM;
@@ -72,7 +70,7 @@ public class PerspectivesExplorerTest {
             return null;
         }).when(perspectivePluginManagerM).getPerspectivePlugins(any());
 
-        perspectivesExplorer = new PerspectivesExplorer(viewM, perspectivePluginManagerM, pluginControllerM, placeManagerM, i18nM);
+        perspectivesExplorer = new PerspectivesExplorer(viewM, perspectivePluginManagerM, placeManagerM, i18nM);
     }
 
     @Test
@@ -86,8 +84,6 @@ public class PerspectivesExplorerTest {
 
     @Test
     public void testPerspectivesAvailable() {
-        when(pluginControllerM.canRead(any())).thenReturn(true);
-
         perspectivesExplorer.show();
 
         InOrder inOrder = inOrder(viewM);
@@ -97,17 +93,4 @@ public class PerspectivesExplorerTest {
         inOrder.verify(viewM).addPerspective(eq("cEE"), any());
     }
 
-    @Test
-    public void testPerspectiveReadAccessDenied() {
-        when(pluginControllerM.canRead(a)).thenReturn(true);
-        when(pluginControllerM.canRead(b)).thenReturn(true);
-
-        perspectivesExplorer.show();
-
-        InOrder inOrder = inOrder(viewM);
-        inOrder.verify(viewM).clear();
-        inOrder.verify(viewM).addPerspective(eq("a"), any());
-        inOrder.verify(viewM).addPerspective(eq("B"), any());
-        inOrder.verify(viewM, never()).addPerspective(eq("cEE"), any());
-    }
 }

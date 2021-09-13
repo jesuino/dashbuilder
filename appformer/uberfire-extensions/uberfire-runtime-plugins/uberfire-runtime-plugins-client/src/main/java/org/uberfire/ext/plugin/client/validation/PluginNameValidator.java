@@ -17,19 +17,16 @@
 package org.uberfire.ext.plugin.client.validation;
 
 import java.util.Collection;
-import java.util.Set;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.jboss.errai.common.client.api.Caller;
-import org.jboss.errai.common.client.api.RemoteCallback;
 import org.uberfire.ext.editor.commons.client.validation.DefaultFileNameValidator;
 import org.uberfire.ext.editor.commons.client.validation.ValidationErrorReason;
 import org.uberfire.ext.editor.commons.client.validation.Validator;
 import org.uberfire.ext.editor.commons.client.validation.ValidatorCallback;
 import org.uberfire.ext.editor.commons.client.validation.ValidatorWithReasonCallback;
-import org.uberfire.ext.plugin.client.info.PluginsInfo;
-import org.uberfire.ext.plugin.model.Activity;
 import org.uberfire.ext.plugin.model.Plugin;
 import org.uberfire.ext.plugin.service.PluginServices;
 
@@ -38,8 +35,6 @@ public class PluginNameValidator implements Validator {
 
     @Inject
     Caller<PluginServices> pluginServices;
-    @Inject
-    private PluginsInfo pluginsInfo;
     @Inject
     private DefaultFileNameValidator defaultFileNameValidator;
 
@@ -77,30 +72,24 @@ public class PluginNameValidator implements Validator {
 
     protected void validateName(final String name,
                                 final ValidatorWithReasonCallback callback) {
-        final String nameWithoutExtension = (name.lastIndexOf(".") >= 0
+        final var nameWithoutExtension = (name.lastIndexOf(".") >= 0
                 ? name.substring(0,
                                  name.lastIndexOf(".")) : name);
-        final RuleValidator nameValidator = getNameValidator();
+        final var nameValidator = getNameValidator();
 
         if (!nameValidator.isValid(nameWithoutExtension)) {
             callback.onFailure(nameValidator.getValidationError());
             return;
         }
 
-        pluginServices.call(new RemoteCallback<Collection<Plugin>>() {
-            @Override
-            public void callback(final Collection<Plugin> plugins) {
-                Set<Activity> activities = pluginsInfo.getAllPlugins(plugins);
-
-                for (Activity activity : activities) {
-                    if (activity.getName().equalsIgnoreCase(nameWithoutExtension)) {
+        pluginServices.call((final Collection<Plugin> plugins) -> {
+                for (var plugin : plugins) {
+                    if (plugin.getName().equalsIgnoreCase(nameWithoutExtension)) {
                         callback.onFailure(ValidationErrorReason.DUPLICATED_NAME.name());
                         return;
                     }
                 }
-
                 callback.onSuccess();
-            }
         }).listPlugins();
     }
 

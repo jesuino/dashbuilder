@@ -16,20 +16,17 @@
 package org.dashbuilder.dataset.service;
 
 import java.util.ArrayList;
-import java.util.List;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import org.dashbuilder.dataset.ColumnType;
-import org.dashbuilder.dataset.DataSetManagerCDI;
-import org.dashbuilder.dataset.DataSetMetadata;
 import org.dashbuilder.dataset.DataSetDefRegistryCDI;
+import org.dashbuilder.dataset.DataSetManagerCDI;
 import org.dashbuilder.dataset.backend.EditDataSetDef;
 import org.dashbuilder.dataset.def.DataColumnDef;
 import org.dashbuilder.dataset.def.DataSetDef;
 import org.dashbuilder.exception.ExceptionManager;
 import org.jboss.errai.bus.server.annotations.Service;
-import org.jboss.errai.security.shared.api.identity.User;
 import org.uberfire.backend.vfs.Path;
 
 @ApplicationScoped
@@ -37,20 +34,16 @@ import org.uberfire.backend.vfs.Path;
 public class DataSetDefVfsServicesImpl implements DataSetDefVfsServices {
 
     private static final String SYSTEM = "system";
-    protected User identity;
     protected DataSetDefRegistryCDI dataSetDefRegistry;
     protected DataSetManagerCDI dataSetManager;
     protected ExceptionManager exceptionManager;
 
-    public DataSetDefVfsServicesImpl() {
-    }
+    public DataSetDefVfsServicesImpl() {}
 
     @Inject
-    public DataSetDefVfsServicesImpl(User identity,
-                                     DataSetDefRegistryCDI dataSetDefRegistry,
+    public DataSetDefVfsServicesImpl(DataSetDefRegistryCDI dataSetDefRegistry,
                                      DataSetManagerCDI dataSetManager,
                                      ExceptionManager exceptionManager) {
-        this.identity = identity;
         this.dataSetDefRegistry = dataSetDefRegistry;
         this.dataSetManager = dataSetManager;
         this.exceptionManager = exceptionManager;
@@ -69,32 +62,32 @@ public class DataSetDefVfsServicesImpl implements DataSetDefVfsServices {
     @Override
     public EditDataSetDef load(Path path) {
         try {
-            DataSetDef def = dataSetDefRegistry.loadDataSetDef(path);
+            var def = dataSetDefRegistry.loadDataSetDef(path);
             if (def == null) {
                 return null;
             }
 
             // Clone the definition
-            DataSetDef cloned = def.clone();
+            var cloned = def.clone();
 
             // Enable all columns and set columns to null, force to obtain metadata with all original columns
             // and all original column types.
-            boolean clonedAllColumns = cloned.isAllColumnsEnabled();
-            List<DataColumnDef> clonedColumns = cloned.getColumns();
+            var clonedAllColumns = cloned.isAllColumnsEnabled();
+            var clonedColumns = cloned.getColumns();
             cloned.setAllColumnsEnabled(true);
             cloned.setColumns(null);
 
             // Obtain all original columns and all original column types.
-            DataSetMetadata _cd = dataSetManager.resolveProvider(cloned)
+            var _cd = dataSetManager.resolveProvider(cloned)
                     .getDataSetMetadata(cloned);
 
             // Return the list of original columns and its types.
-            List<DataColumnDef> columns = new ArrayList<DataColumnDef>();
+            var columns = new ArrayList<DataColumnDef>();
             if (_cd.getNumberOfColumns() > 0) {
                 for (int x = 0; x < _cd.getNumberOfColumns(); x++) {
-                    String cId = _cd.getColumnId(x);
-                    ColumnType cType = _cd.getColumnType(x);
-                    DataColumnDef cdef = new DataColumnDef(cId, cType);
+                    var cId = _cd.getColumnId(x);
+                    var cType = _cd.getColumnType(x);
+                    var cdef = new DataColumnDef(cId, cType);
                     columns.add(cdef);
                 }
             }
@@ -111,9 +104,7 @@ public class DataSetDefVfsServicesImpl implements DataSetDefVfsServices {
 
     @Override
     public Path save(DataSetDef definition, String commitMessage) {
-        dataSetDefRegistry.registerDataSetDef(definition,
-                identity != null ? identity.getIdentifier() : SYSTEM,
-                commitMessage);
+        dataSetDefRegistry.registerDataSetDef(definition, SYSTEM, commitMessage);
         return dataSetDefRegistry.resolveVfsPath(definition);
     }
 
@@ -124,27 +115,23 @@ public class DataSetDefVfsServicesImpl implements DataSetDefVfsServices {
             throw exceptionManager.handleException(
                     new Exception("Data set definition not found: " + path.getFileName()));
         }
-        DataSetDef clone = dataSetDefRegistry.copyDataSetDef(def, newName,
-                identity != null ? identity.getIdentifier() : SYSTEM,
-                commitMessage);
+        var clone = dataSetDefRegistry.copyDataSetDef(def, newName, SYSTEM, commitMessage);
         return dataSetDefRegistry.resolveVfsPath(clone);
     }
 
     @Override
-    public Path copy( final Path path,
-                      final String newName,
-                      final Path targetDirectory,
-                      final String comment ) {
+    public Path copy(final Path path,
+                     final String newName,
+                     final Path targetDirectory,
+                     final String comment) {
         if (targetDirectory == null) {
             return copy(path, newName, comment);
         }
-        throw new UnsupportedOperationException( "A data set definition cannot be copied to another directory." );
+        throw new UnsupportedOperationException("A data set definition cannot be copied to another directory.");
     }
 
     @Override
     public void delete(Path path, String commitMessage) {
-        dataSetDefRegistry.removeDataSetDef(path,
-                identity != null ? identity.getIdentifier() : SYSTEM,
-                commitMessage);
+        dataSetDefRegistry.removeDataSetDef(path, SYSTEM, commitMessage);
     }
 }

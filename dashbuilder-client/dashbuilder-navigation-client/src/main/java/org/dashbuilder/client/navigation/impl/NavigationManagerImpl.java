@@ -15,7 +15,6 @@
  */
 package org.dashbuilder.client.navigation.impl;
 
-import java.util.List;
 import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -24,12 +23,11 @@ import javax.inject.Inject;
 
 import org.dashbuilder.client.navigation.NavigationManager;
 import org.dashbuilder.client.navigation.event.NavItemGotoEvent;
-import org.dashbuilder.navigation.event.NavTreeChangedEvent;
 import org.dashbuilder.client.navigation.event.NavTreeLoadedEvent;
 import org.dashbuilder.navigation.NavItem;
 import org.dashbuilder.navigation.NavTree;
+import org.dashbuilder.navigation.event.NavTreeChangedEvent;
 import org.dashbuilder.navigation.service.NavigationServices;
-import org.dashbuilder.navigation.workbench.NavSecurityController;
 import org.jboss.errai.common.client.api.Caller;
 import org.uberfire.mvp.Command;
 
@@ -40,18 +38,15 @@ public class NavigationManagerImpl implements NavigationManager {
     private Event<NavItemGotoEvent> navItemGotoEvent;
     private Event<NavTreeLoadedEvent> navTreeLoadedEvent;
     private Event<NavTreeChangedEvent> navTreeChangedEvent;
-    private NavSecurityController navController;
     private NavTree navTree;
     private NavTree defaultNavTree;
 
     @Inject
     public NavigationManagerImpl(Caller<NavigationServices> navServices,
-                                 NavSecurityController navController,
                                  Event<NavTreeLoadedEvent> navTreeLoadedEvent,
                                  Event<NavTreeChangedEvent> navTreeChangedEvent,
                                  Event<NavItemGotoEvent> navItemGotoEvent) {
         this.navServices = navServices;
-        this.navController = navController;
         this.navTreeLoadedEvent = navTreeLoadedEvent;
         this.navTreeChangedEvent = navTreeChangedEvent;
         this.navItemGotoEvent = navItemGotoEvent;
@@ -99,21 +94,10 @@ public class NavigationManagerImpl implements NavigationManager {
         }).saveNavTree(newTree);
     }
 
-    @Override
-    public NavTree secure(NavTree navTree, boolean removeEmptyGroups) {
-        return navController.secure(navTree, removeEmptyGroups);
-    }
-
-    @Override
-    public void secure(List<NavItem> itemList, boolean removeEmptyGroups) {
-        navController.secure(itemList, removeEmptyGroups);
-    }
 
     @Override
     public void navItemClicked(NavItem navItem) {
-        if (navController.canRead(navItem)) {
-            navItemGotoEvent.fire(new NavItemGotoEvent(navItem));
-        }
+        navItemGotoEvent.fire(new NavItemGotoEvent(navItem));
     }
 
     @Override

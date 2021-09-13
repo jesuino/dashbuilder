@@ -19,14 +19,14 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 
-import com.google.gwt.user.client.ui.Widget;
 import org.dashbuilder.client.cms.resources.i18n.ContentManagerI18n;
 import org.dashbuilder.client.cms.screen.explorer.PerspectivesExplorerScreen;
 import org.uberfire.client.annotations.WorkbenchPartTitle;
 import org.uberfire.client.annotations.WorkbenchPartView;
 import org.uberfire.client.annotations.WorkbenchScreen;
 import org.uberfire.client.mvp.UberView;
-import org.uberfire.ext.plugin.client.security.PluginController;
+
+import com.google.gwt.user.client.ui.Widget;
 
 @Dependent
 @WorkbenchScreen(identifier = ContentManagerHomeScreen.SCREEN_ID)
@@ -41,21 +41,19 @@ public class ContentManagerHomeScreen {
 
     View view;
     PerspectivesExplorerScreen perspectivesExplorerScreen;
-    PluginController pluginController;
     ContentManagerI18n i18n;
 
     @Inject
-    public ContentManagerHomeScreen(View view, PerspectivesExplorerScreen perspectivesExplorerScreen, PluginController pluginController, ContentManagerI18n i18n) {
+    public ContentManagerHomeScreen(View view, PerspectivesExplorerScreen perspectivesExplorerScreen,
+                                    ContentManagerI18n i18n) {
         this.view = view;
         this.perspectivesExplorerScreen = perspectivesExplorerScreen;
-        this.pluginController = pluginController;
         this.i18n = i18n;
     }
 
     @PostConstruct
     private void init() {
         view.init(this);
-        view.setPerspectiveCreationVisible(pluginController.canCreatePerspectives());
     }
 
     @WorkbenchPartTitle
@@ -69,8 +67,6 @@ public class ContentManagerHomeScreen {
     }
 
     public void createNewPerspective() {
-        if (pluginController.canCreatePerspectives()) {
-            perspectivesExplorerScreen.createNewPerspective();
-        }
+        perspectivesExplorerScreen.createNewPerspective();
     }
 }

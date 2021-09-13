@@ -16,17 +16,11 @@
 
 package org.uberfire.backend.server.io;
 
-import java.util.concurrent.ExecutorService;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.Produces;
-import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.jboss.errai.security.shared.service.AuthenticationService;
-import org.uberfire.backend.server.security.IOSecurityAuth;
-import org.uberfire.commons.concurrent.Unmanaged;
 import org.uberfire.commons.lifecycle.PriorityDisposableRegistry;
 import org.uberfire.commons.services.cdi.Startup;
 import org.uberfire.commons.services.cdi.StartupType;
@@ -40,9 +34,6 @@ public class ConfigIOServiceProducer {
 
     private static ConfigIOServiceProducer instance;
 
-    private ExecutorService executorService;
-
-    private Instance<AuthenticationService> applicationProvidedConfigIOAuthService;
 
     private IOService configIOService;
     private FileSystem configFileSystem;
@@ -54,15 +45,7 @@ public class ConfigIOServiceProducer {
         return instance;
     }
 
-    public ConfigIOServiceProducer() {
-    }
-
-    @Inject
-    public ConfigIOServiceProducer(@Unmanaged ExecutorService executorService,
-                                   @IOSecurityAuth Instance<AuthenticationService> applicationProvidedConfigIOAuthService) {
-        this.executorService = executorService;
-        this.applicationProvidedConfigIOAuthService = applicationProvidedConfigIOAuthService;
-    }
+    public ConfigIOServiceProducer() {}
 
     @PostConstruct
     public void setup() {

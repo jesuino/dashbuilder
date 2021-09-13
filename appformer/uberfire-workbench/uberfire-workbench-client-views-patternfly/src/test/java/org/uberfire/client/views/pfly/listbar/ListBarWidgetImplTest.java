@@ -16,24 +16,29 @@
 
 package org.uberfire.client.views.pfly.listbar;
 
-import java.util.Collection;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.google.gwt.dom.client.Style;
-import com.google.gwt.user.client.Element;
-import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.IsWidget;
-import com.google.gwt.user.client.ui.Widget;
-import com.google.gwtmockito.GwtMockitoTestRunner;
 import org.gwtbootstrap3.client.ui.AnchorListItem;
 import org.gwtbootstrap3.client.ui.Button;
 import org.gwtbootstrap3.client.ui.ButtonGroup;
 import org.gwtbootstrap3.client.ui.DropDownMenu;
 import org.gwtbootstrap3.client.ui.PanelBody;
 import org.gwtbootstrap3.client.ui.PanelHeader;
-import org.jboss.errai.security.shared.api.identity.User;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,27 +51,20 @@ import org.uberfire.client.workbench.PanelManager;
 import org.uberfire.client.workbench.part.WorkbenchPartPresenter;
 import org.uberfire.commons.data.Pair;
 import org.uberfire.mvp.PlaceRequest;
-import org.uberfire.security.Resource;
-import org.uberfire.security.ResourceAction;
-import org.uberfire.security.authz.AuthorizationManager;
-import org.uberfire.security.authz.Permission;
 import org.uberfire.workbench.model.PartDefinition;
 import org.uberfire.workbench.model.impl.PartDefinitionImpl;
 import org.uberfire.workbench.model.menu.MenuFactory;
 import org.uberfire.workbench.model.menu.Menus;
 
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import com.google.gwt.dom.client.Style;
+import com.google.gwt.user.client.Element;
+import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.IsWidget;
+import com.google.gwt.user.client.ui.Widget;
+import com.google.gwtmockito.GwtMockitoTestRunner;
 
 @RunWith(GwtMockitoTestRunner.class)
 public class ListBarWidgetImplTest {
-
-    @Mock
-    AuthorizationManager authzManager;
-
-    @Mock
-    User identity;
 
     @Mock
     PanelManager panelManager;
@@ -77,14 +75,6 @@ public class ListBarWidgetImplTest {
 
     @Before
     public void setUp() throws Exception {
-        when(authzManager.authorize(any(Permission.class),
-                                    any(User.class))).thenReturn(true);
-        when(authzManager.authorize(any(Resource.class),
-                                    any(User.class))).thenReturn(true);
-        when(authzManager.authorize(any(Resource.class),
-                                    any(ResourceAction.class),
-                                    any(User.class))).thenReturn(true);
-
         doNothing().when(listBar).setupContextMenu();
 
         listBar.contextMenu = mock(ButtonGroup.class);

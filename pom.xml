@@ -15,7 +15,7 @@
 	<parent>
 		<groupId>org.kie</groupId>
 		<artifactId>kie-parent</artifactId>
-		<version>7.60.0-SNAPSHOT</version>
+		<version>7.59.0.Final</version>
 		<!-- Keep in sync with the parent version of kie-soup-bom/pom.xml -->
 	</parent>
 
@@ -40,6 +40,7 @@
 	<properties>
 		<maven.compiler.source>11</maven.compiler.source>
 		<maven.compiler.target>11</maven.compiler.target>
+		<maven.compiler.release>11</maven.compiler.release>
 		<version.org.webjars.bower.d3js>5.5.0</version.org.webjars.bower.d3js>
 		<version.org.webjars.bower.c3>0.6.6</version.org.webjars.bower.c3>
 		<version.org.webjars.bower.d3geoprojection>2.5.1</version.org.webjars.bower.d3geoprojection>
@@ -59,6 +60,7 @@
 	<modules>
 		<module>dashbuilder-bom</module>
 		<module>kie-soup</module>
+		<module>dashbuilder-project-storage</module>
 		<module>appformer</module>
 		<module>dashbuilder-backend</module>
 		<module>dashbuilder-shared</module>

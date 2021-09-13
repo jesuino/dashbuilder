@@ -16,6 +16,11 @@
 
 package org.uberfire.client.views.pfly.widgets;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.jboss.errai.common.client.dom.Document;
 import org.jboss.errai.common.client.dom.Option;
 import org.junit.Test;
@@ -23,9 +28,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SelectTest {

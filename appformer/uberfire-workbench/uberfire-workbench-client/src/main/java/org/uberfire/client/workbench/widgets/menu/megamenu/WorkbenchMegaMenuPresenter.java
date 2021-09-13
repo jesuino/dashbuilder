@@ -18,11 +18,8 @@ package org.uberfire.client.workbench.widgets.menu.megamenu;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.google.gwt.user.client.ui.IsWidget;
 import org.jboss.errai.common.client.api.IsElement;
 import org.jboss.errai.ioc.client.api.ManagedInstance;
-import org.jboss.errai.security.shared.api.identity.User;
-import org.uberfire.client.menu.AuthFilterMenuVisitor;
 import org.uberfire.client.mvp.Activity;
 import org.uberfire.client.mvp.ActivityManager;
 import org.uberfire.client.mvp.PerspectiveActivity;
@@ -48,19 +45,19 @@ import org.uberfire.client.workbench.widgets.menu.megamenu.visitor.WorkbenchMega
 import org.uberfire.client.workbench.widgets.menu.megamenu.visitor.WorkbenchMegaMenuVisitor;
 import org.uberfire.mvp.Command;
 import org.uberfire.rpc.SessionInfo;
-import org.uberfire.security.ResourceRef;
-import org.uberfire.security.authz.AuthorizationManager;
 import org.uberfire.workbench.model.ActivityResourceType;
 import org.uberfire.workbench.model.menu.MenuCustom;
 import org.uberfire.workbench.model.menu.MenuItemPerspective;
 import org.uberfire.workbench.model.menu.MenuPosition;
 import org.uberfire.workbench.model.menu.Menus;
 
+import com.google.gwt.user.client.ui.IsWidget;
+
 public class WorkbenchMegaMenuPresenter extends WorkbenchBaseMenuPresenter {
 
     public interface View extends WorkbenchBaseMenuView,
-                                  UberElement<WorkbenchMegaMenuPresenter>,
-                                  IsElement {
+                          UberElement<WorkbenchMegaMenuPresenter>,
+                          IsElement {
 
         void clear();
 
@@ -103,14 +100,11 @@ public class WorkbenchMegaMenuPresenter extends WorkbenchBaseMenuPresenter {
         void setContextMenuActive(boolean active);
     }
 
-    private AuthorizationManager authzManager;
     private PerspectiveManager perspectiveManager;
     private ActivityManager activityManager;
-    private User identity;
     private View view;
     private ManagedInstance<MegaMenuBrand> megaMenuBrands;
     private PlaceManager placeManager;
-    private AuthorizationManager authorizationManager;
     private SessionInfo sessionInfo;
     private ManagedInstance<ChildMenuItemPresenter> childMenuItemPresenters;
     private ManagedInstance<GroupMenuItemPresenter> groupMenuItemPresenters;
@@ -123,29 +117,21 @@ public class WorkbenchMegaMenuPresenter extends WorkbenchBaseMenuPresenter {
     Map<String, CanBeDisabled> canBeDisabledMenuItemByIdentifier = new HashMap<>();
     Map<String, CanHide> canHideMenuItemByIdentifier = new HashMap<>();
 
-    public WorkbenchMegaMenuPresenter(final AuthorizationManager authzManager,
-                                      final PerspectiveManager perspectiveManager,
+    public WorkbenchMegaMenuPresenter(PerspectiveManager perspectiveManager,
                                       final ActivityManager activityManager,
-                                      final User identity,
                                       final View view,
                                       final ManagedInstance<MegaMenuBrand> megaMenuBrands,
                                       final PlaceManager placeManager,
-                                      final AuthorizationManager authorizationManager,
-                                      final SessionInfo sessionInfo,
                                       final ManagedInstance<ChildMenuItemPresenter> childMenuItemPresenters,
                                       final ManagedInstance<GroupMenuItemPresenter> groupMenuItemPresenters,
                                       final ManagedInstance<ChildContextMenuItemPresenter> childContextMenuItemPresenters,
                                       final ManagedInstance<GroupContextMenuItemPresenter> groupContextMenuItemPresenters,
                                       final Workbench workbench) {
-        this.authzManager = authzManager;
         this.perspectiveManager = perspectiveManager;
         this.activityManager = activityManager;
-        this.identity = identity;
         this.view = view;
         this.megaMenuBrands = megaMenuBrands;
         this.placeManager = placeManager;
-        this.authorizationManager = authorizationManager;
-        this.sessionInfo = sessionInfo;
         this.childMenuItemPresenters = childMenuItemPresenters;
         this.groupMenuItemPresenters = groupMenuItemPresenters;
         this.childContextMenuItemPresenters = childContextMenuItemPresenters;
@@ -172,31 +158,27 @@ public class WorkbenchMegaMenuPresenter extends WorkbenchBaseMenuPresenter {
 
     @Override
     protected void visitMenus(final Menus addedMenu) {
-        addedMenu.accept(new AuthFilterMenuVisitor(authzManager,
-                                                   identity,
-                                                   new WorkbenchMegaMenuVisitor(this,
-                                                                                perspectiveManager,
-                                                                                placeManager) {
+        addedMenu.accept(new WorkbenchMegaMenuVisitor(this, perspectiveManager, placeManager) {
 
-                                                       @Override
-                                                       public void visit(final MenuCustom<?> menuCustom) {
-                                                           final Object build = menuCustom.build();
-                                                           if (build instanceof IsElement) {
-                                                               addCustomMenuItem((IsElement) build,
-                                                                                 menuCustom.getPosition());
-                                                           } else if (build instanceof IsWidget) {
-                                                               addCustomMenuItem(((IsWidget) build).asWidget(),
-                                                                                 menuCustom.getPosition());
-                                                           } else {
-                                                               addMenuItem(WorkbenchBaseMenuUtils.getMenuItemId(menuCustom),
-                                                                           menuCustom.getCaption(),
-                                                                           getParentId(),
-                                                                           null,
-                                                                           menuCustom.getPosition());
-                                                           }
-                                                           setupEnableDisableMenuItem(menuCustom);
-                                                       }
-                                                   }));
+            @Override
+            public void visit(final MenuCustom<?> menuCustom) {
+                final Object build = menuCustom.build();
+                if (build instanceof IsElement) {
+                    addCustomMenuItem((IsElement) build,
+                            menuCustom.getPosition());
+                } else if (build instanceof IsWidget) {
+                    addCustomMenuItem(((IsWidget) build).asWidget(),
+                            menuCustom.getPosition());
+                } else {
+                    addMenuItem(WorkbenchBaseMenuUtils.getMenuItemId(menuCustom),
+                            menuCustom.getCaption(),
+                            getParentId(),
+                            null,
+                            menuCustom.getPosition());
+                }
+                setupEnableDisableMenuItem(menuCustom);
+            }
+        });
 
         synchronizeUIWithMenus(addedMenu.getItems());
     }
@@ -210,9 +192,9 @@ public class WorkbenchMegaMenuPresenter extends WorkbenchBaseMenuPresenter {
                             final String parentId,
                             final Command command,
                             final MenuPosition position) {
-        final ChildMenuItemPresenter childMenuItemPresenter = childMenuItemPresenters.get();
+        final var childMenuItemPresenter = childMenuItemPresenters.get();
         childMenuItemPresenter.setup(label,
-                                     command);
+                command);
         selectableMenuItemByIdentifier.put(id, childMenuItemPresenter);
         canBeDisabledMenuItemByIdentifier.put(id, childMenuItemPresenter);
         canHideMenuItemByIdentifier.put(id, childMenuItemPresenter);
@@ -225,7 +207,7 @@ public class WorkbenchMegaMenuPresenter extends WorkbenchBaseMenuPresenter {
             }
         } else {
             view.addMenuItemOnParent(childMenuItemPresenter,
-                                     hasChildrenMenuItemByIdentifier.get(parentId));
+                    hasChildrenMenuItemByIdentifier.get(parentId));
         }
     }
 
@@ -242,17 +224,17 @@ public class WorkbenchMegaMenuPresenter extends WorkbenchBaseMenuPresenter {
     public void addGroupMenuItem(final String id,
                                  final String label,
                                  final MenuPosition position) {
-        final GroupMenuItemPresenter groupMenuItemPresenter = groupMenuItemPresenters.get();
+        final var groupMenuItemPresenter = groupMenuItemPresenters.get();
         groupMenuItemPresenter.setup(label);
 
         hasChildrenMenuItemByIdentifier.put(id,
-                                            groupMenuItemPresenter);
+                groupMenuItemPresenter);
 
         view.addGroupMenuItem(groupMenuItemPresenter);
     }
 
     public void selectMenuItem(final String id) {
-        final Selectable itemPresenter = selectableMenuItemByIdentifier.get(id);
+        final var itemPresenter = selectableMenuItemByIdentifier.get(id);
         if (itemPresenter != null) {
             itemPresenter.select();
         }
@@ -266,11 +248,11 @@ public class WorkbenchMegaMenuPresenter extends WorkbenchBaseMenuPresenter {
                                    final MenuPosition position) {
         final ChildContextMenuItemPresenter childContextMenuItemPresenter = childContextMenuItemPresenters.get();
         childContextMenuItemPresenter.setup(label,
-                                            command);
+                command);
         selectableMenuItemByIdentifier.put(id,
-                                           childContextMenuItemPresenter);
+                childContextMenuItemPresenter);
         canBeDisabledMenuItemByIdentifier.put(id,
-                                              childContextMenuItemPresenter);
+                childContextMenuItemPresenter);
         if (parentId == null || parentId.isEmpty()) {
             if (MenuPosition.RIGHT.equals(position)) {
                 childContextMenuItemPresenter.pullRight();
@@ -278,7 +260,7 @@ public class WorkbenchMegaMenuPresenter extends WorkbenchBaseMenuPresenter {
             view.addContextMenuItem(childContextMenuItemPresenter);
         } else {
             view.addContextMenuItemOnParent(childContextMenuItemPresenter,
-                                            hasChildrenMenuItemByIdentifier.get(parentId));
+                    hasChildrenMenuItemByIdentifier.get(parentId));
         }
         view.setContextMenuActive(true);
     }
@@ -287,13 +269,13 @@ public class WorkbenchMegaMenuPresenter extends WorkbenchBaseMenuPresenter {
                                         final String id,
                                         final String label,
                                         final MenuPosition position) {
-        final GroupContextMenuItemPresenter groupContextMenuItemPresenter = groupContextMenuItemPresenters.get();
+        final var groupContextMenuItemPresenter = groupContextMenuItemPresenters.get();
         groupContextMenuItemPresenter.setup(label);
 
         hasChildrenMenuItemByIdentifier.put(id,
-                                            groupContextMenuItemPresenter);
+                groupContextMenuItemPresenter);
         canBeDisabledMenuItemByIdentifier.put(id,
-                                              groupContextMenuItemPresenter);
+                groupContextMenuItemPresenter);
 
         if (MenuPosition.RIGHT.equals(position)) {
             groupContextMenuItemPresenter.pullRight();
@@ -322,7 +304,7 @@ public class WorkbenchMegaMenuPresenter extends WorkbenchBaseMenuPresenter {
     public void enableContextMenuItem(final String menuItemId,
                                       final boolean enabled) {
         enableMenuItem(menuItemId,
-                       enabled);
+                enabled);
     }
 
     protected void addPerspectiveMenus(final PerspectiveActivity perspective) {
@@ -330,11 +312,9 @@ public class WorkbenchMegaMenuPresenter extends WorkbenchBaseMenuPresenter {
             final String perspectiveId = perspective.getIdentifier();
             view.clearContextMenu();
             if (menus != null) {
-                menus.accept(new AuthFilterMenuVisitor(authzManager,
-                                                       identity,
-                                                       new WorkbenchMegaMenuContextMenuVisitor(this,
-                                                                                               placeManager,
-                                                                                               perspectiveId)));
+                menus.accept(new WorkbenchMegaMenuContextMenuVisitor(this,
+                        placeManager,
+                        perspectiveId));
 
                 synchronizeUIWithMenus(menus.getItems());
             }
@@ -393,24 +373,15 @@ public class WorkbenchMegaMenuPresenter extends WorkbenchBaseMenuPresenter {
     }
 
     private void goToHomePerspective() {
-        final PerspectiveActivity homePerspectiveActivity = workbench.getHomePerspectiveActivity();
+        final var homePerspectiveActivity = workbench.getHomePerspectiveActivity();
         if (homePerspectiveActivity != null) {
-            final String homePerspectiveIdentifier = homePerspectiveActivity.getIdentifier();
-            if (hasAccessToPerspective(homePerspectiveIdentifier)) {
-                placeManager.goTo(homePerspectiveIdentifier);
-            }
+            final var homePerspectiveIdentifier = homePerspectiveActivity.getIdentifier();
+            placeManager.goTo(homePerspectiveIdentifier);
         }
     }
 
-    boolean hasAccessToPerspective(final String perspectiveId) {
-        ResourceRef resourceRef = new ResourceRef(perspectiveId,
-                                                  ActivityResourceType.PERSPECTIVE);
-        return authorizationManager.authorize(resourceRef,
-                                              sessionInfo.getIdentity());
-    }
-
     public void setupSetVisibleMenuItem(MenuItemPerspective menuItemPerspective) {
-        String perspectiveId = menuItemPerspective.getPlaceRequest().getIdentifier();
+        var perspectiveId = menuItemPerspective.getPlaceRequest().getIdentifier();
 
         changeMenuItemVisibility(perspectiveId, true);
 
@@ -418,7 +389,7 @@ public class WorkbenchMegaMenuPresenter extends WorkbenchBaseMenuPresenter {
     }
 
     private void changeMenuItemVisibility(String id, boolean visible) {
-        CanHide canHide = canHideMenuItemByIdentifier.get(id);
+        var canHide = canHideMenuItemByIdentifier.get(id);
         if (canHide != null) {
             if (visible) {
                 canHide.show();

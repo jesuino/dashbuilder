@@ -20,7 +20,6 @@ import javax.inject.Named;
 
 import com.thoughtworks.xstream.XStream;
 import org.jboss.errai.bus.server.annotations.Service;
-import org.jboss.errai.security.shared.api.identity.User;
 import org.kie.soup.xstream.XStreamUtils;
 import org.uberfire.backend.server.UserServicesBackendImpl;
 import org.uberfire.ext.services.shared.preferences.UserPreference;
@@ -32,11 +31,10 @@ import org.uberfire.java.nio.file.Path;
 @Service
 public class UserPreferencesServiceImpl implements UserPreferencesService {
 
-    @Inject
-    private UserServicesBackendImpl userServicesBackend;
+    private static final String USER_NAME = "Any";
 
     @Inject
-    private User identity;
+    private UserServicesBackendImpl userServicesBackend;
 
     @Inject
     @Named("configIO")
@@ -46,7 +44,7 @@ public class UserPreferencesServiceImpl implements UserPreferencesService {
 
     @Override
     public void saveUserPreferences(final UserPreference preferences) {
-        final Path preferencesPath = userServicesBackend.buildPath(identity.getIdentifier(),
+        final Path preferencesPath = userServicesBackend.buildPath(USER_NAME,
                                                                    preferences.getType().getExt(),
                                                                    preferences.getPreferenceKey());
         saveUserPreferences(preferences,
@@ -56,7 +54,7 @@ public class UserPreferencesServiceImpl implements UserPreferencesService {
     @Override
     public UserPreference loadUserPreferences(final String key,
                                               final UserPreferencesType type) {
-        final Path preferencesPath = userServicesBackend.buildPath(identity.getIdentifier(),
+        final Path preferencesPath = userServicesBackend.buildPath(USER_NAME,
                                                                    type.getExt(),
                                                                    key);
         return loadUserPreferences(preferencesPath);
@@ -89,7 +87,7 @@ public class UserPreferencesServiceImpl implements UserPreferencesService {
 
     @Override
     public UserPreference loadUserPreferences(final UserPreference preferences) {
-        final Path preferencesPath = userServicesBackend.buildPath(identity.getIdentifier(),
+        final Path preferencesPath = userServicesBackend.buildPath(USER_NAME,
                                                                    preferences.getType().getExt(),
                                                                    preferences.getPreferenceKey());
         return loadUserPreferences(preferencesPath);

@@ -18,26 +18,23 @@ package org.uberfire.backend.server;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import org.jboss.errai.security.shared.service.AuthenticationService;
 import org.uberfire.java.nio.file.Path;
 
 @ApplicationScoped
 public class UserServicesImpl {
 
-    @Inject
-    private AuthenticationService authService;
 
     @Inject
     private UserServicesBackendImpl userServicesBackend;
 
     public Path buildPath(final String serviceType) {
-        return userServicesBackend.buildPath(authService.getUser().getIdentifier(),
+        return userServicesBackend.buildPath("system",
                                              serviceType);
     }
 
     public Path buildPath(final String serviceType,
                           final String relativePath) {
-        return userServicesBackend.buildPath(authService.getUser().getIdentifier(),
+        return userServicesBackend.buildPath("system",
                                              serviceType,
                                              relativePath);
     }

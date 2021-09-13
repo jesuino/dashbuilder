@@ -16,7 +16,11 @@
 
 package org.uberfire.client.workbench.widgets.menu;
 
-import org.jboss.errai.security.shared.api.identity.User;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,19 +33,9 @@ import org.uberfire.client.workbench.events.PerspectiveChange;
 import org.uberfire.client.workbench.events.PlaceMaximizedEvent;
 import org.uberfire.client.workbench.events.PlaceMinimizedEvent;
 import org.uberfire.client.workbench.widgets.menu.events.PerspectiveVisibiltiyChangeEvent;
-import org.uberfire.security.authz.AuthorizationManager;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
 public class WorkbenchMenuBarProducerTest {
-
-    @Mock
-    private AuthorizationManager authzManager;
 
     @Mock
     private PerspectiveManager perspectiveManager;
@@ -51,9 +45,6 @@ public class WorkbenchMenuBarProducerTest {
 
     @Mock
     private ActivityManager activityManager;
-
-    @Mock
-    private User identity;
 
     @Mock
     private WorkbenchMenuBarPresenter.View view;
@@ -78,11 +69,9 @@ public class WorkbenchMenuBarProducerTest {
 
     @Before
     public void setup() {
-        producer = new WorkbenchMenuBarProducer(authzManager,
-                                                perspectiveManager,
+        producer = new WorkbenchMenuBarProducer(perspectiveManager,
                                                 placeManager,
                                                 activityManager,
-                                                identity,
                                                 view
         ) {
             @Override

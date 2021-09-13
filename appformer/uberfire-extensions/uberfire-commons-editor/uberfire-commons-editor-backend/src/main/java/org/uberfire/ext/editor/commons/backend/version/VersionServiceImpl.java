@@ -86,7 +86,7 @@ public class VersionServiceImpl
                                           REPLACE_EXISTING,
                                           new CommentedOption(
                                                   sessionInfo != null ? sessionInfo.getId() : "--",
-                                                  sessionInfo != null ? sessionInfo.getIdentity().getIdentifier() : "system",
+                                                  "system",
                                                   null,
                                                   comment)));
         } catch (Exception e) {

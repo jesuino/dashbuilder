@@ -16,30 +16,31 @@
 
 package org.uberfire.client.mvp;
 
+import static java.util.Collections.singletonList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 
-import com.google.gwtmockito.GwtMockitoTestRunner;
 import org.jboss.errai.ioc.client.container.SyncBeanDef;
 import org.jboss.errai.ioc.client.container.SyncBeanManager;
-import org.jboss.errai.security.shared.api.identity.User;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.uberfire.mvp.impl.DefaultPlaceRequest;
-import org.uberfire.security.Resource;
-import org.uberfire.security.authz.AuthorizationManager;
 
-import static java.util.Collections.singletonList;
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import com.google.gwtmockito.GwtMockitoTestRunner;
 
 /**
  * Mock-based tests for how ActivityManager handles beans affected by Errai IOC's {@code @ActivatedBy} feature.
@@ -64,15 +65,10 @@ public class ActivityManagerActivatedByTest {
     @Mock
     private ResourceTypeManagerCache resourceTypeManagerCache;
 
-    @Mock
-    private AuthorizationManager authzManager;
-
     private Activity activatedActivity;
 
     @Before
     public void setup() {
-        when(authzManager.authorize(Mockito.<Resource>any(),
-                                    any())).thenReturn(true);
 
         activatedActivity = mock(Activity.class);
         when(activatedActivity.getIdentifier()).thenReturn("activated activity");

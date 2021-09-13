@@ -26,7 +26,7 @@ import org.uberfire.mvp.ParameterizedCommand;
 
 @Alternative
 @ApplicationScoped
-public class RuntimePluginsServiceProxyImpl implements RuntimePluginsServiceProxy{
+public class RuntimePluginsServiceProxyImpl implements RuntimePluginsServiceProxy {
 
     @Override
     public void getTemplateContent(String contentUrl, ParameterizedCommand<String> command) {

@@ -23,7 +23,6 @@ import org.dashbuilder.client.navigation.event.NavItemEditCancelledEvent;
 import org.dashbuilder.client.navigation.event.NavItemEditStartedEvent;
 import org.dashbuilder.client.navigation.plugin.PerspectivePluginManager;
 import org.jboss.errai.ioc.client.container.SyncBeanManager;
-import org.uberfire.client.authz.PerspectiveTreeProvider;
 import org.uberfire.client.mvp.PlaceManager;
 
 @Dependent
@@ -33,19 +32,18 @@ public class NavItemDefaultEditor extends NavItemEditor {
     public NavItemDefaultEditor(NavItemDefaultEditorView view,
                                 SyncBeanManager beanManager,
                                 PlaceManager placeManager,
-                                PerspectiveTreeProvider perspectiveTreeProvider,
                                 TargetPerspectiveEditor targetPerspectiveEditor,
                                 PerspectivePluginManager perspectivePluginManager,
                                 Event<NavItemEditStartedEvent> navItemEditStartedEvent,
                                 Event<NavItemEditCancelledEvent> navItemEditCancelledEvent) {
 
-        super(view, beanManager,
-                placeManager,
-                perspectiveTreeProvider,
-                targetPerspectiveEditor,
-                perspectivePluginManager,
-                navItemEditStartedEvent,
-                navItemEditCancelledEvent);
+        super(view,
+              beanManager,
+              placeManager,
+              targetPerspectiveEditor,
+              perspectivePluginManager,
+              navItemEditStartedEvent,
+              navItemEditCancelledEvent);
 
         super.setChildEditorClass(NavItemDefaultEditor.class);
     }

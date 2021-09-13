@@ -30,8 +30,8 @@ import org.uberfire.ext.plugin.model.LayoutEditorModel;
 import org.uberfire.ext.plugin.model.Plugin;
 import org.uberfire.ext.plugin.model.PluginType;
 
-@ApplicationScoped
 @Service
+@ApplicationScoped
 public class PerspectivePluginServicesImpl implements PerspectivePluginServices {
 
     private PluginServicesImpl pluginServices;
@@ -50,7 +50,7 @@ public class PerspectivePluginServicesImpl implements PerspectivePluginServices 
 
     @Override
     public Collection<Plugin> listPlugins() {
-        return pluginServices.listPlugins(PluginType.PERSPECTIVE_LAYOUT);
+        return pluginServices.listPlugins();
     }
 
     @Override
@@ -80,8 +80,8 @@ public class PerspectivePluginServicesImpl implements PerspectivePluginServices 
 
     @Override
     public LayoutTemplate getLayoutTemplate(Plugin perspectivePlugin) {
-        LayoutEditorModel layoutEditorModel = pluginServices.getLayoutEditor(perspectivePlugin.getPath(), PluginType.PERSPECTIVE_LAYOUT);
-        return layoutServices.convertLayoutFromString(layoutEditorModel.getLayoutEditorModel());
+        LayoutEditorModel layoutEditorModel = pluginServices.getLayoutEditor(perspectivePlugin.getPath());
+        return layoutServices.fromJson(layoutEditorModel.getLayoutEditorModel());
     }
 
     @Override

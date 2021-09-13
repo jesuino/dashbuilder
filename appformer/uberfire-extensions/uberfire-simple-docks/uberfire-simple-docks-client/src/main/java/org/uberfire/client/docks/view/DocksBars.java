@@ -18,17 +18,14 @@ package org.uberfire.client.docks.view;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.enterprise.context.Dependent;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 
-import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.user.client.ui.Widget;
-import org.jboss.errai.security.shared.api.identity.User;
 import org.uberfire.client.docks.view.bars.DocksCollapsedBar;
 import org.uberfire.client.docks.view.bars.DocksExpandedBar;
 import org.uberfire.client.docks.view.menu.MenuBuilder;
-import org.uberfire.client.menu.AuthFilterMenuVisitor;
 import org.uberfire.client.mvp.AbstractWorkbenchScreenActivity;
 import org.uberfire.client.mvp.Activity;
 import org.uberfire.client.mvp.PlaceManager;
@@ -38,12 +35,14 @@ import org.uberfire.client.workbench.docks.UberfireDocksContainer;
 import org.uberfire.client.workbench.docks.UberfireDocksInteractionEvent;
 import org.uberfire.mvp.ParameterizedCommand;
 import org.uberfire.mvp.PlaceRequest;
-import org.uberfire.security.authz.AuthorizationManager;
 import org.uberfire.workbench.model.menu.MenuCustom;
 import org.uberfire.workbench.model.menu.MenuItemCommand;
 import org.uberfire.workbench.model.menu.MenuItemPerspective;
 import org.uberfire.workbench.model.menu.MenuItemPlain;
 import org.uberfire.workbench.model.menu.impl.BaseMenuVisitor;
+
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.user.client.ui.Widget;
 
 @Dependent
 public class DocksBars {
@@ -55,22 +54,16 @@ public class DocksBars {
     private Event<UberfireDocksInteractionEvent> dockInteractionEvent;
     private UberfireDocksContainer uberfireDocksContainer;
     private List<DocksBar> docks = new ArrayList<>();
-    private AuthorizationManager authorizationManager;
-    private User identity;
 
     @Inject
     public DocksBars(PlaceManager placeManager,
                      MenuBuilder menuBuilder,
                      Event<UberfireDocksInteractionEvent> dockInteractionEvent,
-                     UberfireDocksContainer uberfireDocksContainer,
-                     AuthorizationManager authorizationManager,
-                     User identity) {
+                     UberfireDocksContainer uberfireDocksContainer) {
         this.placeManager = placeManager;
         this.menuBuilder = menuBuilder;
         this.dockInteractionEvent = dockInteractionEvent;
         this.uberfireDocksContainer = uberfireDocksContainer;
-        this.authorizationManager = authorizationManager;
-        this.identity = identity;
     }
 
     public void setup() {
@@ -83,14 +76,14 @@ public class DocksBars {
         DocksBar docksBar = createDockBar(position);
 
         uberfireDocksContainer.add(position,
-                                   docksBar.getCollapsedBar(),
-                                   docksBar.getCollapsedBarSize());
+                docksBar.getCollapsedBar(),
+                docksBar.getCollapsedBarSize());
         uberfireDocksContainer.add(position,
-                                   docksBar.getExpandedBar(),
-                                   docksBar.getExpandedBarSize());
+                docksBar.getExpandedBar(),
+                docksBar.getExpandedBarSize());
         uberfireDocksContainer.add(position,
-                                   docksBar.getDockResizeBar(),
-                                   docksBar.getDockResizeBarDefaultSize());
+                docksBar.getDockResizeBar(),
+                docksBar.getDockResizeBarDefaultSize());
 
         docksBar.configureResizeBar(createResizeCommand(docksBar));
         docks.add(docksBar);
@@ -104,10 +97,10 @@ public class DocksBars {
     public void addDock(UberfireDock dock) {
         DocksBar docksBar = getDockBar(dock);
         docksBar.addDock(dock,
-                         createDockOpenCommand(dock,
-                                               docksBar),
-                         createDockCloseCommand(dock,
-                                                docksBar));
+                createDockOpenCommand(dock,
+                        docksBar),
+                createDockCloseCommand(dock,
+                        docksBar));
     }
 
     DocksBar getDockBar(UberfireDock dock) {
@@ -130,17 +123,18 @@ public class DocksBars {
 
     ParameterizedCommand<Double> createResizeCommand(final DocksBar docksBar) {
         return new ParameterizedCommand<Double>() {
+
             @Override
             public void execute(Double size) {
                 if (sizeIsValid(size,
-                                docksBar)) {
+                        docksBar)) {
                     docksBar.setExpandedSize(size);
                     uberfireDocksContainer.setWidgetSize(docksBar.getExpandedBar(),
-                                                         docksBar.getExpandedBarSize());
+                            docksBar.getExpandedBarSize());
                     docksBar.getExpandedBar().setupDockContentSize();
                     uberfireDocksContainer.resize();
                     dockInteractionEvent.fire(new UberfireDocksInteractionEvent(docksBar.getPosition(),
-                                                                                UberfireDocksInteractionEvent.InteractionType.RESIZED));
+                            UberfireDocksInteractionEvent.InteractionType.RESIZED));
                 }
             }
         };
@@ -219,13 +213,13 @@ public class DocksBars {
         return clickDockName -> {
             if (targetDock != null) {
                 openDock(targetDock,
-                         docksBar);
+                        docksBar);
                 if (docksBar.isCollapsedBarInSingleMode()) {
                     hide(docksBar.getCollapsedBar());
                 }
                 uberfireDocksContainer.resize();
                 dockInteractionEvent.fire(new UberfireDocksInteractionEvent(targetDock,
-                                                                            UberfireDocksInteractionEvent.InteractionType.OPENED));
+                        UberfireDocksInteractionEvent.InteractionType.OPENED));
             }
         };
     }
@@ -238,23 +232,23 @@ public class DocksBars {
         PlaceRequest placeRequest = targetDock.getPlaceRequest();
 
         setupCollapsedBar(targetDock,
-                          collapsedBar);
+                collapsedBar);
         setupExpandedBar(targetDock,
-                         docksBar,
-                         expandedBar);
+                docksBar,
+                expandedBar);
         show(docksBar.getDockResizeBar());
         goToPlace(expandedBar,
-                  placeRequest);
+                placeRequest);
 
         lookUpContextMenus(placeRequest,
-                           docksBar.getExpandedBar());
+                docksBar.getExpandedBar());
     }
 
     private void goToPlace(DocksExpandedBar expandedBar,
                            PlaceRequest placeRequest) {
         placeRequest.setUpdateLocationBar(false);
         placeManager.goTo(placeRequest,
-                          expandedBar.targetPanel());
+                expandedBar.targetPanel());
     }
 
     private void lookUpContextMenus(PlaceRequest placeRequest,
@@ -264,26 +258,28 @@ public class DocksBars {
             AbstractWorkbenchScreenActivity screen = (AbstractWorkbenchScreenActivity) activity;
             screen.getMenus(menus -> {
                 if (menus != null) {
-                    menus.accept(new AuthFilterMenuVisitor(authorizationManager,
-                            identity, new BaseMenuVisitor() {
+                    menus.accept(new BaseMenuVisitor() {
 
-                                @Override
-                                public void visit(MenuItemPlain menuItemPlain) {
-                                    expandedBar.addContextMenuItem(menuBuilder.makeItem(menuItemPlain, true));
-                                }
-                                @Override
-                                public void visit(MenuItemCommand menuItemCommand) {
-                                    expandedBar.addContextMenuItem(menuBuilder.makeItem(menuItemCommand, true));
-                                }
-                                @Override
-                                public void visit(MenuItemPerspective menuItemPerspective) {
-                                    expandedBar.addContextMenuItem(menuBuilder.makeItem(menuItemPerspective, true));
-                                }
-                                @Override
-                                public void visit(MenuCustom<?> menuCustom) {
-                                    expandedBar.addContextMenuItem(menuBuilder.makeItem(menuCustom, true));
-                                }
-                            }));
+                        @Override
+                        public void visit(MenuItemPlain menuItemPlain) {
+                            expandedBar.addContextMenuItem(menuBuilder.makeItem(menuItemPlain, true));
+                        }
+
+                        @Override
+                        public void visit(MenuItemCommand menuItemCommand) {
+                            expandedBar.addContextMenuItem(menuBuilder.makeItem(menuItemCommand, true));
+                        }
+
+                        @Override
+                        public void visit(MenuItemPerspective menuItemPerspective) {
+                            expandedBar.addContextMenuItem(menuBuilder.makeItem(menuItemPerspective, true));
+                        }
+
+                        @Override
+                        public void visit(MenuCustom<?> menuCustom) {
+                            expandedBar.addContextMenuItem(menuBuilder.makeItem(menuCustom, true));
+                        }
+                    });
                 }
             });
         }
@@ -301,10 +297,10 @@ public class DocksBars {
         show(expandedBar);
 
         setupExpandedBarSize(targetDock,
-                             docksBar);
+                docksBar);
         expandedBar.setup(targetDock.getLabel(),
-                          createDockCloseCommand(targetDock,
-                                                 docksBar));
+                createDockCloseCommand(targetDock,
+                        docksBar));
     }
 
     public void open(UberfireDock dock) {
@@ -318,9 +314,9 @@ public class DocksBars {
         DocksBar dockBar = getDockBar(dock);
         if (dockBar != null) {
             if (isOpenWith(dock,
-                           dockBar)) {
+                    dockBar)) {
                 closeDockProcess(dock,
-                                 dockBar);
+                        dockBar);
             }
         }
     }
@@ -329,9 +325,9 @@ public class DocksBars {
         DocksBar dockBar = getDockBar(dock);
         if (dockBar != null) {
             if (isOpenWith(dock,
-                           dockBar)) {
+                    dockBar)) {
                 closeDockProcess(dock,
-                                 dockBar);
+                        dockBar);
             } else {
                 dockBar.open(dock);
             }
@@ -339,27 +335,27 @@ public class DocksBars {
     }
 
     boolean isOpenWith(UberfireDock dock,
-                               DocksBar dockBar) {
+                       DocksBar dockBar) {
         return dockBar.isOpenWith(dock.getPlaceRequest());
     }
 
     ParameterizedCommand<String> createDockCloseCommand(final UberfireDock targetDock,
                                                         final DocksBar docksBar) {
         return clickedDockName -> closeDockProcess(targetDock,
-                                                   docksBar);
+                docksBar);
     }
 
     void closeDockProcess(UberfireDock targetDock,
-                                  DocksBar docksBar) {
+                          DocksBar docksBar) {
         if (targetDock != null) {
             closeDock(targetDock,
-                      docksBar);
+                    docksBar);
             if (docksBar.isCollapsedBarInSingleMode()) {
                 show(docksBar.getCollapsedBar());
             }
             uberfireDocksContainer.resize();
             dockInteractionEvent.fire(new UberfireDocksInteractionEvent(targetDock,
-                                                                        UberfireDocksInteractionEvent.InteractionType.CLOSED));
+                    UberfireDocksInteractionEvent.InteractionType.CLOSED));
         }
     }
 
@@ -381,16 +377,16 @@ public class DocksBars {
 
         if (thereIsASpecificSize(targetDock)) {
             expandedBar.setPanelSize(targetDock.getSize().intValue(),
-                                     targetDock.getSize().intValue());
+                    targetDock.getSize().intValue());
             uberfireDocksContainer.setWidgetSize(expandedBar,
-                                                 targetDock.getSize());
+                    targetDock.getSize());
         } else {
             int width = uberfireDocksContainer.getClientWidth();
             Double height = new Double(docksBar.getExpandedBarSize());
             expandedBar.setPanelSize(width,
-                                     height.intValue());
+                    height.intValue());
             uberfireDocksContainer.setWidgetSize(expandedBar,
-                                                 docksBar.getExpandedBarSize());
+                    docksBar.getExpandedBarSize());
         }
     }
 

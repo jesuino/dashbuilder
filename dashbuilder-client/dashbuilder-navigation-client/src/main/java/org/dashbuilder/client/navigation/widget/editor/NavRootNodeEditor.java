@@ -24,7 +24,6 @@ import org.dashbuilder.client.navigation.event.NavItemEditStartedEvent;
 import org.dashbuilder.client.navigation.plugin.PerspectivePluginManager;
 import org.dashbuilder.navigation.NavTree;
 import org.jboss.errai.ioc.client.container.SyncBeanManager;
-import org.uberfire.client.authz.PerspectiveTreeProvider;
 import org.uberfire.client.mvp.PlaceManager;
 
 /**
@@ -43,7 +42,6 @@ public class NavRootNodeEditor extends NavItemEditor {
     public NavRootNodeEditor(NavRootNodeEditorView view,
                              SyncBeanManager beanManager,
                              PlaceManager placeManager,
-                             PerspectiveTreeProvider perspectiveTreeProvider,
                              TargetPerspectiveEditor targetPerspectiveEditor,
                              PerspectivePluginManager perspectivePluginManager,
                              Event<NavItemEditStartedEvent> navItemEditStartedEvent,
@@ -51,7 +49,6 @@ public class NavRootNodeEditor extends NavItemEditor {
 
         super(view, beanManager,
                 placeManager,
-                perspectiveTreeProvider,
                 targetPerspectiveEditor,
                 perspectivePluginManager,
                 navItemEditStartedEvent,

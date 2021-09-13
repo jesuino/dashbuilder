@@ -14,7 +14,16 @@
  */
 package org.dashbuilder.client.navigation.widget.editor;
 
-import com.google.gwtmockito.GwtMockitoTestRunner;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.dashbuilder.client.navigation.event.NavItemEditCancelledEvent;
 import org.dashbuilder.client.navigation.event.NavItemEditStartedEvent;
 import org.dashbuilder.client.navigation.plugin.PerspectivePluginManager;
@@ -28,13 +37,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.uberfire.client.authz.PerspectiveTreeProvider;
 import org.uberfire.client.mvp.PlaceManager;
 import org.uberfire.mocks.EventSourceMock;
 import org.uberfire.mvp.Command;
 
-import static org.mockito.Mockito.*;
-import static org.junit.Assert.*;
+import com.google.gwtmockito.GwtMockitoTestRunner;
 
 @RunWith(GwtMockitoTestRunner.class)
 public class NavItemEditorTest {
@@ -44,9 +51,6 @@ public class NavItemEditorTest {
 
     @Mock
     SyncBeanManager beanManager;
-
-    @Mock
-    PerspectiveTreeProvider perspectiveTreeProvider;
 
     @Mock
     EventSourceMock<NavItemEditStartedEvent> navItemEditStartedEvent;
@@ -72,7 +76,7 @@ public class NavItemEditorTest {
     @Before
     public void setUp() throws Exception {
         presenter = new NavItemDefaultEditor(view, beanManager,
-                placeManager, perspectiveTreeProvider, targetPerspectiveEditor,
+                placeManager, targetPerspectiveEditor,
                 perspectivePluginManager, navItemEditStartedEvent, navItemEditCancelledEvent);
 
         when(view.i18nNewItemName("Perspective")).thenReturn(NEW_PERSPECTIVE_NAME);

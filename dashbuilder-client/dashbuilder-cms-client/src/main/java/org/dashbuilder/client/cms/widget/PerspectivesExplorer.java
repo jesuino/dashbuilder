@@ -17,18 +17,18 @@ package org.dashbuilder.client.cms.widget;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
 import javax.enterprise.context.Dependent;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
-import org.dashbuilder.navigation.event.PerspectivePluginsChangedEvent;
 import org.dashbuilder.client.cms.resources.i18n.ContentManagerI18n;
 import org.dashbuilder.client.navigation.plugin.PerspectivePluginManager;
+import org.dashbuilder.navigation.event.PerspectivePluginsChangedEvent;
 import org.jboss.errai.common.client.api.IsElement;
 import org.jboss.errai.common.client.dom.HTMLElement;
 import org.uberfire.client.mvp.PlaceManager;
 import org.uberfire.client.mvp.UberElement;
-import org.uberfire.ext.plugin.client.security.PluginController;
 import org.uberfire.ext.plugin.model.Plugin;
 import org.uberfire.mvp.Command;
 import org.uberfire.mvp.PlaceRequest;
@@ -49,18 +49,15 @@ public class PerspectivesExplorer implements IsElement {
     View view;
     PerspectivePluginManager perspectivePluginManager;
     PlaceManager placeManager;
-    PluginController pluginController;
     ContentManagerI18n i18n;
 
     @Inject
     public PerspectivesExplorer(View view,
                                 PerspectivePluginManager perspectivePluginManager,
-                                PluginController pluginController,
                                 PlaceManager placeManager,
                                 ContentManagerI18n i18n) {
         this.view = view;
         this.perspectivePluginManager = perspectivePluginManager;
-        this.pluginController = pluginController;
         this.placeManager = placeManager;
         this.i18n = i18n;
         this.view.init(this);
@@ -77,7 +74,6 @@ public class PerspectivesExplorer implements IsElement {
         perspectivePluginManager.getPerspectivePlugins(perspectivePlugins -> {
 
             List<Plugin> filteredPlugins = perspectivePlugins.stream()
-                    .filter(pluginController::canRead)
                     .sorted((p1, p2) -> p1.getName().compareToIgnoreCase(p2.getName()))
                     .collect(Collectors.toList());
 

@@ -21,7 +21,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.Dependent;
@@ -31,13 +33,11 @@ import org.jboss.errai.ioc.client.api.EnabledByProperty;
 import org.jboss.errai.ioc.client.container.IOCBeanDef;
 import org.jboss.errai.ioc.client.container.SyncBeanDef;
 import org.jboss.errai.ioc.client.container.SyncBeanManager;
-import org.jboss.errai.security.shared.api.identity.User;
 import org.uberfire.backend.vfs.Path;
 import org.uberfire.client.mvp.ActivityLifecycleError.LifecyclePhase;
 import org.uberfire.mvp.PlaceRequest;
 import org.uberfire.mvp.impl.ExternalPathPlaceRequest;
 import org.uberfire.mvp.impl.PathPlaceRequest;
-import org.uberfire.security.authz.AuthorizationManager;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
@@ -58,19 +58,14 @@ public class ActivityManagerImpl implements ActivityManager {
     @Inject
     private SyncBeanManager iocManager;
     @Inject
-    private AuthorizationManager authzManager;
-    @Inject
     private ActivityBeansCache activityBeansCache;
-    @Inject
-    private User identity;
     @Inject
     private ActivityLifecycleErrorHandler lifecycleErrorHandler;
 
     @Override
     public <T extends Activity> Set<T> getActivities(final Class<T> clazz) {
         // not calling onStartup. See UF-105.
-        return secure(iocManager.lookupBeans(clazz),
-                      true);
+        return createInstances(iocManager.lookupBeans(clazz));
     }
 
     @Override
@@ -86,14 +81,14 @@ public class ActivityManagerImpl implements ActivityManager {
             }
         }
 
-        return startIfNecessary(secure(resultBean),
-                                placeRequest);
+        return startIfNecessary(resultBean,
+                placeRequest);
     }
 
     @Override
     public Set<Activity> getActivities(final PlaceRequest placeRequest) {
         return getActivities(placeRequest,
-                             true);
+                true);
     }
 
     @Override
@@ -107,13 +102,10 @@ public class ActivityManagerImpl implements ActivityManager {
             beans = resolveById(placeRequest.getIdentifier());
         }
 
-        final Set<Activity> activities = startIfNecessary(secure(beans,
-                                                                 secure),
-                                                          placeRequest);
+        final var activities = startIfNecessary(createInstances(beans), placeRequest);
 
         if (placeRequest instanceof PathPlaceRequest) {
-            resolvePathPlaceRequestIdentifier(placeRequest,
-                                              activities);
+            resolvePathPlaceRequestIdentifier(placeRequest,  activities);
         }
 
         return activities;
@@ -143,10 +135,10 @@ public class ActivityManagerImpl implements ActivityManager {
 
         final Activity result = getActivity(placeRequest);
         containsCache.put(placeRequest.getIdentifier(),
-                          result != null);
+                result != null);
         if (path != null) {
             containsCache.put(path,
-                              result != null);
+                    result != null);
         }
 
         return result != null;
@@ -155,23 +147,23 @@ public class ActivityManagerImpl implements ActivityManager {
     @Override
     public Activity getActivity(final PlaceRequest placeRequest) {
         return getActivity(Activity.class,
-                           placeRequest);
+                placeRequest);
     }
 
     @Override
     public Activity getActivity(PlaceRequest placeRequest,
                                 boolean secure) {
         return getActivity(Activity.class,
-                           placeRequest,
-                           secure);
+                placeRequest,
+                secure);
     }
 
     @Override
     public <T extends Activity> T getActivity(final Class<T> clazz,
                                               final PlaceRequest placeRequest) {
         return getActivity(clazz,
-                           placeRequest,
-                           true);
+                placeRequest,
+                true);
     }
 
     @Override
@@ -179,7 +171,7 @@ public class ActivityManagerImpl implements ActivityManager {
                                               final PlaceRequest placeRequest,
                                               final boolean secure) {
         final Set<Activity> activities = getActivities(placeRequest,
-                                                       secure);
+                secure);
         if (activities.size() == 0) {
             return null;
         }
@@ -197,8 +189,8 @@ public class ActivityManagerImpl implements ActivityManager {
                 activity.onShutdown();
             } catch (Exception ex) {
                 lifecycleErrorHandler.handle(activity,
-                                             LifecyclePhase.SHUTDOWN,
-                                             ex);
+                        LifecyclePhase.SHUTDOWN,
+                        ex);
             }
             if (isDependentScope) {
                 iocManager.destroyBean(activity);
@@ -235,39 +227,19 @@ public class ActivityManagerImpl implements ActivityManager {
         return beanDef.getScope();
     }
 
-    private <T extends Activity> Set<T> secure(final Collection<SyncBeanDef<T>> activityBeans,
-                                               final boolean protectedAccess) {
-        final Set<T> activities = new HashSet<T>(activityBeans.size());
+    private <T extends Activity> Set<T> createInstances(final Collection<SyncBeanDef<T>> activityBeans) {
+        var activities = new HashSet<T>(activityBeans.size());
 
-        for (final SyncBeanDef<T> activityBean : activityBeans) {
+        for (final var activityBean : activityBeans) {
             if (!activityBean.isActivated()) {
                 continue;
             }
             final T instance = activityBean.getInstance();
-            if (!protectedAccess || authzManager.authorize(instance, identity)) {
                 activities.add(instance);
-            } else {
-                // Since user does not have permission, destroy bean to avoid memory leak
-                if (activityBean.getScope().equals(Dependent.class)) {
-                    iocManager.destroyBean(instance);
-                }
-            }
+            
         }
 
         return activities;
-    }
-
-    private SplashScreenActivity secure(final SplashScreenActivity bean) {
-        if (bean == null) {
-            return null;
-        }
-
-        if (authzManager.authorize(bean,
-                                   identity)) {
-            return bean;
-        }
-
-        return null;
     }
 
     private <T extends Activity> T startIfNecessary(T activity,
@@ -278,7 +250,7 @@ public class ActivityManagerImpl implements ActivityManager {
         try {
             if (!startedActivities.containsKey(activity)) {
                 startedActivities.put(activity,
-                                      place);
+                        place);
                 if (activity.isDynamic() && place instanceof PathPlaceRequest) {
                     activity.onStartup(ExternalPathPlaceRequest.create((PathPlaceRequest) place));
                 } else {
@@ -288,8 +260,8 @@ public class ActivityManagerImpl implements ActivityManager {
             return activity;
         } catch (Exception ex) {
             lifecycleErrorHandler.handle(activity,
-                                         LifecyclePhase.STARTUP,
-                                         ex);
+                    LifecyclePhase.STARTUP,
+                    ex);
             destroyActivity(activity);
             return null;
         }
@@ -302,17 +274,12 @@ public class ActivityManagerImpl implements ActivityManager {
      * @param place
      * @return
      */
-    private Set<Activity> startIfNecessary(Set<Activity> activities,
+    private Set<Activity> startIfNecessary(Collection<Activity> activities,
                                            PlaceRequest place) {
-        Set<Activity> validatedActivities = new HashSet<Activity>();
-        for (Activity activity : activities) {
-            Activity validated = startIfNecessary(activity,
-                                                  place);
-            if (validated != null) {
-                validatedActivities.add(validated);
-            }
-        }
-        return validatedActivities;
+        return activities.stream()
+                         .map(a -> startIfNecessary(a, place))
+                         .filter(Objects::nonNull)
+                         .collect(Collectors.toSet());
     }
 
     /**

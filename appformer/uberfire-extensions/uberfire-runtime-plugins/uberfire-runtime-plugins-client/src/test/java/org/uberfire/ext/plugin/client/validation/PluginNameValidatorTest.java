@@ -16,8 +16,10 @@
 
 package org.uberfire.ext.plugin.client.validation;
 
-import java.util.HashSet;
-import java.util.Set;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
 
 import org.jboss.errai.common.client.api.Caller;
 import org.junit.Before;
@@ -29,21 +31,13 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.uberfire.backend.vfs.PathFactory;
 import org.uberfire.ext.editor.commons.client.validation.ValidationErrorReason;
 import org.uberfire.ext.editor.commons.client.validation.ValidatorWithReasonCallback;
-import org.uberfire.ext.plugin.client.info.PluginsInfo;
-import org.uberfire.ext.plugin.model.Activity;
 import org.uberfire.ext.plugin.model.Plugin;
 import org.uberfire.ext.plugin.model.PluginType;
 import org.uberfire.ext.plugin.service.PluginServices;
 import org.uberfire.mocks.CallerMock;
 
-import static org.mockito.ArgumentMatchers.anyCollection;
-import static org.mockito.Mockito.*;
-
 @RunWith(MockitoJUnitRunner.class)
 public class PluginNameValidatorTest {
-
-    @Mock
-    private PluginsInfo pluginsInfo;
 
     @Mock
     private ValidatorWithReasonCallback callback;
@@ -60,72 +54,73 @@ public class PluginNameValidatorTest {
         pluginServicesCaller = new CallerMock<PluginServices>(pluginServices);
         validator.pluginServices = pluginServicesCaller;
 
-        Set<Activity> activities = new HashSet<Activity>();
-        activities.add(new Plugin("existingPerspectiveLayout",
-                                  PluginType.PERSPECTIVE_LAYOUT,
-                                  PathFactory.newPath("test1",
-                                                      "/tmp/test1")));
-        activities.add(new Plugin("existingScreen",
-                                  PluginType.SCREEN,
-                                  PathFactory.newPath("test2",
-                                                      "/tmp/test2")));
-        activities.add(new Plugin("existingEditor",
-                                  PluginType.EDITOR,
-                                  PathFactory.newPath("test3",
-                                                      "/tmp/test3")));
-        activities.add(new Plugin("existingSplashScreen",
-                                  PluginType.SPLASH,
-                                  PathFactory.newPath("test4",
-                                                      "/tmp/test4")));
-        activities.add(new Plugin("existingDynamicMenu",
-                                  PluginType.DYNAMIC_MENU,
-                                  PathFactory.newPath("test5",
-                                                      "/tmp/test5")));
+        var plugins = List.of(
+                new Plugin("existingPerspectiveLayout",
+                        PluginType.PERSPECTIVE_LAYOUT,
+                        PathFactory.newPath("test1",
+                                "/tmp/test1")),
+                new Plugin("existingScreen",
+                        PluginType.SCREEN,
+                        PathFactory.newPath("test2",
+                                "/tmp/test2")),
+                new Plugin("existingEditor",
+                        PluginType.EDITOR,
+                        PathFactory.newPath("test3",
+                                "/tmp/test3")),
+                new Plugin("existingSplashScreen",
+                        PluginType.SPLASH,
+                        PathFactory.newPath("test4",
+                                "/tmp/test4")),
+                new Plugin("existingDynamicMenu",
+                        PluginType.DYNAMIC_MENU,
+                        PathFactory.newPath("test5",
+                                "/tmp/test5")));
 
-        when(pluginsInfo.getAllPlugins(anyCollection())).thenReturn(activities);
+        when(pluginServices.listPlugins()).thenReturn(plugins);
+
     }
 
     @Test
     public void validateEmptyName() {
         validator.validateName("",
-                               callback);
+                callback);
         verify(callback).onFailure(ValidationErrorReason.EMPTY_NAME.name());
 
         validator.validateName("notEmpty",
-                               callback);
+                callback);
         verify(callback).onSuccess();
     }
 
     @Test
     public void validateEmptyNameWithExtension() {
         validator.validateName(".plugin",
-                               callback);
+                callback);
         verify(callback).onFailure(ValidationErrorReason.EMPTY_NAME.name());
 
         validator.validateName("notEmpty.plugin",
-                               callback);
+                callback);
         verify(callback).onSuccess();
     }
 
     @Test
     public void validateInvalidName() {
         validator.validateName("invalid*.plugin",
-                               callback);
+                callback);
         verify(callback).onFailure(ValidationErrorReason.INVALID_NAME.name());
 
         validator.validateName("valid.plugin",
-                               callback);
+                callback);
         verify(callback).onSuccess();
     }
 
     @Test
     public void validateDuplicatedName() {
         validator.validateName("existingPerspectiveLayout.plugin",
-                               callback);
+                callback);
         verify(callback).onFailure(ValidationErrorReason.DUPLICATED_NAME.name());
 
         validator.validateName("nonExistingPerspectiveLayout.plugin",
-                               callback);
+                callback);
         verify(callback).onSuccess();
     }
 }

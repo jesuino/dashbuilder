@@ -354,7 +354,6 @@ public class IOWatchServiceExecutorImplTest {
 
         when(context.getOldPath()).thenReturn(oldPath);
         when(context.getPath()).thenReturn(path);
-        when(event.context()).thenReturn(context);
         return event;
     }
 
@@ -369,8 +368,6 @@ public class IOWatchServiceExecutorImplTest {
                      resourceUpdatedEventCaptor.getValue().getPath().toURI());
         assertEquals(sessionId,
                      resourceUpdatedEventCaptor.getValue().getSessionInfo().getId());
-        assertEquals(userId,
-                     resourceUpdatedEventCaptor.getValue().getSessionInfo().getIdentity().getIdentifier());
         assertEquals(commitMessage,
                      resourceUpdatedEventCaptor.getValue().getMessage());
     }
@@ -386,8 +383,6 @@ public class IOWatchServiceExecutorImplTest {
                      resourceDeletedEventCaptor.getValue().getPath().toURI());
         assertEquals(sessionId,
                      resourceDeletedEventCaptor.getValue().getSessionInfo().getId());
-        assertEquals(userId,
-                     resourceDeletedEventCaptor.getValue().getSessionInfo().getIdentity().getIdentifier());
         assertEquals(commitMessage,
                      resourceDeletedEventCaptor.getValue().getMessage());
     }
@@ -403,8 +398,6 @@ public class IOWatchServiceExecutorImplTest {
                      resourceAddedEventCaptor.getValue().getPath().toURI());
         assertEquals(sessionId,
                      resourceAddedEventCaptor.getValue().getSessionInfo().getId());
-        assertEquals(userId,
-                     resourceAddedEventCaptor.getValue().getSessionInfo().getIdentity().getIdentifier());
         assertEquals(commitMessage,
                      resourceAddedEventCaptor.getValue().getMessage());
     }
@@ -423,8 +416,6 @@ public class IOWatchServiceExecutorImplTest {
                      resourceRenamedEventCaptor.getValue().getDestinationPath().toURI());
         assertEquals(sessionId,
                      resourceRenamedEventCaptor.getValue().getSessionInfo().getId());
-        assertEquals(userId,
-                     resourceRenamedEventCaptor.getValue().getSessionInfo().getIdentity().getIdentifier());
         assertEquals(commitMessage,
                      resourceRenamedEventCaptor.getValue().getMessage());
     }

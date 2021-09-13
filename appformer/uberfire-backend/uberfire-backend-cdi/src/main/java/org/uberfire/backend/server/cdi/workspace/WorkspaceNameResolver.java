@@ -51,10 +51,9 @@ public class WorkspaceNameResolver {
      */
     public String getWorkspaceName() {
         try {
-            SessionInfo sessionInfo = getSessionInfo();
-            return sessionInfo.getIdentity().getIdentifier();
+            return getSessionInfo().getId();
         } catch (Exception e) {
-            String name = WorkspaceContext.get();
+            var name = WorkspaceContext.get();
             if (name == null || name.isEmpty()) {
                 return GLOBAL_WORKSPACE_NAME;
             } else {

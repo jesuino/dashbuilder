@@ -19,56 +19,69 @@ package org.uberfire.ext.layout.editor.impl;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.event.Event;
 import javax.inject.Inject;
 
+import org.dashbuilder.project.storage.ProjectStorageServices;
 import org.jboss.errai.bus.server.annotations.Service;
 import org.uberfire.backend.vfs.Path;
+import org.uberfire.backend.vfs.PathFactory;
 import org.uberfire.ext.editor.commons.backend.service.SaveAndRenameServiceImpl;
 import org.uberfire.ext.editor.commons.file.DefaultMetadata;
 import org.uberfire.ext.layout.editor.api.PerspectiveServices;
 import org.uberfire.ext.layout.editor.api.editor.LayoutTemplate;
-import org.uberfire.ext.plugin.backend.PluginServicesImpl;
-import org.uberfire.ext.plugin.model.LayoutEditorModel;
+import org.uberfire.ext.plugin.event.PluginAdded;
+import org.uberfire.ext.plugin.event.PluginDeleted;
+import org.uberfire.ext.plugin.event.PluginRenamed;
+import org.uberfire.ext.plugin.event.PluginSaved;
 import org.uberfire.ext.plugin.model.Plugin;
 import org.uberfire.ext.plugin.model.PluginType;
-import org.uberfire.spaces.SpacesAPI;
 
 @Service
 @ApplicationScoped
 public class PerspectiveServicesImpl implements PerspectiveServices {
 
-    private PluginServicesImpl pluginServices;
     private LayoutServicesImpl layoutServices;
+    private ProjectStorageServices projectStorageServices;
     private SaveAndRenameServiceImpl<LayoutTemplate, DefaultMetadata> saveAndRenameService;
+    private Event<PluginAdded> pluginAddedEvent;
+    private Event<PluginDeleted> pluginDeletedEvent;
+    private Event<PluginSaved> pluginSavedEvent;
+    private Event<PluginRenamed> pluginRenamedEvent;
 
     @Inject
-    public PerspectiveServicesImpl(final PluginServicesImpl pluginServices,
+    public PerspectiveServicesImpl(final ProjectStorageServices projectStorageServices,
                                    final LayoutServicesImpl layoutServices,
-                                   final SaveAndRenameServiceImpl<LayoutTemplate, DefaultMetadata> saveAndRenameService) {
-        this.pluginServices = pluginServices;
+                                   final SaveAndRenameServiceImpl<LayoutTemplate, DefaultMetadata> saveAndRenameService,
+                                   final Event<PluginAdded> pluginAddedEvent,
+                                   final Event<PluginDeleted> pluginDeletedEvent,
+                                   final Event<PluginSaved> pluginSavedEvent,
+                                   final Event<PluginRenamed> pluginRenamedEvent) {
+        this.projectStorageServices = projectStorageServices;
         this.layoutServices = layoutServices;
         this.saveAndRenameService = saveAndRenameService;
-    }
-
-    @PostConstruct
-    public void init() {
-        saveAndRenameService.init(this);
+        this.pluginAddedEvent = pluginAddedEvent;
+        this.pluginDeletedEvent = pluginDeletedEvent;
+        this.pluginSavedEvent = pluginSavedEvent;
+        this.pluginRenamedEvent = pluginRenamedEvent;
     }
 
     @Override
     public Plugin createNewPerspective(String name, LayoutTemplate.Style style) {
-        Plugin perspectivePlugin = pluginServices.createNewPlugin(name, PluginType.PERSPECTIVE_LAYOUT);
         LayoutTemplate layoutTemplate = new LayoutTemplate(name, style);
-        saveLayoutTemplate(perspectivePlugin.getPath(), layoutTemplate, "Perspective '" + name + "' check-in");
-        return perspectivePlugin;
+        saveLayoutTemplate(layoutTemplate);
+        var plugin = new Plugin(name, PluginType.PERSPECTIVE_LAYOUT, PathFactory.newPath(name, name));
+        pluginAddedEvent.fire(new PluginAdded(plugin, null));
+        return plugin;
     }
 
     @Override
     public Collection<LayoutTemplate> listLayoutTemplates() {
-        return pluginServices.listPlugins(PluginType.PERSPECTIVE_LAYOUT).stream()
-                .map(this::getLayoutTemplate)
+        return projectStorageServices.listPerspectives()
+                .values()
+                .stream()
+                .map(layoutServices::fromJson)
                 .collect(Collectors.toList());
     }
 
@@ -80,11 +93,10 @@ public class PerspectiveServicesImpl implements PerspectiveServices {
 
     @Override
     public LayoutTemplate getLayoutTemplate(Path perspectivePath) {
-        LayoutEditorModel layoutEditorModel = pluginServices.getLayoutEditor(perspectivePath, PluginType.PERSPECTIVE_LAYOUT);
-        if (layoutEditorModel.isEmptyLayout()) {
-            return new LayoutTemplate(layoutEditorModel.getName(), LayoutTemplate.Style.PAGE);
-        }
-        return layoutServices.convertLayoutFromString(layoutEditorModel.getLayoutEditorModel());
+        var name = perspectivePath.getFileName();
+        return projectStorageServices.getPerspective(name)
+                .map(layoutServices::fromJson)
+                .orElse(new LayoutTemplate(name, LayoutTemplate.Style.PAGE));
     }
 
     @Override
@@ -96,60 +108,55 @@ public class PerspectiveServicesImpl implements PerspectiveServices {
         if (perspectiveName == null) {
             return null;
         }
-        for (Plugin plugin : pluginServices.listPlugins(PluginType.PERSPECTIVE_LAYOUT)) {
-            if (PluginType.PERSPECTIVE_LAYOUT.equals(plugin.getType()) && plugin.getName().equals(perspectiveName)) {
-                return plugin;
-            }
-        }
-        return null;
+        return projectStorageServices.getPerspective(perspectiveName)
+                .map(p -> new Plugin(perspectiveName, PluginType.PERSPECTIVE_LAYOUT, PathFactory.newPath(
+                        perspectiveName, perspectiveName)))
+                .orElse(null);
     }
 
     @Override
-    public Path saveLayoutTemplate(Path perspectivePath, LayoutTemplate layoutTemplate, String commitMessage) {
-        String layoutModel = layoutServices.convertLayoutToString(layoutTemplate);
-        LayoutEditorModel plugin = new LayoutEditorModel(layoutTemplate.getName(), PluginType.PERSPECTIVE_LAYOUT, perspectivePath, layoutModel);
-        pluginServices.saveLayout(plugin, commitMessage);
-        return perspectivePath;
+    public Path saveLayoutTemplate(LayoutTemplate layoutTemplate) {
+        var layoutModel = layoutServices.toJson(layoutTemplate);
+        var path = PathFactory.newPath(layoutTemplate.getName(), layoutTemplate.getName());
+        
+        projectStorageServices.savePerspective(layoutTemplate.getName(), layoutModel);
+        pluginSavedEvent.fire(new PluginSaved(new Plugin(layoutTemplate.getName(), PluginType.PERSPECTIVE_LAYOUT, path), null));
+        return path;
     }
 
     @Override
     public LayoutTemplate convertToLayoutTemplate(String layoutModel) {
-        return layoutServices.convertLayoutFromString(layoutModel);
+        return layoutServices.fromJson(layoutModel);
     }
 
     @Override
     public Path copy(Path path, String newName, String comment) {
-        Path pathCopy = pluginServices.copy(path, newName, comment);
-        this.setLayoutTemplateName(pathCopy, newName, comment);
-        return pathCopy;
+        var perspectiveOp = projectStorageServices.getPerspective(path.getFileName());
+        var newPath = PathFactory.newPath(newName, newName);
+        perspectiveOp.ifPresent(p -> projectStorageServices.savePerspective(newName, p));
+        pluginAddedEvent.fire(new PluginAdded(new Plugin(newName, PluginType.PERSPECTIVE_LAYOUT, newPath), null));
+        return newPath;
     }
 
     @Override
     public Path copy(Path path, String newName, Path targetDirectory, String comment) {
-        Path pathCopy = pluginServices.copy(path, newName, targetDirectory, comment);
-        this.setLayoutTemplateName(pathCopy, newName, comment);
-        return pathCopy;
+        return copy(path, newName, comment);
     }
 
     @Override
     public Path rename(Path path, String newName, String comment) {
-        Path pathRenamed = pluginServices.rename(path, newName, comment);
-        this.setLayoutTemplateName(pathRenamed, newName, comment);
-        return pathRenamed;
+        var perspectiveOp = projectStorageServices.getPerspective(path.getFileName());
+        var newPath = PathFactory.newPath(newName, newName);
+        perspectiveOp.ifPresent(p -> projectStorageServices.savePerspective(newName, p));
+        projectStorageServices.removePerspective(path.getFileName());
+        pluginRenamedEvent.fire(new PluginRenamed(path.getFileName(),  new Plugin(newName, PluginType.PERSPECTIVE_LAYOUT, newPath), null));
+        return newPath;
     }
 
     @Override
     public void delete(Path path, String comment) {
-        pluginServices.delete(path, comment);
-    }
-
-    private void setLayoutTemplateName(Path path, String newName, String comment) {
-        LayoutTemplate layoutTemplate = getLayoutTemplate(path);
-        layoutTemplate.setName(newName);
-
-        String layoutModel = layoutServices.convertLayoutToString(layoutTemplate);
-        LayoutEditorModel pluginCopy = new LayoutEditorModel(newName, PluginType.PERSPECTIVE_LAYOUT, path, layoutModel);
-        pluginServices.saveLayout(pluginCopy, comment);
+        projectStorageServices.removePerspective(path.getFileName());
+        pluginDeletedEvent.fire(new PluginDeleted(new Plugin(path.getFileName(), PluginType.PERSPECTIVE_LAYOUT, path), null));
     }
 
     @Override
@@ -157,7 +164,7 @@ public class PerspectiveServicesImpl implements PerspectiveServices {
                      final LayoutTemplate content,
                      final DefaultMetadata metadata,
                      final String comment) {
-        return saveLayoutTemplate(path, content, comment);
+        return saveLayoutTemplate(content);
     }
 
     @Override
@@ -166,6 +173,8 @@ public class PerspectiveServicesImpl implements PerspectiveServices {
                               final DefaultMetadata metadata,
                               final LayoutTemplate content,
                               final String comment) {
-        return saveAndRenameService.saveAndRename(path, newFileName, metadata, content, comment);
+        this.save(path, content, metadata, comment);
+        saveAndRenameService.saveAndRename(path, newFileName, metadata, content, comment);
+        return this.rename(path, newFileName, comment);
     }
 }

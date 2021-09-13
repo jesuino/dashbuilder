@@ -16,8 +16,12 @@
 
 package org.uberfire.client.workbench.widgets.menu.megamenu;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+
 import org.jboss.errai.ioc.client.api.ManagedInstance;
-import org.jboss.errai.security.shared.api.identity.User;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,28 +40,15 @@ import org.uberfire.client.workbench.widgets.menu.megamenu.contextmenuitem.Child
 import org.uberfire.client.workbench.widgets.menu.megamenu.contextmenuitem.GroupContextMenuItemPresenter;
 import org.uberfire.client.workbench.widgets.menu.megamenu.menuitem.ChildMenuItemPresenter;
 import org.uberfire.client.workbench.widgets.menu.megamenu.menuitem.GroupMenuItemPresenter;
-import org.uberfire.rpc.SessionInfo;
-import org.uberfire.security.authz.AuthorizationManager;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
 public class WorkbenchMegaMenuProducerTest {
-
-    @Mock
-    private AuthorizationManager authzManager;
 
     @Mock
     private PerspectiveManager perspectiveManager;
 
     @Mock
     private ActivityManager activityManager;
-
-    @Mock
-    private User identity;
 
     @Mock
     private WorkbenchMegaMenuPresenter.View view;
@@ -84,12 +75,6 @@ public class WorkbenchMegaMenuProducerTest {
     private PlaceManager placeManager;
 
     @Mock
-    private AuthorizationManager authorizationManager;
-
-    @Mock
-    private SessionInfo sessionInfo;
-
-    @Mock
     private ManagedInstance<ChildMenuItemPresenter> childMenuItemPresenters;
 
     @Mock
@@ -109,15 +94,11 @@ public class WorkbenchMegaMenuProducerTest {
 
     @Before
     public void setup() {
-        producer = new WorkbenchMegaMenuProducer(authzManager,
-                                                 perspectiveManager,
+        producer = new WorkbenchMegaMenuProducer(perspectiveManager,
                                                  activityManager,
-                                                 identity,
                                                  view,
                                                  megaMenuBrands,
                                                  placeManager,
-                                                 authorizationManager,
-                                                 sessionInfo,
                                                  childMenuItemPresenters,
                                                  groupMenuItemPresenters,
                                                  childContextMenuItemPresenters,

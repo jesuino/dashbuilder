@@ -14,9 +14,17 @@
  */
 package org.dashbuilder.client.navigation.widget.editor;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.dashbuilder.client.navigation.plugin.PerspectivePluginManager;
-import org.dashbuilder.navigation.NavFactory;
-import org.dashbuilder.navigation.NavGroup;
 import org.dashbuilder.navigation.NavTree;
 import org.dashbuilder.navigation.impl.NavTreeBuilder;
 import org.junit.Before;
@@ -24,12 +32,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.uberfire.client.authz.PerspectiveTreeProvider;
 import org.uberfire.ext.widgets.common.client.dropdown.PerspectiveDropDown;
 import org.uberfire.mvp.Command;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TargetPerspectiveEditorTest {
@@ -42,9 +46,6 @@ public class TargetPerspectiveEditorTest {
 
     @Mock
     PerspectiveDropDown perspectiveDropDown;
-
-    @Mock
-    PerspectiveTreeProvider perspectiveTreeProvider;
 
     @Mock
     Command updateCommand;
@@ -65,7 +66,7 @@ public class TargetPerspectiveEditorTest {
 
     @Before
     public void setUp() throws Exception {
-        presenter = new TargetPerspectiveEditor(view, perspectiveDropDown,perspectivePluginManager, perspectiveTreeProvider);
+        presenter = new TargetPerspectiveEditor(view, perspectiveDropDown,perspectivePluginManager);
         presenter.setNavItemList(NAV_TREE.getRootItems());
         presenter.setPerspectiveId("A");
         presenter.setNavGroupId("level1a");
@@ -111,9 +112,6 @@ public class TargetPerspectiveEditorTest {
     @Test
     public void testPerspectiveName() {
         when(perspectivePluginManager.isRuntimePerspective("A.1")).thenReturn(true);
-        when(perspectiveTreeProvider.getPerspectiveName("B.1")).thenReturn("Pretty");
-
         assertEquals(presenter.getPerspectiveName("A.1"), "A.1");
-        assertEquals(presenter.getPerspectiveName("B.1"), "Pretty");
     }
 }

@@ -16,6 +16,15 @@
 
 package org.uberfire.backend.server.io.object;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -28,13 +37,6 @@ import org.junit.Test;
 import org.uberfire.io.IOService;
 import org.uberfire.java.nio.file.FileSystem;
 import org.uberfire.mocks.FileSystemTestingUtils;
-import org.uberfire.mocks.SessionInfoMock;
-import org.uberfire.rpc.SessionInfo;
-
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyMap;
-import static org.mockito.Mockito.*;
 
 public class ObjectStorageTest {
 
@@ -48,13 +50,11 @@ public class ObjectStorageTest {
 
     private IOService ioService;
     private FileSystem fileSystem;
-    private SessionInfo sessionInfo;
     private ObjectStorageImpl objectStorage;
 
     @Before
     public void setup() throws IOException {
         fileSystemTestingUtils.setup();
-        sessionInfo = mockSessionInfo();
         fileSystem = mockFileSystem();
         ioService = mockIoService(fileSystem);
         objectStorage = new ObjectStorageImpl(ioService);
@@ -141,10 +141,6 @@ public class ObjectStorageTest {
         assertTrue(objectStorage.exists("/forks/uberfire"));
         objectStorage.delete("/forks/uberfire");
         assertFalse(objectStorage.exists("/forks/uberfire"));
-    }
-
-    private SessionInfo mockSessionInfo() {
-        return new SessionInfoMock();
     }
 
     private FileSystem mockFileSystem() {

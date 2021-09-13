@@ -16,23 +16,35 @@
 
 package org.uberfire.client.mvp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.Dependent;
 
 import org.jboss.errai.ioc.client.container.IOCBeanDef;
 import org.jboss.errai.ioc.client.container.SyncBeanDef;
 import org.jboss.errai.ioc.client.container.SyncBeanManagerImpl;
-import org.jboss.errai.security.shared.api.identity.User;
-import org.jboss.errai.security.shared.api.identity.UserImpl;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.uberfire.backend.vfs.ObservablePath;
 import org.uberfire.backend.vfs.Path;
@@ -40,13 +52,6 @@ import org.uberfire.client.util.MockIOCBeanDef;
 import org.uberfire.mvp.PlaceRequest;
 import org.uberfire.mvp.impl.DefaultPlaceRequest;
 import org.uberfire.mvp.impl.PathPlaceRequest;
-import org.uberfire.security.Resource;
-import org.uberfire.security.authz.AuthorizationManager;
-
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ActivityManagerLifecycleTest {
@@ -57,11 +62,7 @@ public class ActivityManagerLifecycleTest {
     SyncBeanManagerImpl iocManager;
     @Mock
     ActivityBeansCache activityBeansCache;
-    @Mock
-    AuthorizationManager authzManager;
 
-    @Spy
-    User dorothy = new UserImpl("dorothy");
     // the activity manager we're unit testing
     @InjectMocks
     ActivityManagerImpl activityManager = new ActivityManagerImpl();
@@ -98,9 +99,6 @@ public class ActivityManagerLifecycleTest {
                                                               pathPlaceActivity);
         pathIocBeanSpy = spy(pathIocBean);
         when(activityBeansCache.getActivity(pathPlace.getIdentifier())).thenReturn(pathIocBeanSpy);
-
-        when(authzManager.authorize(any(Resource.class),
-                                    eq(dorothy))).thenReturn(true);
     }
 
     @Test
@@ -197,36 +195,6 @@ public class ActivityManagerLifecycleTest {
                times(1)).onShutdown();
         verify(iocManager,
                times(1)).destroyBean(kansasActivity);
-    }
-
-    @Test
-    public void shouldNotSeeUnauthorizedActivities() throws Exception {
-        when(authzManager.authorize(any(Resource.class),
-                                    eq(dorothy))).thenReturn(false);
-        Set<Activity> activities = activityManager.getActivities(kansas);
-        assertEquals(0,
-                     activities.size());
-    }
-
-    @Test
-    public void shouldNotLeakUnauthorizedActivityInstances() throws Exception {
-        when(authzManager.authorize(any(Resource.class),
-                                    eq(dorothy))).thenReturn(false);
-        activityManager.getActivities(kansas);
-
-        // this overspecified; all we care is that any activity that was created has also been destroyed.
-        // it would be equally okay if the bean was never instantiated in the first place.
-        verify(activityBeansCache).getActivity("kansas");
-        verify(iocManager).destroyBean(kansasActivity);
-    }
-
-    @Test
-    public void shouldNotStartUnauthorizedActivities() throws Exception {
-        when(authzManager.authorize(any(Resource.class),
-                                    eq(dorothy))).thenReturn(false);
-        activityManager.getActivities(kansas);
-        verify(kansasActivity,
-               never()).onStartup(kansas);
     }
 
     @Test

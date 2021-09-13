@@ -23,7 +23,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.jboss.errai.bus.server.annotations.Service;
-import org.jboss.errai.security.shared.api.identity.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.uberfire.backend.server.util.Paths;
@@ -44,7 +43,6 @@ public class DeleteServiceImpl implements DeleteService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DeleteServiceImpl.class);
 
     private IOService ioService;
-    private User identity;
     private SessionInfo sessionInfo;
     private Instance<DeleteHelper> helpers;
     private Instance<DeleteRestrictor> deleteRestrictorBeans;
@@ -55,12 +53,10 @@ public class DeleteServiceImpl implements DeleteService {
 
     @Inject
     public DeleteServiceImpl(final @Named("ioStrategy") IOService ioService,
-                             final User identity,
                              final SessionInfo sessionInfo,
                              final Instance<DeleteHelper> helpers,
                              final Instance<DeleteRestrictor> deleteRestrictorBeans) {
         this.ioService = ioService;
-        this.identity = identity;
         this.sessionInfo = sessionInfo;
         this.helpers = helpers;
         this.deleteRestrictorBeans = deleteRestrictorBeans;
@@ -70,7 +66,7 @@ public class DeleteServiceImpl implements DeleteService {
     public void delete(final Path path,
                        final String comment) {
 
-        LOGGER.info("User:" + identity.getIdentifier() + " deleting file [" + path.getFileName() + "]");
+        LOGGER.info("Deleting file [" + path.getFileName() + "]");
 
         checkRestrictions(path);
 
@@ -89,7 +85,7 @@ public class DeleteServiceImpl implements DeleteService {
             startBatch(paths);
 
             for (final Path path : paths) {
-                LOGGER.info("User:" + identity.getIdentifier() + " deleting file (if exists) [" + path.getFileName() + "]");
+                LOGGER.info("Deleting file (if exists) [" + path.getFileName() + "]");
 
                 checkRestrictions(path);
                 deletePathIfExists(path,
@@ -139,7 +135,6 @@ public class DeleteServiceImpl implements DeleteService {
 
             ioService.delete(Paths.convert(path),
                              new CommentedOption(sessionInfo != null ? sessionInfo.getId() : "--",
-                                                 identity.getIdentifier(),
                                                  null,
                                                  comment));
         } catch (final Exception e) {
@@ -158,7 +153,6 @@ public class DeleteServiceImpl implements DeleteService {
 
         ioService.deleteIfExists(Paths.convert(path),
                                  new CommentedOption(sessionInfo.getId(),
-                                                     identity.getIdentifier(),
                                                      null,
                                                      comment),
                                  StandardDeleteOption.NON_EMPTY_DIRECTORIES

@@ -15,15 +15,23 @@
  */
 package org.dashbuilder.client.sales.widgets;
 
-import javax.annotation.PostConstruct;
+import static org.dashbuilder.dataset.group.AggregateFunctionType.AVERAGE;
+import static org.dashbuilder.dataset.group.AggregateFunctionType.COUNT;
+import static org.dashbuilder.dataset.group.AggregateFunctionType.SUM;
+import static org.dashbuilder.dataset.group.DateIntervalType.MONTH;
+import static org.dashbuilder.dataset.sort.SortOrder.DESCENDING;
+import static org.dashbuilder.shared.sales.SalesConstants.AMOUNT;
+import static org.dashbuilder.shared.sales.SalesConstants.CLOSING_DATE;
+import static org.dashbuilder.shared.sales.SalesConstants.COUNTRY;
+import static org.dashbuilder.shared.sales.SalesConstants.EXPECTED_AMOUNT;
+import static org.dashbuilder.shared.sales.SalesConstants.PROBABILITY;
+import static org.dashbuilder.shared.sales.SalesConstants.PRODUCT;
+import static org.dashbuilder.shared.sales.SalesConstants.SALES_OPPS;
+import static org.dashbuilder.shared.sales.SalesConstants.SALES_PERSON;
+
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.uibinder.client.UiBinder;
-import com.google.gwt.uibinder.client.UiField;
-import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.Widget;
 import org.dashbuilder.client.gallery.GalleryWidget;
 import org.dashbuilder.client.resources.i18n.AppConstants;
 import org.dashbuilder.displayer.DisplayerSettingsFactory;
@@ -31,10 +39,11 @@ import org.dashbuilder.displayer.client.Displayer;
 import org.dashbuilder.displayer.client.DisplayerCoordinator;
 import org.dashbuilder.displayer.client.DisplayerLocator;
 
-import static org.dashbuilder.shared.sales.SalesConstants.*;
-import static org.dashbuilder.dataset.group.DateIntervalType.*;
-import static org.dashbuilder.dataset.sort.SortOrder.*;
-import static org.dashbuilder.dataset.group.AggregateFunctionType.*;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.uibinder.client.UiBinder;
+import com.google.gwt.uibinder.client.UiField;
+import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.Widget;
 
 /**
  * A composite widget that represents an entire dashboard sample composed using an UI binder template.

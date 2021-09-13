@@ -27,9 +27,6 @@ import org.uberfire.io.impl.IOServiceDotFileImpl;
 import org.uberfire.java.nio.file.FileSystem;
 import org.uberfire.java.nio.file.FileSystemAlreadyExistsException;
 import org.uberfire.java.nio.file.Path;
-import org.uberfire.java.nio.file.api.FileSystemProviders;
-import org.uberfire.java.nio.fs.jgit.JGitFileSystemProvider;
-import org.uberfire.java.nio.fs.jgit.manager.JGitFileSystemsCache;
 
 public class FileSystemTestingUtils {
 
@@ -93,21 +90,8 @@ public class FileSystemTestingUtils {
         return fileSystem;
     }
 
-    public void setProviderAsDefault() {
-        JGitFileSystemProvider gitFsProvider = (JGitFileSystemProvider) FileSystemProviders.resolveProvider(URI.create("git://whatever"));
-        gitFsProvider.forceAsDefault();
-    }
-
     public void cleanup() {
         FileUtils.deleteQuietly(path);
-        JGitFileSystemProvider gitFsProvider = (JGitFileSystemProvider) FileSystemProviders.resolveProvider(URI.create("git://whatever"));
-        gitFsProvider.shutdown();
-        FileUtils.deleteQuietly(gitFsProvider.getGitRepoContainerDir());
-    }
-
-    public void shutDownProvider() {
-        JGitFileSystemProvider gitFsProvider = (JGitFileSystemProvider) FileSystemProviders.resolveProvider(URI.create("git://whatever"));
-        gitFsProvider.shutdown();
     }
 
     public FileSystem getFileSystem() {
@@ -118,12 +102,4 @@ public class FileSystemTestingUtils {
         return ioService;
     }
 
-    public JGitFileSystemProvider getProvider() {
-        return (JGitFileSystemProvider) FileSystemProviders.resolveProvider(URI.create("git://whatever"));
-    }
-
-    public JGitFileSystemsCache.JGitFileSystemsCacheInfo getFSCacheInfo() {
-        JGitFileSystemProvider gitFsProvider = (JGitFileSystemProvider) FileSystemProviders.resolveProvider(URI.create("git://whatever"));
-        return gitFsProvider.getFsManager().getFsCache().getCacheInfo();
-    }
 }

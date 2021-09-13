@@ -32,7 +32,6 @@ import org.dashbuilder.navigation.NavFactory;
 import org.dashbuilder.navigation.NavGroup;
 import org.dashbuilder.navigation.NavTree;
 import org.jboss.errai.ioc.client.container.SyncBeanManager;
-import org.uberfire.client.authz.PerspectiveTreeProvider;
 import org.uberfire.client.mvp.PlaceManager;
 import org.uberfire.mvp.Command;
 
@@ -59,20 +58,19 @@ public class NavTreeEditor extends NavItemEditor {
                          NavigationManager navigationManager,
                          SyncBeanManager beanManager,
                          PlaceManager placeManager,
-                         PerspectiveTreeProvider perspectiveTreeProvider,
                          TargetPerspectiveEditor targetPerspectiveEditor,
                          PerspectivePluginManager perspectivePluginManager,
                          Event<NavItemEditStartedEvent> navItemEditStartedEvent,
                          Event<NavItemEditCancelledEvent> navItemEditCancelledEvent,
                          LoadingBox loadingBox) {
 
-        super(view, beanManager,
-                placeManager,
-                perspectiveTreeProvider,
-                targetPerspectiveEditor,
-                perspectivePluginManager,
-                navItemEditStartedEvent,
-                navItemEditCancelledEvent);
+        super(view,
+              beanManager,
+              placeManager,
+              targetPerspectiveEditor,
+              perspectivePluginManager,
+              navItemEditStartedEvent,
+              navItemEditCancelledEvent);
 
         this.view = view;
         this.navigationManager = navigationManager;

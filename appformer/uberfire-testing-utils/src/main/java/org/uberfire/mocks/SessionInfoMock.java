@@ -16,32 +16,16 @@
 
 package org.uberfire.mocks;
 
-import java.util.Map;
-import java.util.Set;
-
-import org.jboss.errai.security.shared.api.Group;
-import org.jboss.errai.security.shared.api.Role;
-import org.jboss.errai.security.shared.api.identity.User;
 import org.uberfire.rpc.SessionInfo;
 
 public class SessionInfoMock implements SessionInfo {
 
     private String id;
 
-    private String identity;
-
-    public SessionInfoMock() {
-        this("admin");
-    }
-
-    public SessionInfoMock(final String identity) {
-        this.identity = identity;
-    }
 
     public SessionInfoMock(final String id,
                            final String identity) {
         this.id = id;
-        this.identity = identity;
     }
 
     @Override
@@ -49,44 +33,4 @@ public class SessionInfoMock implements SessionInfo {
         return id != null ? id : "session_id";
     }
 
-    @Override
-    public User getIdentity() {
-        return new User() {
-            @Override
-            public String getIdentifier() {
-                return identity;
-            }
-
-            @Override
-            public Set<Role> getRoles() {
-                return null;
-            }
-
-            @Override
-            public Set<Group> getGroups() {
-                return null;
-            }
-
-            @Override
-            public Map<String, String> getProperties() {
-                return null;
-            }
-
-            @Override
-            public void setProperty(final String s,
-                                    final String s1) {
-
-            }
-
-            @Override
-            public void removeProperty(final String s) {
-
-            }
-
-            @Override
-            public String getProperty(final String s) {
-                return null;
-            }
-        };
-    }
 }

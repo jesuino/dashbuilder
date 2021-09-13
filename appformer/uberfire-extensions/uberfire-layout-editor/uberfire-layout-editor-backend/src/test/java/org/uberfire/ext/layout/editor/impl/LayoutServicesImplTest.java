@@ -47,8 +47,8 @@ public class LayoutServicesImplTest {
     @Test
     public void layoutMarshaller12withHTMLComponent() {
         String expected = loadSample("12withHTMLComponent.txt");
-        LayoutTemplate template = layoutServices.convertLayoutFromString(expected);
-        String actual = layoutServices.convertLayoutToString(template);
+        LayoutTemplate template = layoutServices.fromJson(expected);
+        String actual = layoutServices.toJson(template);
         assertEquals(expected,
                      actual);
     }
@@ -56,8 +56,8 @@ public class LayoutServicesImplTest {
     @Test
     public void layoutMarshallerBigLayout() {
         String expected = loadSample("BigLayout.txt");
-        LayoutTemplate template = layoutServices.convertLayoutFromString(expected);
-        String actual = layoutServices.convertLayoutToString(template);
+        LayoutTemplate template = layoutServices.fromJson(expected);
+        String actual = layoutServices.toJson(template);
         assertEquals(expected,
                      actual);
     }
@@ -65,8 +65,8 @@ public class LayoutServicesImplTest {
     @Test
     public void layoutMarshallerSubColumns() {
         String expected = loadSample("SubColumnsLayout.txt");
-        LayoutTemplate template = layoutServices.convertLayoutFromString(expected);
-        String actual = layoutServices.convertLayoutToString(template);
+        LayoutTemplate template = layoutServices.fromJson(expected);
+        String actual = layoutServices.toJson(template);
         assertEquals(expected,
                      actual);
     }
@@ -74,8 +74,8 @@ public class LayoutServicesImplTest {
     @Test
     public void layoutMarshallerComponentWithParts() {
         String expected = loadSample("LayoutWithComponentWithParts.txt");
-        LayoutTemplate template = layoutServices.convertLayoutFromString(expected);
-        String actual = layoutServices.convertLayoutToString(template);
+        LayoutTemplate template = layoutServices.fromJson(expected);
+        String actual = layoutServices.toJson(template);
         assertEquals(expected,
                      actual);
     }

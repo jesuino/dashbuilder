@@ -7,7 +7,6 @@
   <inherits name="org.uberfire.client.views.PatternFlyTheme"/>
 
   <inherits name="org.uberfire.ext.plugin.RuntimePluginClient"/>
-  <inherits name="org.uberfire.ext.security.management.UberfireSecurityManagementWorkbench"/>
   <inherits name="org.dashbuilder.DashbuilderKieServerAPI"/>
   <inherits name="org.dashbuilder.DashbuilderClientAll"/>
   <inherits name="org.dashbuilder.DashbuilderKieServerClient"/>

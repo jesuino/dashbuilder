@@ -136,10 +136,10 @@
       <groupId>org.uberfire</groupId>
       <artifactId>uberfire-api</artifactId>
     </dependency>
-
+    
     <dependency>
-      <groupId>org.uberfire</groupId>
-      <artifactId>uberfire-io</artifactId>
+      <groupId>org.dashbuilder</groupId>
+      <artifactId>dashbuilder-project-storage</artifactId>
     </dependency>
 
     <!-- Unit testing -->

@@ -38,8 +38,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
-import javax.ws.rs.NotSupportedException;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.dashbuilder.dataset.def.CSVDataSetDef;
@@ -56,6 +54,7 @@ import org.dashbuilder.navigation.json.NavTreeJSONMarshaller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.uberfire.ext.layout.editor.api.editor.LayoutTemplate;
+import org.uberfire.java.nio.base.NotImplementedException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.dashbuilder.dsl.helper.ComponentsHelper.listComponents;
@@ -88,7 +87,7 @@ public class DashboardZipSerializer implements DashboardSerializer {
 
     @Override
     public Dashboard deserialize(InputStream model) {
-        throw new NotSupportedException("Deserialize is not supported for ZIP Serializer");
+        throw new NotImplementedException();
     }
     
     /**

@@ -31,7 +31,6 @@ import org.dashbuilder.dataset.uuid.UUIDGenerator;
 import org.dashbuilder.exception.ExceptionManager;
 import org.jboss.errai.bus.server.annotations.Service;
 import org.jboss.errai.bus.server.api.RpcContext;
-import org.jboss.errai.security.shared.api.identity.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,21 +39,17 @@ import org.slf4j.LoggerFactory;
 public class DataSetDefServicesImpl implements DataSetDefServices {
 
     protected static Logger log = LoggerFactory.getLogger(DataSetDefServicesImpl.class);
-    protected User identity;
     protected ExceptionManager exceptionManager;
     protected UUIDGenerator uuidGenerator;
     protected DataSetDefRegistryCDI dataSetDefRegistry;
     protected DataSetDefDeployerCDI dataSetDefDeployer;
 
-    public DataSetDefServicesImpl() {
-    }
+    public DataSetDefServicesImpl() {}
 
     @Inject
-    public DataSetDefServicesImpl(User identity,
-                                  ExceptionManager exceptionManager,
+    public DataSetDefServicesImpl(ExceptionManager exceptionManager,
                                   DataSetDefRegistryCDI dataSetDefRegistry,
                                   DataSetDefDeployerCDI dataSetDefDeployer) {
-        this.identity = identity;
         this.uuidGenerator = DataSetCore.get().getUuidGenerator();
         this.dataSetDefRegistry = dataSetDefRegistry;
         this.exceptionManager = exceptionManager;
@@ -64,9 +59,9 @@ public class DataSetDefServicesImpl implements DataSetDefServices {
     @PostConstruct
     protected void init() {
         // By default, enable the register of data set definitions stored into the deployment folder.
-        ServletContext servletContext = RpcContext.getHttpSession().getServletContext();
+        var servletContext = RpcContext.getHttpSession().getServletContext();
         if (!dataSetDefDeployer.isRunning() && servletContext != null) {
-            String dir = servletContext.getRealPath("WEB-INF/datasets");
+            var dir = servletContext.getRealPath("WEB-INF/datasets");
             if (dir != null && new File(dir).exists()) {
                 dir = dir.replaceAll("\\\\", "/");
                 dataSetDefDeployer.deploy(dir);
@@ -94,7 +89,7 @@ public class DataSetDefServicesImpl implements DataSetDefServices {
             definition.setUUID(uuid);
         }
         dataSetDefRegistry.registerDataSetDef(definition,
-                identity != null ? identity.getIdentifier() : "---",
+                "system",
                 comment);
         return definition.getUUID();
     }
@@ -104,8 +99,8 @@ public class DataSetDefServicesImpl implements DataSetDefServices {
         final DataSetDef def = dataSetDefRegistry.getDataSetDef(uuid);
         if (def != null) {
             dataSetDefRegistry.removeDataSetDef(uuid,
-                identity != null ? identity.getIdentifier() : "---",
-                comment);
+                    "system",
+                    comment);
         }
     }
 }

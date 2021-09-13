@@ -16,6 +16,11 @@
 
 package org.uberfire.ext.plugin.client.perspective.editor;
 
+import static org.uberfire.ext.editor.commons.client.menu.MenuItems.COPY;
+import static org.uberfire.ext.editor.commons.client.menu.MenuItems.DELETE;
+import static org.uberfire.ext.editor.commons.client.menu.MenuItems.RENAME;
+import static org.uberfire.ext.editor.commons.client.menu.MenuItems.SAVE;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -29,9 +34,6 @@ import javax.enterprise.context.Dependent;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 
-import com.google.gwt.user.client.ui.IsWidget;
-import com.google.gwt.user.client.ui.Widget;
-import elemental2.promise.Promise;
 import org.jboss.errai.common.client.api.Caller;
 import org.jboss.errai.ioc.client.container.SyncBeanDef;
 import org.jboss.errai.ioc.client.container.SyncBeanManager;
@@ -65,7 +67,6 @@ import org.uberfire.ext.plugin.client.perspective.editor.components.popup.AddTag
 import org.uberfire.ext.plugin.client.perspective.editor.events.PerspectiveEditorFocusEvent;
 import org.uberfire.ext.plugin.client.perspective.editor.layout.editor.PerspectiveEditorSettings;
 import org.uberfire.ext.plugin.client.perspective.editor.layout.editor.TargetDivList;
-import org.uberfire.ext.plugin.client.security.PluginController;
 import org.uberfire.ext.plugin.client.type.PerspectiveLayoutPluginResourceType;
 import org.uberfire.ext.plugin.client.validation.PluginNameValidator;
 import org.uberfire.ext.plugin.model.Plugin;
@@ -75,17 +76,18 @@ import org.uberfire.lifecycle.OnFocus;
 import org.uberfire.lifecycle.OnMayClose;
 import org.uberfire.lifecycle.OnStartup;
 import org.uberfire.mvp.PlaceRequest;
-import org.uberfire.workbench.events.NotificationEvent;
 import org.uberfire.workbench.model.menu.MenuFactory;
 import org.uberfire.workbench.model.menu.Menus;
 
-import static org.uberfire.ext.editor.commons.client.menu.MenuItems.COPY;
-import static org.uberfire.ext.editor.commons.client.menu.MenuItems.DELETE;
-import static org.uberfire.ext.editor.commons.client.menu.MenuItems.RENAME;
-import static org.uberfire.ext.editor.commons.client.menu.MenuItems.SAVE;
+import com.google.gwt.user.client.ui.IsWidget;
+import com.google.gwt.user.client.ui.Widget;
+
+import elemental2.promise.Promise;
 
 @Dependent
-@WorkbenchEditor(identifier = PerspectiveEditorPresenter.ID, supportedTypes = {PerspectiveLayoutPluginResourceType.class}, priority = Integer.MAX_VALUE)
+@WorkbenchEditor(identifier = PerspectiveEditorPresenter.ID, supportedTypes = {
+                                                                               PerspectiveLayoutPluginResourceType.class},
+                 priority = Integer.MAX_VALUE)
 public class PerspectiveEditorPresenter extends BaseEditor<LayoutTemplate, DefaultMetadata> {
 
     public static final String ID = "Perspective Editor";
@@ -97,9 +99,6 @@ public class PerspectiveEditorPresenter extends BaseEditor<LayoutTemplate, Defau
     private LayoutEditorPlugin layoutEditorPlugin;
 
     @Inject
-    private Event<NotificationEvent> ufNotification;
-
-    @Inject
     private PerspectiveLayoutPluginResourceType resourceType;
 
     @Inject
@@ -107,9 +106,6 @@ public class PerspectiveEditorPresenter extends BaseEditor<LayoutTemplate, Defau
 
     @Inject
     private PluginNameValidator pluginNameValidator;
-
-    @Inject
-    private PluginController pluginController;
 
     @Inject
     private PerspectiveEditorSettings perspectiveEditorSettings;
@@ -132,33 +128,25 @@ public class PerspectiveEditorPresenter extends BaseEditor<LayoutTemplate, Defau
         // This is only used to define the "name" used by @WorkbenchPartTitle which is called by Uberfire after @OnStartup
         // but before the async call in "loadContent()" has returned. When the *real* plugin is loaded this is overwritten
         final String name = place.getParameter("name",
-                                               "");
+                "");
         plugin = new Plugin(name,
-                            PluginType.PERSPECTIVE_LAYOUT,
-                            path);
+                PluginType.PERSPECTIVE_LAYOUT,
+                path);
 
         // Show the available menu options according to the permissions set
         List<MenuItems> menuItems = new ArrayList<>();
-        addMenuItem(menuItems,
-                    SAVE,
-                    pluginController.canUpdate(plugin));
-        addMenuItem(menuItems,
-                    COPY,
-                    pluginController.canCreatePerspectives());
-        addMenuItem(menuItems,
-                    RENAME,
-                    pluginController.canUpdate(plugin));
-        addMenuItem(menuItems,
-                    DELETE,
-                    pluginController.canDelete(plugin));
+        addMenuItem(menuItems, SAVE, true);
+        addMenuItem(menuItems, COPY, true);
+        addMenuItem(menuItems, RENAME, true);
+        addMenuItem(menuItems, DELETE, true);
 
         // Init the editor
         init(path,
-             place,
-             resourceType,
-             true,
-             false,
-             menuItems);
+                place,
+                resourceType,
+                true,
+                false,
+                menuItems);
 
         // Init the drag component palette
         initLayoutDragComponentGroups();
@@ -199,7 +187,8 @@ public class PerspectiveEditorPresenter extends BaseEditor<LayoutTemplate, Defau
     }
 
     private Collection<LayoutComponentPaletteGroupProvider> scanPerspectiveDragGroups() {
-        List<PerspectiveEditorComponentGroupProvider> result = beanManager.lookupBeans(PerspectiveEditorComponentGroupProvider.class).stream()
+        List<PerspectiveEditorComponentGroupProvider> result = beanManager.lookupBeans(
+                PerspectiveEditorComponentGroupProvider.class).stream()
                 .map(SyncBeanDef::getInstance)
                 .filter(this::shouldRemoveGroup)
                 .collect(Collectors.toList());
@@ -215,12 +204,12 @@ public class PerspectiveEditorPresenter extends BaseEditor<LayoutTemplate, Defau
         return super.makeMenuBar().then(v -> {
             if (perspectiveEditorSettings.isTagsEnabled()) {
                 menuBuilder.addNewTopLevelMenu(MenuFactory.newTopLevelMenu(CommonConstants.INSTANCE.Tags())
-                                                       .respondsWith(() -> {
-                                                           AddTag addTag = new AddTag(PerspectiveEditorPresenter.this);
-                                                           addTag.show();
-                                                       })
-                                                       .endMenu()
-                                                       .build().getItems().get(0));
+                        .respondsWith(() -> {
+                            AddTag addTag = new AddTag(PerspectiveEditorPresenter.this);
+                            addTag.show();
+                        })
+                        .endMenu()
+                        .build().getItems().get(0));
             }
 
             return promises.resolve();
@@ -241,7 +230,8 @@ public class PerspectiveEditorPresenter extends BaseEditor<LayoutTemplate, Defau
     @Override
     @WorkbenchPartTitle
     public String getTitleText() {
-        return org.uberfire.ext.plugin.client.resources.i18n.CommonConstants.INSTANCE.PerspectiveEditor() + " [" + plugin.getName() + "]";
+        return org.uberfire.ext.plugin.client.resources.i18n.CommonConstants.INSTANCE.PerspectiveEditor() + " [" +
+                plugin.getName() + "]";
     }
 
     @WorkbenchMenu
@@ -268,14 +258,14 @@ public class PerspectiveEditorPresenter extends BaseEditor<LayoutTemplate, Defau
     protected void afterLoad() {
         setOriginalHash(getCurrentModelHash());
         plugin = new Plugin(layoutEditorPlugin.getLayout().getName(),
-                            PluginType.PERSPECTIVE_LAYOUT,
-                            versionRecordManager.getCurrentPath());
+                PluginType.PERSPECTIVE_LAYOUT,
+                versionRecordManager.getCurrentPath());
     }
 
     @Override
     protected void save() {
         layoutEditorPlugin.save(versionRecordManager.getCurrentPath(),
-                                getSaveSuccessCallback(getCurrentModelHash()));
+                getSaveSuccessCallback(getCurrentModelHash()));
         concurrentUpdateSessionInfo = null;
     }
 
@@ -292,8 +282,8 @@ public class PerspectiveEditorPresenter extends BaseEditor<LayoutTemplate, Defau
     protected void afterRename() {
         this.afterLoad();
         changeTitleNotification.fire(new ChangeTitleWidgetEvent(place,
-                                                                getTitleText(),
-                                                                getTitle()));
+                getTitleText(),
+                getTitle()));
     }
 
     @Override
@@ -320,7 +310,7 @@ public class PerspectiveEditorPresenter extends BaseEditor<LayoutTemplate, Defau
     protected Caller<? extends SupportsCopy> getCopyServiceCaller() {
         return perspectiveServices;
     }
-    
+
     protected boolean shouldRemoveGroup(PerspectiveEditorComponentGroupProvider group) {
         if (group != null) {
             LayoutDragComponentGroup componentGroup = group.getComponentGroup();
@@ -335,7 +325,7 @@ public class PerspectiveEditorPresenter extends BaseEditor<LayoutTemplate, Defau
     public void saveProperty(String key,
                              String value) {
         layoutEditorPlugin.addLayoutProperty(key,
-                                             value);
+                value);
     }
 
     public String getLayoutProperty(String key) {
@@ -345,9 +335,9 @@ public class PerspectiveEditorPresenter extends BaseEditor<LayoutTemplate, Defau
     public List<String> getAllTargetDivs() {
         return TargetDivList.list(layoutEditorPlugin.getLayout());
     }
-    
+
     public interface View extends BaseEditorView,
-                                  UberView<PerspectiveEditorPresenter> {
+                          UberView<PerspectiveEditorPresenter> {
 
         void setupLayoutEditor(Widget widget);
     }

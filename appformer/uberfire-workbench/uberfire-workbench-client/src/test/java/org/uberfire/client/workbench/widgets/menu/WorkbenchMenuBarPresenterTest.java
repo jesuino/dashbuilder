@@ -16,36 +16,6 @@
 
 package org.uberfire.client.workbench.widgets.menu;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
-
-import org.jboss.errai.security.shared.api.identity.User;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
-import org.uberfire.client.mvp.ActivityManager;
-import org.uberfire.client.mvp.PerspectiveActivity;
-import org.uberfire.client.mvp.PerspectiveManager;
-import org.uberfire.client.workbench.events.PerspectiveChange;
-import org.uberfire.client.workbench.events.PlaceMaximizedEvent;
-import org.uberfire.client.workbench.events.PlaceMinimizedEvent;
-import org.uberfire.client.workbench.widgets.menu.events.PerspectiveVisibiltiyChangeEvent;
-import org.uberfire.mvp.Command;
-import org.uberfire.mvp.PlaceRequest;
-import org.uberfire.mvp.impl.DefaultPlaceRequest;
-import org.uberfire.security.Resource;
-import org.uberfire.security.authz.AuthorizationManager;
-import org.uberfire.workbench.model.ActivityResourceType;
-import org.uberfire.workbench.model.menu.MenuFactory;
-import org.uberfire.workbench.model.menu.MenuItem;
-import org.uberfire.workbench.model.menu.MenuPosition;
-import org.uberfire.workbench.model.menu.Menus;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
@@ -61,6 +31,29 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.function.Consumer;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
+import org.uberfire.client.mvp.ActivityManager;
+import org.uberfire.client.mvp.PerspectiveActivity;
+import org.uberfire.client.mvp.PerspectiveManager;
+import org.uberfire.client.workbench.events.PerspectiveChange;
+import org.uberfire.client.workbench.events.PlaceMaximizedEvent;
+import org.uberfire.client.workbench.events.PlaceMinimizedEvent;
+import org.uberfire.mvp.Command;
+import org.uberfire.mvp.PlaceRequest;
+import org.uberfire.mvp.impl.DefaultPlaceRequest;
+import org.uberfire.workbench.model.ActivityResourceType;
+import org.uberfire.workbench.model.menu.MenuFactory;
+import org.uberfire.workbench.model.menu.MenuPosition;
+import org.uberfire.workbench.model.menu.Menus;
+
 @RunWith(MockitoJUnitRunner.class)
 public class WorkbenchMenuBarPresenterTest {
 
@@ -69,10 +62,6 @@ public class WorkbenchMenuBarPresenterTest {
     private static final String SECOND_PERSPECTIVE_ID = "secondPerspectiveId";
     private static final String THIRD_PERSPECTIVE_ID = "thirdPerspectiveId";
 
-    @Mock
-    protected AuthorizationManager authzManager;
-    @Mock
-    protected User identity;
     @Mock
     private PerspectiveManager perspectiveManager;
     @Mock
@@ -92,8 +81,6 @@ public class WorkbenchMenuBarPresenterTest {
 
         when(perspectiveActivity.getPlace()).thenReturn(placeRequest);
         when(perspectiveManager.getCurrentPerspective()).thenReturn(perspectiveActivity);
-        when(authzManager.authorize(any(Resource.class),
-                                    eq(identity))).thenReturn(true);
 
         presenter.addMenus(menus);
         verify(view).selectMenuItem(PERSPECTIVE_ID);
@@ -107,8 +94,6 @@ public class WorkbenchMenuBarPresenterTest {
 
         when(perspectiveActivity.getPlace()).thenReturn(placeRequest);
         when(perspectiveManager.getCurrentPerspective()).thenReturn(perspectiveActivity);
-        when(authzManager.authorize(any(Resource.class),
-                                    eq(identity))).thenReturn(true);
 
         presenter.addMenus(menus);
 
@@ -126,123 +111,17 @@ public class WorkbenchMenuBarPresenterTest {
                                                                           null,
                                                                           PERSPECTIVE_ID);
 
-        when(authzManager.authorize(any(Resource.class),
-                                    eq(identity))).thenReturn(true);
-
         presenter.addMenus(menus);
         presenter.onPerspectiveChange(perspectiveChange);
 
         verify(view).selectMenuItem(PERSPECTIVE_ID);
     }
 
-    @Test
-    public void testAddMenuWithPermission() {
-        final Menus menus = MenuFactory.newSimpleItem(NAME).perspective(PERSPECTIVE_ID).endMenu().build();
-        when(authzManager.authorize(menus.getItems().get(0),
-                                    identity)).thenReturn(true);
-
-        presenter.addMenus(menus);
-
-        verify(authzManager).authorize(menus.getItems().get(0),
-                                       identity);
-        verify(view).addMenuItem(eq(PERSPECTIVE_ID),
-                                 eq(NAME),
-                                 isNull(String.class),
-                                 any(Command.class),
-                                 any(MenuPosition.class));
-    }
-
-    @Test
-    public void testAddMenuWithoutPermission() {
-        final Menus menus = MenuFactory.newSimpleItem(NAME).perspective(PERSPECTIVE_ID).endMenu().build();
-        when(authzManager.authorize(menus.getItems().get(0),
-                                    identity)).thenReturn(false);
-
-        presenter.addMenus(menus);
-
-        verify(authzManager).authorize(menus.getItems().get(0),
-                                       identity);
-        verify(view,
-               never()).addMenuItem(eq(PERSPECTIVE_ID),
-                                    eq(NAME),
-                                    isNull(String.class),
-                                    any(Command.class),
-                                    any(MenuPosition.class));
-    }
-
-    @Test
-    public void testAddContextMenuWithPermission() {
-        final MenuPosition position = MenuPosition.LEFT;
-        final Menus contextMenus = MenuFactory.newSimpleItem(NAME).endMenu().build();
-        final PerspectiveActivity activity = mock(PerspectiveActivity.class);
-        final PlaceRequest placeRequest = mock(PlaceRequest.class);
-
-        when(activity.getIdentifier()).thenReturn(PERSPECTIVE_ID);
-        doAnswer(invocationOnMock -> {
-            invocationOnMock.getArgument(0, Consumer.class).accept(contextMenus);
-            return null;
-        }).when(activity).getMenus(any());
-        when(activity.isType(ActivityResourceType.PERSPECTIVE.name())).thenReturn(true);
-        when(authzManager.authorize(contextMenus.getItems().get(0),
-                                    identity)).thenReturn(true);
-        when(activityManager.getActivity(placeRequest)).thenReturn(activity);
-
-        presenter.onPerspectiveChange(new PerspectiveChange(placeRequest,
-                                                            null,
-                                                            contextMenus,
-                                                            PERSPECTIVE_ID));
-
-        verify(authzManager).authorize(contextMenus.getItems().get(0),
-                                       identity);
-        verify(view).clearContextMenu();
-        verify(view).addContextMenuItem(eq(PERSPECTIVE_ID),
-                                        anyString(),
-                                        eq(NAME),
-                                        isNull(),
-                                        any(),
-                                        eq(position));
-    }
-
-    @Test
-    public void testAddContextMenuWithoutPermission() {
-        final Menus contextMenus = MenuFactory.newSimpleItem(NAME).endMenu().build();
-        final PerspectiveActivity activity = mock(PerspectiveActivity.class);
-        final PlaceRequest placeRequest = mock(PlaceRequest.class);
-
-        when(activity.getIdentifier()).thenReturn(PERSPECTIVE_ID);
-        doAnswer(invocationOnMock -> {
-            invocationOnMock.getArgument(0, Consumer.class).accept(contextMenus);
-            return null;
-        }).when(activity).getMenus(any());
-        when(activity.isType(ActivityResourceType.PERSPECTIVE.name())).thenReturn(true);
-        when(authzManager.authorize(contextMenus.getItems().get(0),
-                                    identity)).thenReturn(false);
-        when(activityManager.getActivity(placeRequest)).thenReturn(activity);
-
-        presenter.onPerspectiveChange(new PerspectiveChange(placeRequest,
-                                                            null,
-                                                            contextMenus,
-                                                            PERSPECTIVE_ID));
-
-        verify(authzManager).authorize(contextMenus.getItems().get(0),
-                                       identity);
-        verify(view).clearContextMenu();
-        verify(view,
-               never()).addContextMenuItem(anyString(),
-                                           anyString(),
-                                           anyString(),
-                                           anyString(),
-                                           any(Command.class),
-                                           any(MenuPosition.class));
-    }
 
     @Test
     public void testSetupEnableDisableMenuItemCommand() {
         final Command command = mock(Command.class);
         final Menus menus = MenuFactory.newSimpleItem(NAME).respondsWith(command).endMenu().build();
-
-        when(authzManager.authorize(menus.getItems().get(0),
-                                    identity)).thenReturn(true);
 
         presenter.addMenus(menus);
         verify(view).enableMenuItem(anyString(), eq(true));
@@ -259,9 +138,6 @@ public class WorkbenchMenuBarPresenterTest {
         final PlaceRequest place = mock(PlaceRequest.class);
         final Menus menus = MenuFactory.newSimpleItem(NAME).place(place).endMenu().build();
 
-        when(authzManager.authorize(menus.getItems().get(0),
-                                    identity)).thenReturn(true);
-
         presenter.addMenus(menus);
         verify(view).enableMenuItem(anyString(), eq(true));
 
@@ -275,9 +151,6 @@ public class WorkbenchMenuBarPresenterTest {
     @Test
     public void testSetupEnableDisableMenuItemPerspective() {
         final Menus menus = MenuFactory.newSimpleItem(NAME).perspective(PERSPECTIVE_ID).endMenu().build();
-
-        when(authzManager.authorize(menus.getItems().get(0),
-                                    identity)).thenReturn(true);
 
         presenter.addMenus(menus);
         verify(view).enableMenuItem(anyString(), eq(true));
@@ -301,8 +174,6 @@ public class WorkbenchMenuBarPresenterTest {
             return null;
         }).when(activity).getMenus(any());
         when(activity.isType(ActivityResourceType.PERSPECTIVE.name())).thenReturn(true);
-        when(authzManager.authorize(contextMenus.getItems().get(0),
-                                    identity)).thenReturn(true);
         when(activityManager.getActivity(placeRequest)).thenReturn(activity);
 
         presenter.onPerspectiveChange(new PerspectiveChange(placeRequest,
@@ -323,13 +194,6 @@ public class WorkbenchMenuBarPresenterTest {
         final Menus firstMenus = MenuFactory.newSimpleItem(NAME).perspective(PERSPECTIVE_ID).endMenu().build();
         final Menus secondMenus = MenuFactory.newSimpleItem(NAME).orderAll(1).perspective(SECOND_PERSPECTIVE_ID).endMenu().build();
         final Menus thirdMenus = MenuFactory.newSimpleItem(NAME).orderAll(2).perspective(THIRD_PERSPECTIVE_ID).endMenu().build();
-
-        when(authzManager.authorize(firstMenus.getItems().get(0),
-                                    identity)).thenReturn(true);
-        when(authzManager.authorize(secondMenus.getItems().get(0),
-                                    identity)).thenReturn(true);
-        when(authzManager.authorize(thirdMenus.getItems().get(0),
-                                    identity)).thenReturn(true);
 
         presenter.addMenus(thirdMenus);
         presenter.addMenus(firstMenus);

@@ -21,7 +21,6 @@ import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
 import org.jboss.errai.ioc.client.api.ManagedInstance;
-import org.jboss.errai.security.shared.api.identity.User;
 import org.uberfire.client.mvp.ActivityManager;
 import org.uberfire.client.mvp.PerspectiveManager;
 import org.uberfire.client.mvp.PlaceManager;
@@ -32,15 +31,11 @@ import org.uberfire.client.workbench.widgets.menu.megamenu.contextmenuitem.Child
 import org.uberfire.client.workbench.widgets.menu.megamenu.contextmenuitem.GroupContextMenuItemPresenter;
 import org.uberfire.client.workbench.widgets.menu.megamenu.menuitem.ChildMenuItemPresenter;
 import org.uberfire.client.workbench.widgets.menu.megamenu.menuitem.GroupMenuItemPresenter;
-import org.uberfire.rpc.SessionInfo;
-import org.uberfire.security.authz.AuthorizationManager;
 
 @ApplicationScoped
 public class WorkbenchMegaMenuProducer extends AbstractWorkbenchMenuProducer<WorkbenchMegaMenuPresenter, WorkbenchMegaMenuPresenter.View> {
 
     private ManagedInstance<MegaMenuBrand> megaMenuBrands;
-    private AuthorizationManager authorizationManager;
-    private SessionInfo sessionInfo;
     private ManagedInstance<ChildMenuItemPresenter> childMenuItemPresenters;
     private ManagedInstance<GroupMenuItemPresenter> groupMenuItemPresenters;
     private ManagedInstance<ChildContextMenuItemPresenter> childContextMenuItemPresenters;
@@ -52,25 +47,19 @@ public class WorkbenchMegaMenuProducer extends AbstractWorkbenchMenuProducer<Wor
     }
 
     @Inject
-    public WorkbenchMegaMenuProducer(final AuthorizationManager authzManager,
-                                     final PerspectiveManager perspectiveManager,
+    public WorkbenchMegaMenuProducer(final PerspectiveManager perspectiveManager,
                                      final ActivityManager activityManager,
-                                     final User identity,
                                      final WorkbenchMegaMenuPresenter.View view,
                                      final ManagedInstance<MegaMenuBrand> megaMenuBrands,
                                      final PlaceManager placeManager,
-                                     final AuthorizationManager authorizationManager,
-                                     final SessionInfo sessionInfo,
                                      final ManagedInstance<ChildMenuItemPresenter> childMenuItemPresenters,
                                      final ManagedInstance<GroupMenuItemPresenter> groupMenuItemPresenters,
                                      final ManagedInstance<ChildContextMenuItemPresenter> childContextMenuItemPresenters,
                                      final ManagedInstance<GroupContextMenuItemPresenter> groupContextMenuItemPresenters,
                                      final Workbench workbench) {
-        super(authzManager, perspectiveManager, placeManager, activityManager, identity, view);
-        this.authorizationManager = authorizationManager;
+        super(perspectiveManager, placeManager, activityManager, view);
         this.megaMenuBrands = megaMenuBrands;
         this.placeManager = placeManager;
-        this.sessionInfo = sessionInfo;
         this.childMenuItemPresenters = childMenuItemPresenters;
         this.groupMenuItemPresenters = groupMenuItemPresenters;
         this.childContextMenuItemPresenters = childContextMenuItemPresenters;
@@ -86,15 +75,11 @@ public class WorkbenchMegaMenuProducer extends AbstractWorkbenchMenuProducer<Wor
 
     @Override
     protected WorkbenchMegaMenuPresenter makeDefaultPresenter() {
-        return new WorkbenchMegaMenuPresenter(authzManager,
-                                              perspectiveManager,
+        return new WorkbenchMegaMenuPresenter(perspectiveManager,
                                               activityManager,
-                                              identity,
                                               view,
                                               megaMenuBrands,
                                               placeManager,
-                                              authorizationManager,
-                                              sessionInfo,
                                               childMenuItemPresenters,
                                               groupMenuItemPresenters,
                                               childContextMenuItemPresenters,
@@ -104,15 +89,11 @@ public class WorkbenchMegaMenuProducer extends AbstractWorkbenchMenuProducer<Wor
 
     @Override
     protected WorkbenchMegaMenuStandalonePresenter makeStandalonePresenter() {
-        return new WorkbenchMegaMenuStandalonePresenter(authzManager,
-                                                        perspectiveManager,
+        return new WorkbenchMegaMenuStandalonePresenter(perspectiveManager,
                                                         activityManager,
-                                                        identity,
                                                         view,
                                                         megaMenuBrands,
                                                         placeManager,
-                                                        authorizationManager,
-                                                        sessionInfo,
                                                         childMenuItemPresenters,
                                                         groupMenuItemPresenters,
                                                         childContextMenuItemPresenters,

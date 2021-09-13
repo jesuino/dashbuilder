@@ -15,80 +15,51 @@
  */
 package org.dashbuilder.navigation.storage;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.inject.Named;
 
 import org.dashbuilder.navigation.NavTree;
 import org.dashbuilder.navigation.json.NavTreeJSONMarshaller;
+import org.dashbuilder.project.storage.ProjectStorageServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.uberfire.io.IOService;
-import org.uberfire.java.nio.file.FileSystem;
-import org.uberfire.java.nio.file.Path;
 
 @ApplicationScoped
 public class NavTreeStorage {
 
     public static final String NAV_TREE_FILE_NAME = "navtree.json";
-    private IOService ioService;
     private NavTreeJSONMarshaller jsonMarshaller;
-    private Path root;
     private Logger log = LoggerFactory.getLogger(NavTreeStorage.class);
-    private FileSystem fileSystem;
+    private ProjectStorageServices projectStorageServices;
 
-    public NavTreeStorage() {
-    }
+    public NavTreeStorage() {}
 
     @Inject
-    public NavTreeStorage(@Named("ioStrategy") IOService ioService,
-                          @Named("navigationFS") FileSystem fileSystem) {
-        this.ioService = ioService;
-        this.fileSystem = fileSystem;
+    public NavTreeStorage(ProjectStorageServices projectStorageServices) {
+        this.projectStorageServices = projectStorageServices;
         this.jsonMarshaller = NavTreeJSONMarshaller.get();
     }
 
-    @PostConstruct
-    public void init() {
-        root = fileSystem.getRootDirectories().iterator().next();
-    }
-
-    protected Path getNavRootPath() {
-        return root.resolve("navigation");
-    }
-
-    protected Path getNavTreePath() {
-        return getNavRootPath().resolve(NAV_TREE_FILE_NAME);
-    }
-
     public NavTree loadNavTree() {
-        Path path = getNavTreePath();
-        if (!ioService.exists(path)) {
+        var navigation = projectStorageServices.getNavigation();
+        if (navigation.isEmpty()) {
             return null;
         }
         try {
-            String json = ioService.readAllString(path);
-            return jsonMarshaller.fromJson(json);
+            return jsonMarshaller.fromJson(navigation.get());
         } catch (Exception e) {
-            log.error("Error parsing json definition: " + path.getFileName(),
-                      e);
+            log.error("Error parsing json definition",
+                    e);
             return null;
         }
     }
 
     public void saveNavTree(NavTree navTree) {
-        ioService.startBatch(fileSystem);
         try {
-            String json = jsonMarshaller.toJson(navTree).toString();
-            Path path = getNavTreePath();
-            ioService.write(path,
-                            json);
+            var json = jsonMarshaller.toJson(navTree).toString();
+            projectStorageServices.saveNavigation(json);
         } catch (Exception e) {
-            log.error("Can't save the navigation tree.",
-                      e);
-        } finally {
-            ioService.endBatch();
+            log.error("Can't save the navigation tree.", e);
         }
     }
 }

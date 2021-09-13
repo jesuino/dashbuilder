@@ -15,13 +15,21 @@
  */
 package org.uberfire.ext.plugin.client.perspective.editor;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
 import java.util.function.Supplier;
 
-import com.google.gwtmockito.GwtMockitoTestRunner;
 import org.assertj.core.api.Assertions;
 import org.jboss.errai.common.client.api.Caller;
 import org.jboss.errai.ioc.client.container.SyncBeanDef;
@@ -53,31 +61,18 @@ import org.uberfire.ext.layout.editor.client.widgets.LayoutComponentPaletteGroup
 import org.uberfire.ext.plugin.client.perspective.editor.api.PerspectiveEditorComponentGroupProvider;
 import org.uberfire.ext.plugin.client.perspective.editor.events.PerspectiveEditorFocusEvent;
 import org.uberfire.ext.plugin.client.perspective.editor.layout.editor.PerspectiveEditorSettings;
-import org.uberfire.ext.plugin.client.security.PluginController;
 import org.uberfire.mocks.EventSourceMock;
 import org.uberfire.mvp.Command;
 import org.uberfire.mvp.PlaceRequest;
 import org.uberfire.promise.SyncPromises;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isA;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.google.gwtmockito.GwtMockitoTestRunner;
 
 @RunWith(GwtMockitoTestRunner.class)
 public class PerspectiveEditorPresenterTest {
 
     @Mock
     PerspectiveEditorPresenter.View view;
-
-    @Mock
-    PluginController pluginController;
 
     @Mock
     ObservablePath observablePath;
@@ -162,9 +157,6 @@ public class PerspectiveEditorPresenterTest {
     @Before
     public void setUp() {
         presenter.perspectiveEditorFocusEvent = perspectiveEditorFocusEvent;
-        when(pluginController.canCreatePerspectives()).thenReturn(true);
-        when(pluginController.canDelete(any())).thenReturn(true);
-        when(pluginController.canUpdate(any())).thenReturn(true);
 
         dragComponentGroupA = new LayoutDragComponentGroup(COMPONENT_GROUP_A);
         dragComponentGroupA.addLayoutDragComponent("fd", mock(LayoutDragComponent.class));

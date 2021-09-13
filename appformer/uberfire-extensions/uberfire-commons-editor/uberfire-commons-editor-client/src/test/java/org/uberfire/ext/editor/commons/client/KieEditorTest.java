@@ -20,7 +20,6 @@ import java.util.Set;
 
 import com.google.gwtmockito.GwtMockitoTestRunner;
 import elemental2.promise.Promise;
-import org.jboss.errai.security.shared.api.identity.User;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -189,10 +188,6 @@ public class KieEditorTest {
                 return null;
             }
 
-            @Override
-            public User getIdentity() {
-                return null;
-            }
         };
 
         kieEditor.onSave();
@@ -222,10 +217,6 @@ public class KieEditorTest {
                 return null;
             }
 
-            @Override
-            public User getIdentity() {
-                return null;
-            }
         };
 
         final Set<MenuItems> menuItems = kieEditor.menuItems;

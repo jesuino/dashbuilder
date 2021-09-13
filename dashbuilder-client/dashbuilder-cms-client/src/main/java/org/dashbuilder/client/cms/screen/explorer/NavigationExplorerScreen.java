@@ -17,15 +17,20 @@ package org.dashbuilder.client.cms.screen.explorer;
 
 import java.util.function.Consumer;
 
+import javax.annotation.PostConstruct;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.event.Event;
+import javax.enterprise.event.Observes;
+import javax.inject.Inject;
+
 import org.dashbuilder.client.cms.resources.i18n.ContentManagerI18n;
 import org.dashbuilder.client.navigation.NavigationManager;
 import org.dashbuilder.client.navigation.event.NavTreeLoadedEvent;
-import org.dashbuilder.navigation.event.NavTreeChangedEvent;
-import org.dashbuilder.navigation.event.PerspectivePluginsChangedEvent;
 import org.dashbuilder.client.navigation.widget.editor.NavTreeEditor;
 import org.dashbuilder.navigation.NavTree;
+import org.dashbuilder.navigation.event.NavTreeChangedEvent;
+import org.dashbuilder.navigation.event.PerspectivePluginsChangedEvent;
 import org.jboss.errai.common.client.api.IsElement;
-import org.uberfire.backend.events.AuthorizationPolicySavedEvent;
 import org.uberfire.client.annotations.WorkbenchMenu;
 import org.uberfire.client.annotations.WorkbenchPartTitle;
 import org.uberfire.client.annotations.WorkbenchPartView;
@@ -33,12 +38,6 @@ import org.uberfire.client.annotations.WorkbenchScreen;
 import org.uberfire.workbench.events.NotificationEvent;
 import org.uberfire.workbench.model.menu.MenuFactory;
 import org.uberfire.workbench.model.menu.Menus;
-
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Event;
-import javax.enterprise.event.Observes;
-import javax.inject.Inject;
 
 @ApplicationScoped
 @WorkbenchScreen(identifier = NavigationExplorerScreen.SCREEN_ID)
@@ -128,10 +127,4 @@ public class NavigationExplorerScreen {
         workbenchNotification.fire(new NotificationEvent(i18n.getContentManagerNavigationChanged(), NotificationEvent.NotificationType.SUCCESS));
     }
 
-    void onAuthzPolicyChanged(@Observes final AuthorizationPolicySavedEvent event) {
-        NavTree navTree = navigationManager.getNavTree();
-        if (navTree != null) {
-            navTreeEditor.edit(navTree);
-        }
-    }
 }

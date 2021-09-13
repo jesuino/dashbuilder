@@ -86,10 +86,6 @@ public class SystemConfigProducer implements Extension {
     private final List<OrderedBean> startupBootstrapBeans = new LinkedList<>();
     private final Comparator<OrderedBean> priorityComparator = (o1, o2) -> o1.priority - o2.priority;
     private boolean systemFSNotExists = true;
-    private boolean pluginsFSNotExists = true;
-    private boolean perspectivesFSNotExists = true;
-    private boolean datasetsFSNotExists = true;
-    private boolean navigationFSNotExists = true;
     private boolean ioStrategyBeanNotFound = true;
 
     public void processSystemFSProducer(@Observes ProcessProducer<?, FileSystem> pp) {
@@ -98,29 +94,6 @@ public class SystemConfigProducer implements Extension {
         }
     }
 
-    public void processPluginsFSProducer(@Observes ProcessProducer<?, FileSystem> pp) {
-        if (pp.getAnnotatedMember().getJavaMember().getName().equals("pluginsFS")) {
-            pluginsFSNotExists = false;
-        }
-    }
-
-    public void processPerspectivesFSProducer(@Observes ProcessProducer<?, FileSystem> pp) {
-        if (pp.getAnnotatedMember().getJavaMember().getName().equals("perspectivesFS")) {
-            perspectivesFSNotExists = false;
-        }
-    }
-
-    public void processDatasetsFSProducer(@Observes ProcessProducer<?, FileSystem> pp) {
-        if (pp.getAnnotatedMember().getJavaMember().getName().equals("datasetsFS")) {
-            datasetsFSNotExists = false;
-        }
-    }
-
-    public void processNavigationFSProducer(@Observes ProcessProducer<?, FileSystem> pp) {
-        if (pp.getAnnotatedMember().getJavaMember().getName().equals("navigationFS")) {
-            navigationFSNotExists = false;
-        }
-    }
 
     public void processIOServiceProducer(@Observes ProcessProducer<?, IOService> pp) {
         if (pp.getAnnotatedMember().getJavaMember().getName().equals("ioStrategy")) {
@@ -131,14 +104,6 @@ public class SystemConfigProducer implements Extension {
     public <X> void processBean(@Observes final ProcessBean<X> event) {
         if (event.getBean().getName() != null && event.getBean().getName().equals("systemFS")) {
             systemFSNotExists = false;
-        } else if (event.getBean().getName() != null && event.getBean().getName().equals("pluginsFS")) {
-            pluginsFSNotExists = false;
-        } else if (event.getBean().getName() != null && event.getBean().getName().equals("perspectivesFS")) {
-            perspectivesFSNotExists = false;
-        } else if (event.getBean().getName() != null && event.getBean().getName().equals("datasetsFS")) {
-            datasetsFSNotExists = false;
-        } else if (event.getBean().getName() != null && event.getBean().getName().equals("navigationFS")) {
-            navigationFSNotExists = false;
         } else if (event.getBean().getName() != null && event.getBean().getName().equals("ioStrategy")) {
             ioStrategyBeanNotFound = false;
         }
@@ -213,27 +178,6 @@ public class SystemConfigProducer implements Extension {
             buildIOStrategy(abd,
                             bm);
         }
-
-        if (perspectivesFSNotExists) {
-            buildPerspectivesFS(abd,
-                                bm);
-        }
-
-        if (datasetsFSNotExists) {
-            buildDatasetsFS(abd,
-                            bm);
-        }
-
-        if (navigationFSNotExists) {
-            buildNavigationFS(abd,
-                              bm);
-        }
-
-        if (pluginsFSNotExists) {
-            buildPluginsFS(abd,
-                           bm);
-        }
-
         if (!CDI_METHOD.equalsIgnoreCase(START_METHOD)) {
             buildStartableBean(abd,
                                bm);
@@ -252,41 +196,6 @@ public class SystemConfigProducer implements Extension {
                                          "plugins"));
     }
 
-    void buildPerspectivesFS(final AfterBeanDiscovery abd,
-                             final BeanManager bm) {
-        final InjectionTarget<DummyFileSystem> it = bm.createInjectionTarget(bm.createAnnotatedType(DummyFileSystem.class));
-
-        abd.addBean(createFileSystemBean(bm,
-                                         it,
-                                         SpacesAPI.DASHBUILDER_SPACE,
-                                         "ioStrategy",
-                                         "perspectivesFS",
-                                         "perspectives"));
-    }
-
-    void buildDatasetsFS(final AfterBeanDiscovery abd,
-                         final BeanManager bm) {
-        final InjectionTarget<DummyFileSystem> it = bm.createInjectionTarget(bm.createAnnotatedType(DummyFileSystem.class));
-
-        abd.addBean(createFileSystemBean(bm,
-                                         it,
-                                         SpacesAPI.DASHBUILDER_SPACE,
-                                         "ioStrategy",
-                                         "datasetsFS",
-                                         "datasets"));
-    }
-
-    void buildNavigationFS(final AfterBeanDiscovery abd,
-                           final BeanManager bm) {
-        final InjectionTarget<DummyFileSystem> it = bm.createInjectionTarget(bm.createAnnotatedType(DummyFileSystem.class));
-
-        abd.addBean(createFileSystemBean(bm,
-                                         it,
-                                         SpacesAPI.DASHBUILDER_SPACE,
-                                         "ioStrategy",
-                                         "navigationFS",
-                                         "navigation"));
-    }
 
     void buildSystemFS(final AfterBeanDiscovery abd,
                        final BeanManager bm) {

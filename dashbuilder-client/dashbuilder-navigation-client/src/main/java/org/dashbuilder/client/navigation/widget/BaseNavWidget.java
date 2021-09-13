@@ -21,16 +21,15 @@ import java.util.List;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
-import com.google.gwt.user.client.ui.Widget;
 import org.dashbuilder.client.navigation.NavigationManager;
-import org.dashbuilder.navigation.event.NavTreeChangedEvent;
 import org.dashbuilder.navigation.NavDivider;
 import org.dashbuilder.navigation.NavGroup;
 import org.dashbuilder.navigation.NavItem;
 import org.dashbuilder.navigation.NavTree;
-import org.uberfire.ext.security.management.client.widgets.management.events.SaveGroupEvent;
-import org.uberfire.ext.security.management.client.widgets.management.events.SaveRoleEvent;
+import org.dashbuilder.navigation.event.NavTreeChangedEvent;
 import org.uberfire.mvp.Command;
+
+import com.google.gwt.user.client.ui.Widget;
 
 public abstract class BaseNavWidget implements NavWidget {
 
@@ -184,7 +183,6 @@ public abstract class BaseNavWidget implements NavWidget {
         // Make sure the items shown comply with the authz policy defined
         if (secure) {
             navItemList = new ArrayList<>(itemList);
-            navigationManager.secure(navItemList, hideEmptyGroups);
         }
 
         if (navItemList.isEmpty()) {
@@ -317,17 +315,4 @@ public abstract class BaseNavWidget implements NavWidget {
         refresh();
     }
 
-    // Listen to authorization policy changes as it might impact the menu items shown
-
-    public void onAuthzPolicyChanged(@Observes final SaveRoleEvent event) {
-        if (secure) {
-            refresh();
-        }
-    }
-
-    public void onAuthzPolicyChanged(@Observes final SaveGroupEvent event) {
-        if (secure) {
-            refresh();
-        }
-    }
 }
