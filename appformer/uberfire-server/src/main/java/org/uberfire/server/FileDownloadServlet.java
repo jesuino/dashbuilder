@@ -16,32 +16,29 @@
 
 package org.uberfire.server;
 
+import static java.lang.String.format;
+
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.dashbuilder.project.storage.ProjectStorageServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.uberfire.io.IOService;
-import org.uberfire.java.nio.file.Path;
-import org.uberfire.server.util.FileServletUtil;
 
-import static java.lang.String.format;
-
-public class FileDownloadServlet
-        extends BaseFilteredServlet {
+public class FileDownloadServlet extends HttpServlet{
 
     private static final Logger logger = LoggerFactory.getLogger(FileDownloadServlet.class);
-
+    
+    
     @Inject
-    @Named("ioStrategy")
-    private IOService ioService;
+    ProjectStorageServices projectStorageServices;
 
     @Override
     protected void doGet(HttpServletRequest request,
@@ -49,17 +46,10 @@ public class FileDownloadServlet
             throws ServletException, IOException {
 
         try {
-            final URI uri = makeURI(request.getParameter("path"));
-
-            if (!validateAccess(uri,
-                                response)) {
-                return;
-            }
-
-            final Path path = ioService.get(uri);
-
-            byte[] bytes = ioService.readAllBytes(path);
-
+            
+            final var path = Paths.get(request.getParameter("path"));
+            final var tempPath = projectStorageServices.getTempPath(path.getFileName().toString());
+            final var bytes = Files.readAllBytes(tempPath);
             response.setHeader("Content-Disposition",
                                format("attachment; filename=\"%s\";",
                                       path.getFileName().toString()));
@@ -75,9 +65,9 @@ public class FileDownloadServlet
                          e);
         }
     }
-
-    URI makeURI(final String path) throws URISyntaxException {
-        final String encodedPath = FileServletUtil.encodeFileNamePart(path);
-        return new URI(encodedPath);
+    
+    void setProjectStorageServices(ProjectStorageServices projectStorageServices) {
+        this.projectStorageServices = projectStorageServices;
     }
+
 }

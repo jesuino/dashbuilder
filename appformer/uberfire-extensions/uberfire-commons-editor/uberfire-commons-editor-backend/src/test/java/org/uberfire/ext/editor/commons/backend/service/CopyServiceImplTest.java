@@ -16,11 +16,24 @@
 
 package org.uberfire.ext.editor.commons.backend.service;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+
 import javax.enterprise.event.Event;
 import javax.enterprise.inject.Instance;
 
@@ -36,7 +49,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.uberfire.backend.server.util.Paths;
 import org.uberfire.backend.vfs.Path;
 import org.uberfire.backend.vfs.PathFactory;
-import org.uberfire.backend.vfs.VFSLockService;
 import org.uberfire.ext.editor.commons.backend.service.naming.PathNamingServiceImpl;
 import org.uberfire.ext.editor.commons.backend.service.restriction.LockRestrictor;
 import org.uberfire.ext.editor.commons.service.ValidationService;
@@ -46,10 +58,6 @@ import org.uberfire.mocks.EventSourceMock;
 import org.uberfire.mocks.FileSystemTestingUtils;
 import org.uberfire.rpc.SessionInfo;
 import org.uberfire.workbench.events.ResourceCopiedEvent;
-
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 @Ignore("Fix when IO is decided")
 @RunWith(MockitoJUnitRunner.class)
@@ -65,8 +73,6 @@ public class CopyServiceImplTest {
     private Instance<CopyRestrictor> copyRestrictorBeans;
     @Mock
     private SessionInfo sessionInfo;
-    @Mock
-    private VFSLockService lockService;
     @Mock
     private ValidationService validationService;
     @Spy

@@ -32,7 +32,6 @@ public interface NavTreeDefinitions {
     String ENTRY_GALLERY = "app_gallery";
     String GROUP_ADMIN = "app_admin";
     String ENTRY_DATASETS = "app_datasets";
-    String ENTRY_SECURITY = "app_security";
     String ENTRY_CONTENT_MGR = "app_contentMgr";
     String GROUP_DASHBOARDS = "app_dashboards";
     String ENTRY_SALES_DASHBOARD = "app_salesDashboard";
@@ -45,7 +44,6 @@ public interface NavTreeDefinitions {
             .endGroup()
             .group(GROUP_ADMIN, "Administration", "The administration tools", false)
                 .item(ENTRY_DATASETS, "Datasets", "The dataset authoring tool", false, perspective(DATA_SETS))
-                .item(ENTRY_SECURITY, "Security", "The security configuration tool", false, perspective(SECURITY))
                 .item(ENTRY_CONTENT_MGR, "Content manager", "The content manager tool", false, perspective(CONTENT_MANAGER))
                 .item(ENTRY_CONTENT_MGR, "Data Transfer", "Allow content transference between installations", false, perspective(DATA_TRANSFER))
             .endGroup()

@@ -27,10 +27,9 @@ import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
 import org.dashbuilder.client.navigation.NavigationManager;
-import org.dashbuilder.navigation.event.PerspectivePluginsChangedEvent;
 import org.dashbuilder.navigation.NavGroup;
 import org.dashbuilder.navigation.NavItem;
-import org.dashbuilder.navigation.NavTree;
+import org.dashbuilder.navigation.event.PerspectivePluginsChangedEvent;
 import org.dashbuilder.navigation.layout.LayoutRecursionIssue;
 import org.dashbuilder.navigation.layout.LayoutTemplateContext;
 import org.dashbuilder.navigation.layout.LayoutTemplateInfo;
@@ -40,17 +39,14 @@ import org.jboss.errai.common.client.api.Caller;
 import org.jboss.errai.common.client.api.RemoteCallback;
 import org.jboss.errai.common.client.ui.ElementWrapperWidget;
 import org.jboss.errai.ioc.client.api.EntryPoint;
-import org.uberfire.client.workbench.type.ClientResourceType;
-import org.uberfire.client.workbench.type.ClientTypeRegistry;
-import org.uberfire.ext.layout.editor.api.editor.LayoutInstance;
 import org.uberfire.ext.layout.editor.api.editor.LayoutTemplate;
 import org.uberfire.ext.layout.editor.client.generator.LayoutGenerator;
-import org.uberfire.ext.plugin.client.type.PerspectiveLayoutPluginResourceType;
 import org.uberfire.ext.plugin.event.PluginAdded;
 import org.uberfire.ext.plugin.event.PluginDeleted;
 import org.uberfire.ext.plugin.event.PluginRenamed;
 import org.uberfire.ext.plugin.event.PluginSaved;
 import org.uberfire.ext.plugin.model.Plugin;
+import org.uberfire.ext.plugin.model.PluginType;
 import org.uberfire.mvp.ParameterizedCommand;
 import org.uberfire.workbench.model.ActivityResourceType;
 
@@ -60,7 +56,6 @@ import com.google.gwt.user.client.ui.IsWidget;
 @ApplicationScoped
 public class PerspectivePluginManagerImpl implements PerspectivePluginManager {
 
-    private ClientTypeRegistry clientTypeRegistry;
     private LayoutGenerator layoutGenerator;
     private NavigationManager navigationManager;
     private Caller<PerspectivePluginServices> pluginServices;
@@ -70,12 +65,10 @@ public class PerspectivePluginManagerImpl implements PerspectivePluginManager {
     private Stack<NavGroup> navGroupStack = new Stack<>();
 
     @Inject
-    public PerspectivePluginManagerImpl(ClientTypeRegistry clientTypeRegistry,
-                                        LayoutGenerator layoutGenerator,
+    public PerspectivePluginManagerImpl(LayoutGenerator layoutGenerator,
                                         NavigationManager navigationManager,
                                         Caller<PerspectivePluginServices> pluginServices,
                                         Event<PerspectivePluginsChangedEvent> perspectivesChangedEvent) {
-        this.clientTypeRegistry = clientTypeRegistry;
         this.layoutGenerator = layoutGenerator;
         this.navigationManager = navigationManager;
         this.pluginServices = pluginServices;
@@ -89,8 +82,7 @@ public class PerspectivePluginManagerImpl implements PerspectivePluginManager {
 
     @Override
     public boolean isRuntimePerspective(Plugin plugin) {
-        ClientResourceType type = clientTypeRegistry.resolve(plugin.getPath());
-        return type != null && type instanceof PerspectiveLayoutPluginResourceType;
+        return plugin.getType() == PluginType.PERSPECTIVE_LAYOUT;
     }
 
     @Override
@@ -105,10 +97,10 @@ public class PerspectivePluginManagerImpl implements PerspectivePluginManager {
 
     @Override
     public String getRuntimePerspectiveId(NavItem navItem) {
-        NavWorkbenchCtx navCtx = NavWorkbenchCtx.get(navItem);
-        String resourceId = navCtx.getResourceId();
-        ActivityResourceType resourceType = navCtx.getResourceType();
-        boolean isRuntimePerspective = resourceId != null && ActivityResourceType.PERSPECTIVE.equals(resourceType) && isRuntimePerspective(resourceId);
+        var navCtx = NavWorkbenchCtx.get(navItem);
+        var resourceId = navCtx.getResourceId();
+        var resourceType = navCtx.getResourceType();
+        var isRuntimePerspective = resourceId != null && ActivityResourceType.PERSPECTIVE.equals(resourceType) && isRuntimePerspective(resourceId);
         return isRuntimePerspective ? resourceId : null;
     }
 
@@ -129,7 +121,7 @@ public class PerspectivePluginManagerImpl implements PerspectivePluginManager {
 
     @Override
     public void buildPerspectiveWidget(String perspectiveName, LayoutTemplateContext layoutCtx, ParameterizedCommand<IsWidget> afterBuild, ParameterizedCommand<LayoutRecursionIssue> onInfiniteRecursion) {
-        Plugin plugin = pluginMap.get(perspectiveName);
+        var plugin = pluginMap.get(perspectiveName);
         pluginServices.call((LayoutTemplateInfo layoutInfo) -> {
 
             if (!layoutInfo.getRecursionIssue().isEmpty()) {
@@ -141,8 +133,8 @@ public class PerspectivePluginManagerImpl implements PerspectivePluginManager {
                     if (navGroup != null) {
                         navGroupStack.push(navGroup);
                     }
-                    LayoutInstance result = layoutGenerator.build(layoutInfo.getLayoutTemplate());
-                    IsWidget widget = ElementWrapperWidget.getWidget(result.getElement());
+                    var result = layoutGenerator.build(layoutInfo.getLayoutTemplate());
+                    var widget = ElementWrapperWidget.getWidget(result.getElement());
                     afterBuild.execute(widget);
                 } finally {
                     if (navGroup != null) {
@@ -166,7 +158,7 @@ public class PerspectivePluginManagerImpl implements PerspectivePluginManager {
     // Sync up both the internals plugin & widget registry
 
     public void onPlugInAdded(@Observes final PluginAdded event) {
-        Plugin plugin = event.getPlugin();
+        var plugin = event.getPlugin();
         if (isRuntimePerspective(plugin)) {
             pluginMap.put(plugin.getName(), plugin);
             perspectivesChangedEvent.fire(new PerspectivePluginsChangedEvent());
@@ -174,7 +166,7 @@ public class PerspectivePluginManagerImpl implements PerspectivePluginManager {
     }
 
     public void onPlugInSaved(@Observes final PluginSaved event) {
-        Plugin plugin = event.getPlugin();
+        var plugin = event.getPlugin();
         if (isRuntimePerspective(plugin)) {
             pluginMap.put(plugin.getName(), plugin);
             perspectivesChangedEvent.fire(new PerspectivePluginsChangedEvent());
@@ -182,15 +174,15 @@ public class PerspectivePluginManagerImpl implements PerspectivePluginManager {
     }
 
     public void onPlugInRenamed(@Observes final PluginRenamed event) {
-        Plugin plugin = event.getPlugin();
+        var plugin = event.getPlugin();
         if (isRuntimePerspective(plugin)) {
             pluginMap.remove(event.getOldPluginName());
             pluginMap.put(plugin.getName(), plugin);
 
-            NavWorkbenchCtx ctx = NavWorkbenchCtx.perspective(event.getOldPluginName());
-            NavWorkbenchCtx newCtx = NavWorkbenchCtx.perspective(event.getPlugin().getName());
-            List<NavItem> itemsToRename = navigationManager.getNavTree().searchItems(ctx);
-            for (NavItem navItem : itemsToRename) {
+            var ctx = NavWorkbenchCtx.perspective(event.getOldPluginName());
+            var newCtx = NavWorkbenchCtx.perspective(event.getPlugin().getName());
+            var itemsToRename = navigationManager.getNavTree().searchItems(ctx);
+            for (var navItem : itemsToRename) {
                 navItem.setContext(newCtx.toString());
             }
             if (!itemsToRename.isEmpty()) {
@@ -202,13 +194,13 @@ public class PerspectivePluginManagerImpl implements PerspectivePluginManager {
     }
 
     public void onPlugInDeleted(@Observes final PluginDeleted event) {
-        String pluginName = event.getPluginName();
+        var pluginName = event.getPluginName();
         pluginMap.remove(pluginName);
 
-        NavWorkbenchCtx ctx = NavWorkbenchCtx.perspective(pluginName);
-        NavTree navTree = navigationManager.getNavTree();
-        List<NavItem> itemsToDelete = navTree.searchItems(ctx);
-        for (NavItem item : itemsToDelete) {
+        var ctx = NavWorkbenchCtx.perspective(pluginName);
+        var navTree = navigationManager.getNavTree();
+        var itemsToDelete = navTree.searchItems(ctx);
+        for (var item : itemsToDelete) {
             navTree.deleteItem(item.getId());
         }
         if (!itemsToDelete.isEmpty()) {

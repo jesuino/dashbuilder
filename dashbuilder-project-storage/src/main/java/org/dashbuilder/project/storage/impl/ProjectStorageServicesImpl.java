@@ -26,7 +26,7 @@ public class ProjectStorageServicesImpl implements ProjectStorageServices {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProjectStorageServicesImpl.class);
 
     static final String DEFAULT_DB_BASE_PATH = "/tmp/dashbuilder/project";
-    static final String DB_BASE_PATH = "org.dashbuilder.assets.path";
+    static final String DB_BASE_PATH = "org.dashbuilder.project";
 
     private Path parent;
     private Path perspectivesPath;

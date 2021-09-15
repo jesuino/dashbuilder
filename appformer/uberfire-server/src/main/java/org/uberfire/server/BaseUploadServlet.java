@@ -17,8 +17,11 @@
 package org.uberfire.server;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Iterator;
 
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -30,10 +33,8 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.uberfire.io.IOService;
-import org.uberfire.java.nio.file.Path;
 
-public abstract class BaseUploadServlet extends BaseFilteredServlet {
+public abstract class BaseUploadServlet extends HttpServlet  {
 
     private static final Logger logger = LoggerFactory.getLogger(BaseUploadServlet.class);
 
@@ -62,16 +63,15 @@ public abstract class BaseUploadServlet extends BaseFilteredServlet {
         return upload;
     }
 
-    protected void writeFile(final IOService ioService,
-                             final Path path,
+    protected void writeFile(final Path path,
                              final FileItem uploadedItem) throws IOException {
         try {
-            ioService.startBatch(path.getFileSystem());
-            ioService.write(path,
-                            IOUtils.toByteArray(uploadedItem.getInputStream()));
+            if (!Files.exists(path)) {
+                Files.createFile(path);
+            }
+            Files.write(path, IOUtils.toByteArray(uploadedItem.getInputStream()));
         } finally {
             uploadedItem.getInputStream().close();
-            ioService.endBatch();
         }
     }
 

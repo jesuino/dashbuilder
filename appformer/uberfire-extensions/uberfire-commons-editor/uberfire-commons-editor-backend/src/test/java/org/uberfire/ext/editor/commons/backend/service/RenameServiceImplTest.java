@@ -16,6 +16,17 @@
 
 package org.uberfire.ext.editor.commons.backend.service;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -24,24 +35,19 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.ArgumentMatchers;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.uberfire.backend.vfs.Path;
 import org.uberfire.backend.vfs.PathFactory;
-import org.uberfire.backend.vfs.VFSLockService;
 import org.uberfire.backend.vfs.impl.LockInfo;
 import org.uberfire.ext.editor.commons.backend.service.restriction.LockRestrictor;
 import org.uberfire.ext.editor.commons.service.ValidationService;
 import org.uberfire.ext.editor.commons.service.restrictor.RenameRestrictor;
 import org.uberfire.io.IOService;
 import org.uberfire.rpc.SessionInfo;
-
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 @Ignore("fix after figure out IO")
 @RunWith(MockitoJUnitRunner.class)
@@ -52,9 +58,6 @@ public class RenameServiceImplTest {
 
     @Mock
     private SessionInfo sessionInfo;
-
-    @Mock
-    private VFSLockService lockService;
 
     @Mock
     private ValidationService validationService;
@@ -88,8 +91,6 @@ public class RenameServiceImplTest {
     public void renameLockedPathTest() {
         final Path path = getPath();
 
-        givenThatPathIsLocked(path);
-
         try {
             whenPathIsRenamed(path);
         } catch (RuntimeException e) {
@@ -104,7 +105,6 @@ public class RenameServiceImplTest {
     public void renameUnlockedPathTest() {
         final Path path = getPath();
 
-        givenThatPathIsUnlocked(path);
         whenPathIsRenamed(path);
         thenPathWasRenamed(path);
     }
@@ -115,10 +115,6 @@ public class RenameServiceImplTest {
         paths.add(getPath("file0.txt"));
         paths.add(getPath("file1.txt"));
         paths.add(getPath("file2.txt"));
-
-        givenThatPathIsUnlocked(paths.get(0));
-        givenThatPathIsLocked(paths.get(1));
-        givenThatPathIsUnlocked(paths.get(2));
 
         try {
             whenPathsAreRenamedIfExists(paths);
@@ -141,10 +137,6 @@ public class RenameServiceImplTest {
         paths.add(getPath("file1.txt"));
         paths.add(getPath("file2.txt"));
 
-        givenThatPathIsUnlocked(paths.get(0));
-        givenThatPathIsUnlocked(paths.get(1));
-        givenThatPathIsUnlocked(paths.get(2));
-
         whenPathsAreRenamedIfExists(paths);
 
         thenPathWasRenamedIfExists(paths.get(0));
@@ -156,7 +148,6 @@ public class RenameServiceImplTest {
     public void pathHasNoRenameRestrictionTest() {
         final Path path = getPath();
 
-        givenThatPathIsUnlocked(path);
         boolean hasRestriction = whenPathIsCheckedForRenameRestrictions(path);
         thenPathHasNoRenameRestrictions(hasRestriction);
     }
@@ -165,19 +156,8 @@ public class RenameServiceImplTest {
     public void pathHasRenameRestrictionTest() {
         final Path path = getPath();
 
-        givenThatPathIsLocked(path);
         boolean hasRestriction = whenPathIsCheckedForRenameRestrictions(path);
         thenPathHasRenameRestrictions(hasRestriction);
-    }
-
-    private void givenThatPathIsLocked(final Path path) {
-        changeLockInfo(path,
-                       true);
-    }
-
-    private void givenThatPathIsUnlocked(final Path path) {
-        changeLockInfo(path,
-                       false);
     }
 
     private void whenPathIsRenamed(final Path path) {
@@ -251,10 +231,4 @@ public class RenameServiceImplTest {
                                    "file://tmp/" + fileName);
     }
 
-    private void changeLockInfo(Path path,
-                                boolean locked) {
-        when(lockService.retrieveLockInfo(path)).thenReturn(new LockInfo(locked,
-                                                                         "lockedBy",
-                                                                         path));
-    }
 }

@@ -80,9 +80,10 @@ import static org.uberfire.workbench.events.NotificationEvent.NotificationType.E
 import static org.uberfire.workbench.events.NotificationEvent.NotificationType.SUCCESS;
 
 @Dependent
-@WorkbenchEditor(identifier = "DataSetDefEditor", supportedTypes = {DataSetDefType.class}, priority = Integer.MAX_VALUE)
+@WorkbenchEditor(identifier = DataSetDefEditorPresenter.ID, supportedTypes = {DataSetDefType.class}, priority = Integer.MAX_VALUE)
 public class DataSetDefEditorPresenter extends BaseEditor<DataSetDef, DefaultMetadata> {
 
+    public static final String ID = "DataSetDefEditor";
     @Inject
     SyncBeanManager beanManager;
     @Inject
@@ -203,12 +204,12 @@ public class DataSetDefEditorPresenter extends BaseEditor<DataSetDef, DefaultMet
 
     private void edit(final DataSet dataset) {
         if (dataset != null) {
-            final DataSetDef dataSetDef = workflow.getDataSetDef();
-            List<DataColumn> columns = dataset.getColumns();
+            final var dataSetDef = workflow.getDataSetDef();
+            final var columns = dataset.getColumns();
             if (columns != null && !columns.isEmpty()) {
 
                 // Obtain all data columns available from the resulting data set.
-                List<DataColumnDef> columnDefs = new ArrayList<>(columns.size());
+                var columnDefs = new ArrayList<DataColumnDef>(columns.size());
                 for (final DataColumn column : columns) {
                     columnDefs.add(new DataColumnDef(column.getId(),
                                                      column.getColumnType()));
@@ -327,7 +328,7 @@ public class DataSetDefEditorPresenter extends BaseEditor<DataSetDef, DefaultMet
     }
 
     void showError(final ClientRuntimeError error) {
-        final String message = error.getCause() != null ? error.getCause() : error.getMessage();
+        final var message = error.getCause() != null ? error.getCause() : error.getMessage();
         showError(message);
     }
 

@@ -16,34 +16,31 @@
 
 package org.uberfire.server;
 
+import static org.uberfire.server.UploadUriProvider.getTargetLocation;
+import static org.uberfire.server.UploadUriProvider.isUpdate;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
-import org.uberfire.io.IOService;
-import org.uberfire.java.nio.file.Path;
+import org.dashbuilder.project.storage.ProjectStorageServices;
+import java.nio.file.Paths;
 
-import static org.uberfire.server.UploadUriProvider.getTargetLocation;
-import static org.uberfire.server.UploadUriProvider.isUpdate;
-
-public class FileUploadServlet
-        extends BaseUploadServlet {
+public class FileUploadServlet extends BaseUploadServlet {
 
     private static final String RESPONSE_OK = "OK";
     private static final String RESPONSE_FAIL = "FAIL";
     private static final String RESPONSE_CONFLICT = "CONFLICT";
 
     @Inject
-    @Named("ioStrategy")
-    private IOService ioService;
+    ProjectStorageServices projectStorageServices;
 
     @Override
     protected void doPost(HttpServletRequest request,
@@ -51,20 +48,20 @@ public class FileUploadServlet
 
         try {
 
-            URI targetLocation = getTargetLocation(request);
-            final boolean isUpdate = isUpdate(request);
+            var targetLocation = getTargetLocation(request);
+            final var isUpdate = isUpdate(request);
             finalizeResponse(response,
-                             getFileItem(request),
-                             targetLocation,
-                             isUpdate);
+                    getFileItem(request),
+                    targetLocation,
+                    isUpdate);
         } catch (FileUploadException e) {
             logError(e);
             writeResponse(response,
-                          RESPONSE_FAIL);
+                    RESPONSE_FAIL);
         } catch (URISyntaxException e) {
             logError(e);
             writeResponse(response,
-                          RESPONSE_FAIL);
+                    RESPONSE_FAIL);
         }
     }
 
@@ -72,32 +69,20 @@ public class FileUploadServlet
                                   FileItem fileItem,
                                   URI uri,
                                   boolean isUpdate) throws IOException {
-        if (!validateAccess(uri,
-                            response)) {
+
+        var path = Paths.get(uri);
+        var tempPath = projectStorageServices.getTempPath(path.getFileName().toString());
+        if (tempPath.toFile().exists() && !isUpdate) {
+            writeResponse(response,
+                    RESPONSE_CONFLICT);
+            response.sendError(HttpServletResponse.SC_CONFLICT);
             return;
         }
-
-        final Path path = ioService.get(uri);
-
-        try {
-            ioService.startBatch(path.getFileSystem());
-
-            if (ioService.exists(path)
-                    && !isUpdate) {
-                writeResponse(response,
-                              RESPONSE_CONFLICT);
-                response.sendError(HttpServletResponse.SC_CONFLICT);
-                return;
-            }
-
-            writeFile(ioService,
-                      path,
-                      fileItem);
-        } finally {
-            ioService.endBatch();
-        }
-
-        writeResponse(response,
-                      RESPONSE_OK);
+        writeFile(tempPath, fileItem);
+        writeResponse(response, RESPONSE_OK);
+    }
+    
+    void setProjectStorageServices(ProjectStorageServices projectStorageServices) {
+        this.projectStorageServices = projectStorageServices;
     }
 }

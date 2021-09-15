@@ -17,7 +17,6 @@ package org.dashbuilder.client.navigation.plugin;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.dashbuilder.navigation.workbench.NavWorkbenchCtx.perspective;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyObject;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
@@ -30,9 +29,9 @@ import java.util.List;
 import javax.enterprise.event.Event;
 
 import org.dashbuilder.client.navigation.NavigationManager;
-import org.dashbuilder.navigation.event.PerspectivePluginsChangedEvent;
 import org.dashbuilder.navigation.NavItem;
 import org.dashbuilder.navigation.NavTree;
+import org.dashbuilder.navigation.event.PerspectivePluginsChangedEvent;
 import org.dashbuilder.navigation.impl.NavTreeBuilder;
 import org.dashbuilder.navigation.service.PerspectivePluginServices;
 import org.dashbuilder.navigation.workbench.NavWorkbenchCtx;
@@ -42,8 +41,6 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.uberfire.client.workbench.type.ClientTypeRegistry;
-import org.uberfire.ext.plugin.client.type.PerspectiveLayoutPluginResourceType;
 import org.uberfire.ext.plugin.event.PluginAdded;
 import org.uberfire.ext.plugin.event.PluginDeleted;
 import org.uberfire.ext.plugin.event.PluginRenamed;
@@ -52,7 +49,6 @@ import org.uberfire.ext.plugin.model.Plugin;
 import org.uberfire.ext.plugin.model.PluginType;
 import org.uberfire.mocks.CallerMock;
 import org.uberfire.mvp.Command;
-import org.uberfire.workbench.category.Others;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PerspectivePluginManagerImplTest {
@@ -63,9 +59,6 @@ public class PerspectivePluginManagerImplTest {
             .build();
     @Mock
     private NavigationManager navigationManager;
-
-    @Mock
-    private ClientTypeRegistry clientTypeRegistry;
 
     @Mock
     private PerspectivePluginServices pluginServices;
@@ -83,7 +76,6 @@ public class PerspectivePluginManagerImplTest {
 
     @Before
     public void setUp() {
-        when(clientTypeRegistry.resolve(any())).thenReturn(new PerspectiveLayoutPluginResourceType(new Others()));
 
         perspectivePlugin = new Plugin(PERSPECTIVE_ID, PluginType.PERSPECTIVE_LAYOUT, null);
         perspectiveRenamedPlugin = new Plugin("newName", PluginType.PERSPECTIVE_LAYOUT, null);
@@ -95,7 +87,7 @@ public class PerspectivePluginManagerImplTest {
 
         when(pluginServices.listPlugins()).thenReturn(Collections.emptyList());
 
-        testedPluginManager = new PerspectivePluginManagerImpl(clientTypeRegistry, null, navigationManager, new CallerMock<>(pluginServices), perspectiveChangedEvent);
+        testedPluginManager = new PerspectivePluginManagerImpl(null, navigationManager, new CallerMock<>(pluginServices), perspectiveChangedEvent);
         testedPluginManager.getPerspectivePlugins(plugins -> {});
     }
 

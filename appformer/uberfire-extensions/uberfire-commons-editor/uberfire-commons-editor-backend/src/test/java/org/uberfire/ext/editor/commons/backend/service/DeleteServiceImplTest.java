@@ -16,6 +16,16 @@
 
 package org.uberfire.ext.editor.commons.backend.service;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -31,8 +41,6 @@ import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.uberfire.backend.vfs.Path;
 import org.uberfire.backend.vfs.PathFactory;
-import org.uberfire.backend.vfs.VFSLockService;
-import org.uberfire.backend.vfs.impl.LockInfo;
 import org.uberfire.ext.editor.commons.backend.service.helper.DeleteHelper;
 import org.uberfire.ext.editor.commons.backend.service.restriction.LockRestrictor;
 import org.uberfire.ext.editor.commons.service.ValidationService;
@@ -41,10 +49,6 @@ import org.uberfire.io.IOService;
 import org.uberfire.java.nio.base.options.CommentedOption;
 import org.uberfire.java.nio.file.FileSystem;
 import org.uberfire.rpc.SessionInfo;
-
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 @Ignore("fix after figuring out IO")
 @RunWith(MockitoJUnitRunner.class)
@@ -55,9 +59,6 @@ public class DeleteServiceImplTest {
 
     @Mock
     private SessionInfo sessionInfo;
-
-    @Mock
-    private VFSLockService lockService;
 
     @Mock
     private ValidationService validationService;
@@ -85,30 +86,6 @@ public class DeleteServiceImplTest {
         when(deleteHelper.supports(any(Path.class))).thenReturn(true);
     }
 
-    @Test
-    public void deleteLockedPathTest() {
-        final Path path = getPath();
-
-        givenThatPathIsLocked(path);
-
-        try {
-            whenPathIsDeleted(path);
-        } catch (RuntimeException e) {
-            thenPathWasNotDeleted(path,
-                                  e);
-        }
-
-        thenPathWasNotDeleted(path);
-    }
-
-    @Test
-    public void deleteUnlockedPathTest() {
-        final Path path = getPath();
-
-        givenThatPathIsUnlocked(path);
-        whenPathIsDeleted(path);
-        thenPathWasDeleted(path);
-    }
 
     @Test
     public void deleteLockedPathIfExistsTest() {
@@ -116,10 +93,6 @@ public class DeleteServiceImplTest {
         paths.add(getPath("file0.txt"));
         paths.add(getPath("file1.txt"));
         paths.add(getPath("file2.txt"));
-
-        givenThatPathIsUnlocked(paths.get(0));
-        givenThatPathIsLocked(paths.get(1));
-        givenThatPathIsUnlocked(paths.get(2));
 
         try {
             whenPathsAreDeletedIfExists(paths);
@@ -142,10 +115,6 @@ public class DeleteServiceImplTest {
         paths.add(getPath("file1.txt"));
         paths.add(getPath("file2.txt"));
 
-        givenThatPathIsUnlocked(paths.get(0));
-        givenThatPathIsUnlocked(paths.get(1));
-        givenThatPathIsUnlocked(paths.get(2));
-
         whenPathsAreDeletedIfExists(paths);
 
         thenPathWasDeletedIfExists(paths.get(0));
@@ -155,25 +124,23 @@ public class DeleteServiceImplTest {
 
     @Test
     public void pathHasNoDeleteRestrictionTest() {
-        final Path path = getPath();
+        final var path = getPath();
 
-        givenThatPathIsUnlocked(path);
         boolean hasRestriction = whenPathIsCheckedForDeleteRestrictions(path);
         thenPathHasNoDeleteRestrictions(hasRestriction);
     }
 
     @Test
     public void pathHasDeleteRestrictionTest() {
-        final Path path = getPath();
+        final var path = getPath();
 
-        givenThatPathIsLocked(path);
         boolean hasRestriction = whenPathIsCheckedForDeleteRestrictions(path);
         thenPathHasDeleteRestrictions(hasRestriction);
     }
 
     @Test
     public void deletePathInvokesDeleteHelpers() {
-        final Path path = getPath();
+        final var path = getPath();
 
         whenPathIsDeleted(path);
 
@@ -184,7 +151,7 @@ public class DeleteServiceImplTest {
 
     @Test
     public void deletePathsIfExistsInvokesDeleteHelpers() {
-        final List<Path> paths = new ArrayList<Path>();
+        final var paths = new ArrayList<Path>();
         paths.add(getPath("file0.txt"));
         paths.add(getPath("file1.txt"));
         paths.add(getPath("file2.txt"));
@@ -214,16 +181,6 @@ public class DeleteServiceImplTest {
         order.verify(ioService).delete(any(org.uberfire.java.nio.file.Path.class),
                                        any(CommentedOption.class));
         order.verify(ioService).endBatch();
-    }
-
-    private void givenThatPathIsLocked(final Path path) {
-        changeLockInfo(path,
-                       true);
-    }
-
-    private void givenThatPathIsUnlocked(final Path path) {
-        changeLockInfo(path,
-                       false);
     }
 
     private void whenPathIsDeleted(final Path path) {
@@ -303,10 +260,4 @@ public class DeleteServiceImplTest {
                                    "file://tmp/" + fileName);
     }
 
-    private void changeLockInfo(Path path,
-                                boolean locked) {
-        when(lockService.retrieveLockInfo(path)).thenReturn(new LockInfo(locked,
-                                                                         "lockedBy",
-                                                                         path));
-    }
 }

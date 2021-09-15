@@ -22,9 +22,7 @@ import org.jboss.errai.common.client.api.annotations.Portable;
 public enum PluginType {
     DEFAULT,
     PERSPECTIVE,
-    PERSPECTIVE_LAYOUT,
-    SCREEN,
     EDITOR,
-    SPLASH,
-    DYNAMIC_MENU
+    PERSPECTIVE_LAYOUT, 
+    SCREEN;
 }

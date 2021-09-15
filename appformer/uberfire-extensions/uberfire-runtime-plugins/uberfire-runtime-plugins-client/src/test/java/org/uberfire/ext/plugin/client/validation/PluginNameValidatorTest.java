@@ -66,15 +66,7 @@ public class PluginNameValidatorTest {
                 new Plugin("existingEditor",
                         PluginType.EDITOR,
                         PathFactory.newPath("test3",
-                                "/tmp/test3")),
-                new Plugin("existingSplashScreen",
-                        PluginType.SPLASH,
-                        PathFactory.newPath("test4",
-                                "/tmp/test4")),
-                new Plugin("existingDynamicMenu",
-                        PluginType.DYNAMIC_MENU,
-                        PathFactory.newPath("test5",
-                                "/tmp/test5")));
+                                "/tmp/test3")));
 
         when(pluginServices.listPlugins()).thenReturn(plugins);
 

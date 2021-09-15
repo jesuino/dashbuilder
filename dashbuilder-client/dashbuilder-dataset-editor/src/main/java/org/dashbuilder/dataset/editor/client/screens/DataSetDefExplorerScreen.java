@@ -123,13 +123,14 @@ public class DataSetDefExplorerScreen {
     }
 
     void onEditDataSetEvent(@Observes EditDataSetEvent event) {
-        checkNotNull("event",
-                     event);
-        services.call(new RemoteCallback<Path>() {
-            public void callback(Path path) {
-                placeManager.goTo(new PathPlaceRequest(path));
-            }
-        }).resolve(event.getDef());
+        
+        checkNotNull("event", event);
+        services.call((Path path) -> {
+            var place = new PathPlaceRequest(path);
+            place.setIdentifier(DataSetDefEditorPresenter.ID);
+            placeManager.goTo(place);
+        })
+                .resolve(event.getDef());
     }
 
     void onErrorEvent(@Observes ErrorEvent errorEvent) {

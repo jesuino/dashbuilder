@@ -16,36 +16,29 @@
 
 package org.uberfire.server;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.net.URI;
 
 import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.dashbuilder.project.storage.impl.ProjectStorageServicesImpl;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.uberfire.io.IOService;
-import org.uberfire.java.nio.file.FileSystem;
-import org.uberfire.java.nio.file.Path;
-import org.uberfire.server.util.FileServletUtil;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class FileUploadServletTest {
@@ -56,8 +49,8 @@ public class FileUploadServletTest {
     private static final String PARAM_FILENAME = "fileName";
     private static final String PARAM_UPDATE = "update";
 
-    private static final String TEST_ROOT_PATH = "default://main@test-repository/test-project/src/main/resources/test";
-    private static final String TEST_ROOT_PATH_WITH_SPACES = "default://main@mtest-repository/my test project/src/main/resources/test";
+    private static final String TEST_ROOT_PATH = "file:/test-project/src/main/resources/test";
+    private static final String TEST_ROOT_PATH_WITH_SPACES = "file:/my test project/src/main/resources/test";
 
     private static final String BOUNDARY = "---------------------------9051914041544843365972754266";
     private static final String BOUNDARY_DELIMITER = "--";
@@ -74,22 +67,20 @@ public class FileUploadServletTest {
 
     private static final String BREAK = new String(new char[]{CR, LF});
 
-    @Mock
-    private IOService ioService;
 
-    @Mock
-    private Path path;
-
-    @Mock
-    private FileSystem fileSystem;
-
-    @InjectMocks
     private FileUploadServlet uploadServlet;
-
+    private ProjectStorageServicesImpl services;
+    
     @Before
     public void setup() {
-        when(ioService.get(any(URI.class))).thenReturn(path);
-        when(path.getFileSystem()).thenReturn(fileSystem);
+        services = new ProjectStorageServicesImpl();
+        uploadServlet = new FileUploadServlet();
+        uploadServlet.setProjectStorageServices(services);
+    }
+    @After
+    public void clear() {
+        services.clear();
+        services.createStructure();
     }
 
     /**
@@ -238,9 +229,9 @@ public class FileUploadServletTest {
         String fileContent = "the local file content";
     
         doUploadTestByPath(targetPath,
-                               fileContent,
-                               true,
-                               false);
+                           fileContent,
+                           false,
+                           false);
     }
 
     /**
@@ -301,19 +292,6 @@ public class FileUploadServletTest {
         verify(request,
                times(1)).getParameter(PARAM_FILENAME);
 
-        //Expected URI
-        URI expectedURI = new URI(targetFolderName.replaceAll("\\s", "%20") + "/" + FileServletUtil.encodeFileName(targetFileName));
-
-        verify(ioService,
-               times(2)).startBatch(eq(fileSystem));
-        verify(ioService,
-               times(1)).get(eq(expectedURI));
-        verify(ioService,
-               times(1)).write(any(Path.class),
-                               eq(fileContent.getBytes()));
-        verify(ioService,
-               times(2)).endBatch();
-
         printWriter.flush();
         assertEquals("OK",
                      new String(outputStream.toByteArray()));
@@ -324,8 +302,8 @@ public class FileUploadServletTest {
                                     boolean fileExists,
                                     boolean isUpdate) throws Exception {
 
-        HttpServletRequest request = mock(HttpServletRequest.class);
-        HttpServletResponse response = mock(HttpServletResponse.class);
+        var request = mock(HttpServletRequest.class);
+        var response = mock(HttpServletResponse.class);
 
         String localFileName = "local_file_name.txt"; //not relevant for the test
 
@@ -333,22 +311,20 @@ public class FileUploadServletTest {
         when(request.getParameter(PARAM_PATH)).thenReturn(targetPath);
         when(request.getParameter(PARAM_UPDATE)).thenReturn(String.valueOf(isUpdate));
         
-        when(ioService.exists(any(Path.class))).thenReturn(fileExists);
-
         //mock the servlet multipart request
         //local file name, and local file name content are not relevant
-        String requestContent = mockMultipartRequestContent(localFileName,
+        var requestContent = mockMultipartRequestContent(localFileName,
                                                             fileContent);
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(requestContent.getBytes());
-        MockServletInputStream servletInputStream = new MockServletInputStream(inputStream);
+        var inputStream = new ByteArrayInputStream(requestContent.getBytes());
+        var servletInputStream = new MockServletInputStream(inputStream);
 
         when(request.getContentLength()).thenReturn(requestContent.getBytes().length);
         when(request.getContentType()).thenReturn(CONTENT_TYPE);
         when(request.getInputStream()).thenReturn(servletInputStream);
 
         //mock the servlet response writer
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        PrintWriter printWriter = new PrintWriter(outputStream);
+        var outputStream = new ByteArrayOutputStream();
+        var printWriter = new PrintWriter(outputStream);
         when(response.getWriter()).thenReturn(printWriter);
 
         uploadServlet.doPost(request,
@@ -358,31 +334,12 @@ public class FileUploadServletTest {
                times(2)).getParameter(PARAM_PATH);
         verify(request, times(1)).getParameter(PARAM_UPDATE);
     
-        //Expected URI
-        URI expectedURI = new URI(FileServletUtil.encodeFileNamePart(targetPath));
-        verify(ioService,
-               times(1)).get(eq(expectedURI));
-    
+        printWriter.flush();
+
         if(fileExists && !isUpdate) {
-            verify(ioService,
-                   times(1)).startBatch(eq(fileSystem));
-            verify(ioService, times(1)).exists(any(Path.class));
-            verify(ioService,
-                   times(1)).endBatch();
-    
-            printWriter.flush();
             assertEquals("CONFLICT",
                          new String(outputStream.toByteArray()));
         } else {
-            verify(ioService,
-                   times(2)).startBatch(eq(fileSystem));
-            
-            verify(ioService,
-                   times(1)).write(any(Path.class),
-                                   eq(fileContent.getBytes()));
-            verify(ioService,
-                   times(2)).endBatch();
-        
             printWriter.flush();
             assertEquals("OK",
                          new String(outputStream.toByteArray()));

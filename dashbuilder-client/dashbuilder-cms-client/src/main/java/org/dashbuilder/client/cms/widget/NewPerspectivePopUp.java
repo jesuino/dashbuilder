@@ -28,6 +28,7 @@ import org.uberfire.ext.editor.commons.client.validation.ValidationErrorReason;
 import org.uberfire.ext.editor.commons.client.validation.ValidatorWithReasonCallback;
 import org.uberfire.ext.layout.editor.api.PerspectiveServices;
 import org.uberfire.ext.layout.editor.api.editor.LayoutTemplate;
+import org.uberfire.ext.plugin.client.perspective.editor.PerspectiveEditorPresenter;
 import org.uberfire.ext.plugin.client.validation.PluginNameValidator;
 import org.uberfire.ext.plugin.exception.PluginAlreadyExists;
 import org.uberfire.ext.plugin.model.Plugin;
@@ -116,7 +117,9 @@ public class NewPerspectivePopUp implements IsElement {
                     public void onSuccess() {
                         perspectiveServices.call(
                             (Plugin response) -> {
-                                placeManager.goTo(getPathPlaceRequest(response));
+                                var placeRequest = getPathPlaceRequest(response);
+                                placeRequest.setIdentifier(PerspectiveEditorPresenter.ID);
+                                placeManager.goTo(placeRequest);
                                 hide();
                             },
                             (message, throwable) -> {
