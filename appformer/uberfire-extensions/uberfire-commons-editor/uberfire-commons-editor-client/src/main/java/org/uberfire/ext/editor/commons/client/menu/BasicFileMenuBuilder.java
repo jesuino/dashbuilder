@@ -17,7 +17,6 @@ package org.uberfire.ext.editor.commons.client.menu;
 
 import org.jboss.errai.common.client.api.Caller;
 import org.uberfire.backend.vfs.Path;
-import org.uberfire.ext.editor.commons.version.CurrentBranch;
 import org.uberfire.ext.editor.commons.client.validation.Validator;
 import org.uberfire.ext.editor.commons.service.support.SupportsCopy;
 import org.uberfire.ext.editor.commons.service.support.SupportsDelete;

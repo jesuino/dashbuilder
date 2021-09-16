@@ -18,7 +18,6 @@ package org.uberfire.ext.plugin.client.perspective.editor;
 
 import static org.uberfire.ext.editor.commons.client.menu.MenuItems.COPY;
 import static org.uberfire.ext.editor.commons.client.menu.MenuItems.DELETE;
-import static org.uberfire.ext.editor.commons.client.menu.MenuItems.RENAME;
 import static org.uberfire.ext.editor.commons.client.menu.MenuItems.SAVE;
 
 import java.util.ArrayList;
@@ -32,6 +31,7 @@ import java.util.stream.Collectors;
 
 import javax.enterprise.context.Dependent;
 import javax.enterprise.event.Event;
+import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
 import org.jboss.errai.common.client.api.Caller;
@@ -68,6 +68,7 @@ import org.uberfire.ext.plugin.client.perspective.editor.layout.editor.Perspecti
 import org.uberfire.ext.plugin.client.perspective.editor.layout.editor.TargetDivList;
 import org.uberfire.ext.plugin.client.type.PerspectiveLayoutPluginResourceType;
 import org.uberfire.ext.plugin.client.validation.PluginNameValidator;
+import org.uberfire.ext.plugin.event.PluginDeleted;
 import org.uberfire.ext.plugin.model.Plugin;
 import org.uberfire.ext.plugin.model.PluginType;
 import org.uberfire.lifecycle.OnClose;
@@ -126,25 +127,24 @@ public class PerspectiveEditorPresenter extends BaseEditor<LayoutTemplate, Defau
 
         // This is only used to define the "name" used by @WorkbenchPartTitle which is called by Uberfire after @OnStartup
         // but before the async call in "loadContent()" has returned. When the *real* plugin is loaded this is overwritten
-        final String name = place.getParameter("name",
-                "");
+        final var name = place.getParameter("name", "");
         plugin = new Plugin(name,
                 PluginType.PERSPECTIVE_LAYOUT,
                 path);
 
         // Show the available menu options according to the permissions set
-        List<MenuItems> menuItems = new ArrayList<>();
-        addMenuItem(menuItems, SAVE, true);
-        addMenuItem(menuItems, COPY, true);
-        addMenuItem(menuItems, RENAME, true);
-        addMenuItem(menuItems, DELETE, true);
+        var menuItems = new ArrayList<MenuItems>();
+        
+        menuItems.add(SAVE);
+        menuItems.add(COPY);
+        menuItems.add(DELETE);
 
         // Init the editor
         init(path,
-                place,
-                resourceType,
-                true,
-                menuItems);
+             place,
+             resourceType,
+             true,
+             menuItems);
 
         // Init the drag component palette
         initLayoutDragComponentGroups();
@@ -169,14 +169,6 @@ public class PerspectiveEditorPresenter extends BaseEditor<LayoutTemplate, Defau
     @OnClose
     public void onClose() {
         layoutEditorPlugin.clear();
-    }
-
-    protected void addMenuItem(List<MenuItems> menuItems,
-                               MenuItems item,
-                               boolean add) {
-        if (add) {
-            menuItems.add(item);
-        }
     }
 
     public void initLayoutDragComponentGroups() {
@@ -338,4 +330,11 @@ public class PerspectiveEditorPresenter extends BaseEditor<LayoutTemplate, Defau
 
         void setupLayoutEditor(Widget widget);
     }
+
+    public void onPlugInDeleted(@Observes final PluginDeleted event) {
+      if(event.getPlugin().getPath().equals(path)) {
+          placeManager.closePlace(place);
+      }
+    }
+
 }

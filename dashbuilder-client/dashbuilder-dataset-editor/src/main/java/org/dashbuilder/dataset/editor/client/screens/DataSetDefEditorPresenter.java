@@ -244,17 +244,13 @@ public class DataSetDefEditorPresenter extends BaseEditor<DataSetDef, DefaultMet
         if (!workflow.hasErrors()) {
             savePopUpPresenter.show(path,
                                     commitMessage -> {
-                                        final DataSetDef def = getDataSetDef();
-                                        services.call(new RemoteCallback<Path>() {
-                                                          @Override
-                                                          public void callback(final Path path) {
+                                        final var def = getDataSetDef();
+                                        services.call((final Path path)  -> {
                                                               DataSetDefEditorPresenter.this.getSaveSuccessCallback(getCurrentModelHash()).callback(path);
                                                               placeManager.closePlace(DataSetDefEditorPresenter.this.place);
-                                                          }
                                                       },
                                                       errorCallback)
-                                                .save(def,
-                                                      commitMessage);
+                                                .save(def, commitMessage);
                                     }
             );
             concurrentUpdateSessionInfo = null;

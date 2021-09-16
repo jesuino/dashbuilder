@@ -47,6 +47,7 @@ import org.uberfire.ext.editor.commons.client.file.popups.DeletePopUpPresenter;
 import org.uberfire.ext.editor.commons.client.menu.BasicFileMenuBuilder;
 import org.uberfire.ext.editor.commons.client.menu.DownloadMenuItemBuilder;
 import org.uberfire.ext.editor.commons.client.menu.MenuItems;
+import org.uberfire.ext.editor.commons.client.menu.common.SaveAndRenameCommandBuilder;
 import org.uberfire.ext.editor.commons.client.resources.i18n.CommonConstants;
 import org.uberfire.ext.editor.commons.client.validation.DefaultFileNameValidator;
 import org.uberfire.ext.editor.commons.client.validation.Validator;
@@ -78,7 +79,7 @@ public abstract class BaseEditor<T, M> {
     protected Menus menus;
 
     protected Promise<Void> makeMenuBarPromise;
-    
+
     protected boolean saveWithComments = true;
 
     @Inject
@@ -108,6 +109,9 @@ public abstract class BaseEditor<T, M> {
     @Inject
     protected DeletePopUpPresenter deletePopUpPresenter;
 
+    @Inject
+    protected SaveAndRenameCommandBuilder<T, M> saveAndRenameCommandBuilder;
+
     protected ConcurrentChangePopup concurrentChangePopup;
 
     protected Set<MenuItems> menuItems = new HashSet<>();
@@ -128,8 +132,7 @@ public abstract class BaseEditor<T, M> {
         this.changeTitleNotification = changeTitleNotification;
     }
 
-    protected BaseEditor() {
-    }
+    protected BaseEditor() {}
 
     protected BaseEditor(final BaseEditorView baseView) {
         this.baseView = baseView;
@@ -140,10 +143,10 @@ public abstract class BaseEditor<T, M> {
                         final ClientResourceType type,
                         final MenuItems... menuItems) {
         init(path,
-             place,
-             type,
-             true,
-             menuItems);
+                place,
+                type,
+                true,
+                menuItems);
     }
 
     protected void init(final ObservablePath path,
@@ -153,10 +156,10 @@ public abstract class BaseEditor<T, M> {
                         final MenuItems... menuItems) {
 
         init(path,
-             place,
-             type,
-             addFileChangeListeners,
-             Arrays.asList(menuItems));
+                place,
+                type,
+                addFileChangeListeners,
+                Arrays.asList(menuItems));
     }
 
     protected void init(final ObservablePath path,
@@ -172,8 +175,7 @@ public abstract class BaseEditor<T, M> {
         baseView.showLoading();
 
         this.isReadOnly = this.place.getParameter("readOnly",
-                                                  null) == null ? false : true;
-
+                null) == null ? false : true;
 
         if (addFileChangeListeners) {
             addFileChangeListeners(path);
@@ -198,16 +200,16 @@ public abstract class BaseEditor<T, M> {
 
         if (menuItems.contains(COPY)) {
             menuBuilder.addCopy(path,
-                                getCopyValidator(),
-                                getCopyServiceCaller());
+                    getCopyValidator(),
+                    getCopyServiceCaller());
         }
         if (menuItems.contains(RENAME)) {
-            menuBuilder.addRename(path, getRenameServiceCaller());
+            menuBuilder.addRename(getSaveAndRename());
         }
-        
+
         if (menuItems.contains(DELETE)) {
             menuBuilder.addDelete(path,
-                                  getDeleteServiceCaller());
+                    getDeleteServiceCaller());
         }
         if (menuItems.contains(VALIDATE)) {
             menuBuilder.addValidate(getValidateCommand());
@@ -237,7 +239,7 @@ public abstract class BaseEditor<T, M> {
     }
 
     protected Supplier<Boolean> getSaveValidator() {
-        return () ->  true;
+        return () -> true;
     }
 
     protected ParameterizedCommand<Path> onSuccess() {
@@ -287,17 +289,11 @@ public abstract class BaseEditor<T, M> {
     private void addFileChangeListeners(final ObservablePath path) {
         path.onRename(this::onRename);
         path.onDelete(this::onDelete);
-
-    }
-
-    private void disableDeletePopup() {
-        if (deletePopUpPresenter.isOpened()) {
-            deletePopUpPresenter.cancel();
-        }
     }
 
     private void onDelete() {
         Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+
             @Override
             public void execute() {
                 placeManager.forceClosePlace(place);
@@ -343,9 +339,9 @@ public abstract class BaseEditor<T, M> {
         }
     }
 
-
     public RemoteCallback<Path> getSaveSuccessCallback(final int newHash) {
         return new RemoteCallback<Path>() {
+
             @Override
             public void callback(final Path path) {
                 baseView.hideBusyIndicator();
@@ -442,6 +438,7 @@ public abstract class BaseEditor<T, M> {
     public Command getValidateCommand() {
 
         return new Command() {
+
             @Override
             public void execute() {
                 if (!isValidationRunning) {
@@ -449,6 +446,7 @@ public abstract class BaseEditor<T, M> {
                     onBeforeValidate();
 
                     onValidate(new Command() {
+
                         @Override
                         public void execute() {
                             onAfterValidate();
@@ -535,7 +533,23 @@ public abstract class BaseEditor<T, M> {
     }
 
     protected Caller<? extends SupportsSaveAndRename<T, M>> getSaveAndRenameServiceCaller() {
+
         return null;
+    }
+
+    protected Command getSaveAndRename() {
+
+        return saveAndRenameCommandBuilder
+                .addPathSupplier(getPathSupplier())
+                .addValidator(getRenameValidator())
+                .addValidator(getSaveValidator())
+                .addRenameService(getSaveAndRenameServiceCaller())
+                .addMetadataSupplier(getMetadataSupplier())
+                .addContentSupplier(getContentSupplier())
+                .addIsDirtySupplier(isDirtySupplier())
+                .addSuccessCallback(onSuccess())
+                .addBeforeSaveAndRenameCommand(getBeforeSaveAndRenameCommand())
+                .build();
     }
 
     protected Caller<? extends SupportsCopy> getCopyServiceCaller() {
