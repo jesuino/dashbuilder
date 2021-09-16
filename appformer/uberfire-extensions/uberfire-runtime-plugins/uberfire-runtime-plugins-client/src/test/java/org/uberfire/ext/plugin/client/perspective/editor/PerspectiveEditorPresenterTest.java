@@ -45,11 +45,8 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.uberfire.backend.vfs.ObservablePath;
 import org.uberfire.backend.vfs.Path;
-import org.uberfire.ext.editor.commons.client.history.VersionRecordManager;
 import org.uberfire.ext.editor.commons.client.menu.BasicFileMenuBuilder;
-import org.uberfire.ext.editor.commons.client.menu.common.SaveAndRenameCommandBuilder;
 import org.uberfire.ext.editor.commons.client.validation.Validator;
-import org.uberfire.ext.editor.commons.file.DefaultMetadata;
 import org.uberfire.ext.layout.editor.api.PerspectiveServices;
 import org.uberfire.ext.layout.editor.api.editor.LayoutTemplate;
 import org.uberfire.ext.layout.editor.client.LayoutEditorPresenter;
@@ -81,9 +78,6 @@ public class PerspectiveEditorPresenterTest {
     PlaceRequest placeRequest;
 
     @Mock
-    VersionRecordManager versionRecordManager;
-
-    @Mock
     BasicFileMenuBuilder menuBuilder;
 
     @Mock
@@ -112,9 +106,6 @@ public class PerspectiveEditorPresenterTest {
 
     @Mock
     Caller<PerspectiveServices> perspectiveServices;
-
-    @Mock
-    SaveAndRenameCommandBuilder<LayoutTemplate, DefaultMetadata> saveAndRenameCommandBuilder;
 
     @Spy
     SyncPromises promises;
@@ -173,7 +164,6 @@ public class PerspectiveEditorPresenterTest {
         when(beanManager.lookupBeans(PerspectiveEditorComponentGroupProvider.class))
                 .thenReturn(Arrays.asList(perspectiveEditorGroupBeanB, perspectiveEditorGroupBeanA));
 
-        mockSaveAndRenameCommandBuilder();
     }
 
     @Test
@@ -243,17 +233,4 @@ public class PerspectiveEditorPresenterTest {
         assertEquals(perspectiveServices, presenter.getSaveAndRenameServiceCaller());
     }
 
-    private void mockSaveAndRenameCommandBuilder() {
-        when(saveAndRenameCommandBuilder.addPathSupplier(any())).thenReturn(saveAndRenameCommandBuilder);
-        when(saveAndRenameCommandBuilder.addValidator(Mockito.<Validator>any())).thenReturn(saveAndRenameCommandBuilder);
-        when(saveAndRenameCommandBuilder.addValidator(Mockito.<Supplier<Boolean>>any())).thenReturn(saveAndRenameCommandBuilder);
-        when(saveAndRenameCommandBuilder.addRenameService(any())).thenReturn(saveAndRenameCommandBuilder);
-        when(saveAndRenameCommandBuilder.addMetadataSupplier(any())).thenReturn(saveAndRenameCommandBuilder);
-        when(saveAndRenameCommandBuilder.addContentSupplier(any())).thenReturn(saveAndRenameCommandBuilder);
-        when(saveAndRenameCommandBuilder.addIsDirtySupplier(any())).thenReturn(saveAndRenameCommandBuilder);
-        when(saveAndRenameCommandBuilder.addSuccessCallback(any())).thenReturn(saveAndRenameCommandBuilder);
-        when(saveAndRenameCommandBuilder.addBeforeSaveAndRenameCommand(isA(Command.class))).thenReturn(saveAndRenameCommandBuilder);
-        when(saveAndRenameCommandBuilder.build()).thenReturn(() -> {
-        });
-    }
 }

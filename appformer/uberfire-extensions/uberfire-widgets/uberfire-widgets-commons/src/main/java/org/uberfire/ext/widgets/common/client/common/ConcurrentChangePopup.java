@@ -52,19 +52,6 @@ public class ConcurrentChangePopup extends AbstractConcurrentChangePopup {
               onReOpen);
     }
 
-    public static ConcurrentChangePopup newConcurrentUpdate(final Path path,
-                                                            final Command onForceSave,
-                                                            final Command onCancel,
-                                                            final Command onReOpen) {
-
-        final String message = CommonConstants.INSTANCE.ConcurrentUpdate("system",
-                                                                         decode(path));
-        return new ConcurrentChangePopup(message,
-                                         onForceSave,
-                                         onCancel,
-                                         onReOpen);
-    }
-
     public static ConcurrentChangePopup newConcurrentRename(final Path source,
                                                             final Path target,
                                                             final Command onIgnore,

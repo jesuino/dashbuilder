@@ -16,6 +16,8 @@
 
 package org.uberfire.ext.editor.commons.client.file.popups;
 
+import static org.kie.soup.commons.validation.PortablePreconditions.checkNotNull;
+
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.Dependent;
 import javax.enterprise.event.Event;
@@ -25,9 +27,6 @@ import org.uberfire.backend.vfs.Path;
 import org.uberfire.client.mvp.SaveInProgressEvent;
 import org.uberfire.client.mvp.UberElement;
 import org.uberfire.mvp.ParameterizedCommand;
-
-import static org.uberfire.backend.vfs.PathSupport.isVersioned;
-import static org.kie.soup.commons.validation.PortablePreconditions.checkNotNull;
 
 @Dependent
 public class SavePopUpPresenter {
@@ -59,11 +58,7 @@ public class SavePopUpPresenter {
         final ParameterizedCommand<String> wrappedCommand = wrapWithSaveInProgressEvent(path,
                                                                                         command);
 
-        if (isVersioned(path)) {
-            show(wrappedCommand);
-        } else {
-            wrappedCommand.execute("");
-        }
+        wrappedCommand.execute("");
     }
 
     public ParameterizedCommand<String> getCommand() {

@@ -78,9 +78,6 @@ public interface BasicFileMenuBuilder extends HasLockSyncMenuStateHelper {
 
     BasicFileMenuBuilder addValidate(final Command command);
 
-    BasicFileMenuBuilder addRestoreVersion(final Path path,
-                                           final CurrentBranch currentBranch);
-
     BasicFileMenuBuilder addCommand(final String caption,
                                     final Command command);
 

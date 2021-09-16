@@ -22,17 +22,12 @@ import org.dashbuilder.client.cms.screen.explorer.NavigationExplorerScreen;
 import org.dashbuilder.client.navbar.AppHeader;
 import org.dashbuilder.client.navigation.NavTreeDefinitions;
 import org.dashbuilder.client.navigation.NavigationManager;
-import org.jboss.errai.common.client.api.Caller;
 import org.jboss.errai.ioc.client.api.EntryPoint;
-import org.uberfire.mvp.Command;
 
 import com.google.gwt.animation.client.Animation;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.RootPanel;
-
-import elemental2.dom.DomGlobal;
 
 /**
  * Entry-point for the Dashbuilder showcase

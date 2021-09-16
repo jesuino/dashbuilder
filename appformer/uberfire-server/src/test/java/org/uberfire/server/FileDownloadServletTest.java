@@ -33,7 +33,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.uberfire.java.nio.file.Path;
 
 @RunWith(MockitoJUnitRunner.class)
 public class FileDownloadServletTest {
@@ -59,7 +58,6 @@ public class FileDownloadServletTest {
         projectStorageServices.clear();
         projectStorageServices.createStructure();
     }
-    
 
     /**
      * Tests the downloading of a file given the following parameters:

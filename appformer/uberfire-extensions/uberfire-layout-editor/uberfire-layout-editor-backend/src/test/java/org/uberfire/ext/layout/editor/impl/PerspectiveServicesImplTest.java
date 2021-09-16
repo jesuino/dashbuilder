@@ -34,7 +34,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.uberfire.backend.vfs.PathFactory;
-import org.uberfire.ext.editor.commons.backend.service.SaveAndRenameServiceImpl;
 import org.uberfire.ext.editor.commons.file.DefaultMetadata;
 import org.uberfire.ext.layout.editor.api.editor.LayoutTemplate;
 import org.uberfire.ext.plugin.event.PluginAdded;
@@ -44,9 +43,6 @@ import org.uberfire.ext.plugin.event.PluginSaved;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PerspectiveServicesImplTest {
-
-    @Mock
-    SaveAndRenameServiceImpl<LayoutTemplate, DefaultMetadata> saveAndRenameService;
 
     @Mock
     DefaultMetadata metadata;
@@ -81,7 +77,6 @@ public class PerspectiveServicesImplTest {
 
         perspectiveServices = spy(new PerspectiveServicesImpl(projectStorageServices,
                                                               layoutServices,
-                                                              saveAndRenameService,
                                                               pluginAddedEvent,
                                                               pluginDeletedEvent,
                                                               pluginSavedEvent,
@@ -175,7 +170,6 @@ public class PerspectiveServicesImplTest {
         assertFalse(projectStorageServices.getPerspective(name).isPresent());
         assertTrue(projectStorageServices.getPerspective(newFileName).isPresent());
 
-        verify(saveAndRenameService).saveAndRename(path, newFileName, metadata, content, comment);
     }
 
     @Test

@@ -20,7 +20,6 @@ import org.dashbuilder.perspectives.PerspectiveIds;
 import org.uberfire.client.annotations.Perspective;
 import org.uberfire.client.annotations.WorkbenchPerspective;
 import org.uberfire.client.workbench.panels.impl.StaticWorkbenchPanelPresenter;
-import org.uberfire.mvp.PlaceRequest;
 import org.uberfire.mvp.impl.DefaultPlaceRequest;
 import org.uberfire.workbench.model.PerspectiveDefinition;
 import org.uberfire.workbench.model.impl.PartDefinitionImpl;
@@ -31,9 +30,10 @@ public class HomePerspective  {
 
     @Perspective
     public PerspectiveDefinition buildPerspective() {
-        PerspectiveDefinition perspective = new PerspectiveDefinitionImpl(StaticWorkbenchPanelPresenter.class.getName());
-        final PlaceRequest place = new DefaultPlaceRequest(HomeScreen.ID);
-        PartDefinitionImpl dashboardScreen = new PartDefinitionImpl(place);
+        final var perspective = new PerspectiveDefinitionImpl(StaticWorkbenchPanelPresenter.class.getName());
+        final var place = new DefaultPlaceRequest(HomeScreen.ID);
+        final var dashboardScreen = new PartDefinitionImpl(place);
+        
         perspective.getRoot().addPart(dashboardScreen);
         perspective.setName("Dashbuilder Home");
         return perspective;

@@ -28,7 +28,7 @@ import org.uberfire.workbench.model.menu.Menus;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
- * Goes inside the collapsible navbar container, and can contain a status menu (not implemented yet) and the {@link UserMenu}.
+ * Goes inside the collapsible navbar container.
  */
 @ApplicationScoped
 public class UtilityMenuBarView extends UnorderedList implements UtilityMenuBarPresenter.View,

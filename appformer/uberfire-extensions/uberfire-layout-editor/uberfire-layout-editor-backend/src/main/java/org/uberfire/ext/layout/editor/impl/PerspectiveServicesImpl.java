@@ -27,7 +27,6 @@ import org.dashbuilder.project.storage.ProjectStorageServices;
 import org.jboss.errai.bus.server.annotations.Service;
 import org.uberfire.backend.vfs.Path;
 import org.uberfire.backend.vfs.PathFactory;
-import org.uberfire.ext.editor.commons.backend.service.SaveAndRenameServiceImpl;
 import org.uberfire.ext.editor.commons.file.DefaultMetadata;
 import org.uberfire.ext.layout.editor.api.PerspectiveServices;
 import org.uberfire.ext.layout.editor.api.editor.LayoutTemplate;
@@ -44,7 +43,6 @@ public class PerspectiveServicesImpl implements PerspectiveServices {
 
     private LayoutServicesImpl layoutServices;
     private ProjectStorageServices projectStorageServices;
-    private SaveAndRenameServiceImpl<LayoutTemplate, DefaultMetadata> saveAndRenameService;
     private Event<PluginAdded> pluginAddedEvent;
     private Event<PluginDeleted> pluginDeletedEvent;
     private Event<PluginSaved> pluginSavedEvent;
@@ -53,14 +51,12 @@ public class PerspectiveServicesImpl implements PerspectiveServices {
     @Inject
     public PerspectiveServicesImpl(final ProjectStorageServices projectStorageServices,
                                    final LayoutServicesImpl layoutServices,
-                                   final SaveAndRenameServiceImpl<LayoutTemplate, DefaultMetadata> saveAndRenameService,
                                    final Event<PluginAdded> pluginAddedEvent,
                                    final Event<PluginDeleted> pluginDeletedEvent,
                                    final Event<PluginSaved> pluginSavedEvent,
                                    final Event<PluginRenamed> pluginRenamedEvent) {
         this.projectStorageServices = projectStorageServices;
         this.layoutServices = layoutServices;
-        this.saveAndRenameService = saveAndRenameService;
         this.pluginAddedEvent = pluginAddedEvent;
         this.pluginDeletedEvent = pluginDeletedEvent;
         this.pluginSavedEvent = pluginSavedEvent;
@@ -174,7 +170,6 @@ public class PerspectiveServicesImpl implements PerspectiveServices {
                               final LayoutTemplate content,
                               final String comment) {
         this.save(path, content, metadata, comment);
-        saveAndRenameService.saveAndRename(path, newFileName, metadata, content, comment);
         return this.rename(path, newFileName, comment);
     }
 }

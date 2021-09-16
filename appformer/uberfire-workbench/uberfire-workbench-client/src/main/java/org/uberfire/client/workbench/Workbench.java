@@ -124,8 +124,6 @@ public class Workbench {
     private SyncBeanManager iocManager;
     @Inject
     private PlaceManager placeManager;
-    @Inject
-    private VFSServiceProxy vfsService;
     private WorkbenchLayout layout;
     @Inject
     private ClientMessageBus bus;
@@ -276,26 +274,15 @@ public class Workbench {
 
     private void openStandaloneEditor(final Map<String, List<String>> parameters) {
         String standalonePerspective = "StandaloneEditorPerspective";
-        boolean openEditor = true;
 
         if (!workbenchCustomStandalonePerspectiveDefinition.isUnsatisfied()) {
             final WorkbenchCustomStandalonePerspectiveDefinition workbenchCustomStandalonePerspectiveDefinition =
                     this.workbenchCustomStandalonePerspectiveDefinition.get();
             standalonePerspective = workbenchCustomStandalonePerspectiveDefinition.getStandalonePerspectiveIdentifier();
-            openEditor = workbenchCustomStandalonePerspectiveDefinition.openPathAutomatically();
+            workbenchCustomStandalonePerspectiveDefinition.openPathAutomatically();
         }
 
         placeManager.goTo(new DefaultPlaceRequest(standalonePerspective));
-        if (openEditor) {
-            vfsService.get(parameters.get("path").get(0),
-                    path -> {
-                        if (parameters.containsKey("editor") && !parameters.get("editor").isEmpty()) {
-                            openEditor(path, parameters.get("editor").get(0));
-                        } else {
-                            openEditor(path);
-                        }
-                    });
-        }
     }
 
     void openEditor(final Path path) {

@@ -27,7 +27,6 @@ import org.jboss.errai.common.client.api.RemoteCallback;
 import org.jboss.errai.common.client.ui.ElementWrapperWidget;
 import org.uberfire.backend.vfs.Path;
 import org.uberfire.client.mvp.UberElement;
-import org.uberfire.ext.editor.commons.client.file.popups.SavePopUpPresenter;
 import org.uberfire.ext.layout.editor.api.PerspectiveServices;
 import org.uberfire.ext.layout.editor.api.editor.LayoutTemplate;
 import org.uberfire.ext.layout.editor.client.api.LayoutEditorElement;
@@ -45,9 +44,6 @@ public class LayoutEditorPluginImpl implements LayoutEditorPlugin {
 
     @Inject
     private Caller<PerspectiveServices> perspectiveServices;
-
-    @Inject
-    private SavePopUpPresenter savePopUpPresenter;
 
     private String pluginName;
     private String emptyTitleText;
@@ -147,11 +143,9 @@ public class LayoutEditorPluginImpl implements LayoutEditorPlugin {
     public void save(final Path path,
                      final RemoteCallback<Path> saveSuccessCallback) {
 
-        savePopUpPresenter.show(path, commitMessage -> {
             LayoutTemplate layoutTemplate = getLayout();
             perspectiveServices.call(saveSuccessCallback)
                     .saveLayoutTemplate(layoutTemplate);
-        });
     }
 
     @Override

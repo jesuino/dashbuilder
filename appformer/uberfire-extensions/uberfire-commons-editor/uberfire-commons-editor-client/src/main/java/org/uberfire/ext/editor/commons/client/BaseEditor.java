@@ -16,29 +16,37 @@
 
 package org.uberfire.ext.editor.commons.client;
 
-import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.user.client.ui.IsWidget;
-import elemental2.promise.Promise;
+import static org.uberfire.ext.editor.commons.client.menu.MenuItems.COPY;
+import static org.uberfire.ext.editor.commons.client.menu.MenuItems.DELETE;
+import static org.uberfire.ext.editor.commons.client.menu.MenuItems.DOWNLOAD;
+import static org.uberfire.ext.editor.commons.client.menu.MenuItems.RENAME;
+import static org.uberfire.ext.editor.commons.client.menu.MenuItems.SAVE;
+import static org.uberfire.ext.editor.commons.client.menu.MenuItems.VALIDATE;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
+import javax.enterprise.event.Event;
+import javax.inject.Inject;
+
 import org.jboss.errai.common.client.api.Caller;
 import org.jboss.errai.common.client.api.RemoteCallback;
 import org.jboss.errai.ioc.client.api.ManagedInstance;
 import org.uberfire.backend.vfs.ObservablePath;
 import org.uberfire.backend.vfs.Path;
-import org.uberfire.client.callbacks.Callback;
 import org.uberfire.client.mvp.PlaceManager;
 import org.uberfire.client.promise.Promises;
 import org.uberfire.client.workbench.events.ChangeTitleWidgetEvent;
 import org.uberfire.client.workbench.type.ClientResourceType;
-import org.uberfire.ext.editor.commons.client.event.ConcurrentDeleteAcceptedEvent;
-import org.uberfire.ext.editor.commons.client.event.ConcurrentDeleteIgnoredEvent;
-import org.uberfire.ext.editor.commons.client.event.ConcurrentRenameAcceptedEvent;
-import org.uberfire.ext.editor.commons.client.event.ConcurrentRenameIgnoredEvent;
 import org.uberfire.ext.editor.commons.client.file.popups.DeletePopUpPresenter;
-import org.uberfire.ext.editor.commons.client.history.VersionRecordManager;
 import org.uberfire.ext.editor.commons.client.menu.BasicFileMenuBuilder;
 import org.uberfire.ext.editor.commons.client.menu.DownloadMenuItemBuilder;
 import org.uberfire.ext.editor.commons.client.menu.MenuItems;
-import org.uberfire.ext.editor.commons.client.menu.common.SaveAndRenameCommandBuilder;
 import org.uberfire.ext.editor.commons.client.resources.i18n.CommonConstants;
 import org.uberfire.ext.editor.commons.client.validation.DefaultFileNameValidator;
 import org.uberfire.ext.editor.commons.client.validation.Validator;
@@ -46,9 +54,7 @@ import org.uberfire.ext.editor.commons.service.support.SupportsCopy;
 import org.uberfire.ext.editor.commons.service.support.SupportsDelete;
 import org.uberfire.ext.editor.commons.service.support.SupportsRename;
 import org.uberfire.ext.editor.commons.service.support.SupportsSaveAndRename;
-import org.uberfire.ext.editor.commons.version.events.RestoreEvent;
 import org.uberfire.ext.widgets.common.client.common.ConcurrentChangePopup;
-import org.uberfire.java.nio.base.version.VersionRecord;
 import org.uberfire.mvp.Command;
 import org.uberfire.mvp.ParameterizedCommand;
 import org.uberfire.mvp.PlaceRequest;
@@ -56,15 +62,10 @@ import org.uberfire.workbench.events.NotificationEvent;
 import org.uberfire.workbench.model.menu.MenuItem;
 import org.uberfire.workbench.model.menu.Menus;
 
-import javax.enterprise.event.Event;
-import javax.enterprise.event.Observes;
-import javax.inject.Inject;
-import java.util.*;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.user.client.ui.IsWidget;
 
-import static org.uberfire.ext.editor.commons.client.menu.MenuItems.*;
-import static org.uberfire.ext.widgets.common.client.common.ConcurrentChangePopup.*;
+import elemental2.promise.Promise;
 
 public abstract class BaseEditor<T, M> {
 
@@ -90,9 +91,6 @@ public abstract class BaseEditor<T, M> {
     protected Event<NotificationEvent> notification;
 
     @Inject
-    protected VersionRecordManager versionRecordManager;
-
-    @Inject
     protected ManagedInstance<BasicFileMenuBuilder> menuBuilderManagedInstance;
 
     @Inject
@@ -100,21 +98,6 @@ public abstract class BaseEditor<T, M> {
 
     @Inject
     protected DefaultFileNameValidator fileNameValidator;
-
-    @Inject
-    protected SaveAndRenameCommandBuilder<T, M> saveAndRenameCommandBuilder;
-
-    @Inject
-    protected Event<ConcurrentDeleteAcceptedEvent> concurrentDeleteAcceptedEvent;
-
-    @Inject
-    protected Event<ConcurrentDeleteIgnoredEvent> concurrentDeleteIgnoredEvent;
-
-    @Inject
-    protected Event<ConcurrentRenameAcceptedEvent> concurrentRenameAcceptedEvent;
-
-    @Inject
-    protected Event<ConcurrentRenameIgnoredEvent> concurrentRenameIgnoredEvent;
 
     @Inject
     private DownloadMenuItemBuilder downloadMenuItemBuilder;
@@ -134,15 +117,12 @@ public abstract class BaseEditor<T, M> {
     protected Integer originalHash;
     protected Integer metadataOriginalHash;
     protected boolean isValidationRunning = false;
-    private boolean displayShowMoreVersions;
-    private ObservablePath path;
+    protected ObservablePath path;
 
     //for test purposes only
-    BaseEditor(VersionRecordManager versionRecordManager,
-               BaseEditorView baseView,
+    BaseEditor(BaseEditorView baseView,
                BasicFileMenuBuilder menuBuilder,
                Event<ChangeTitleWidgetEvent> changeTitleNotification) {
-        this.versionRecordManager = versionRecordManager;
         this.baseView = baseView;
         this.menuBuilder = menuBuilder;
         this.changeTitleNotification = changeTitleNotification;
@@ -163,7 +143,6 @@ public abstract class BaseEditor<T, M> {
              place,
              type,
              true,
-             false,
              menuItems);
     }
 
@@ -171,14 +150,12 @@ public abstract class BaseEditor<T, M> {
                         final PlaceRequest place,
                         final ClientResourceType type,
                         final boolean addFileChangeListeners,
-                        final boolean displayShowMoreVersions,
                         final MenuItems... menuItems) {
 
         init(path,
              place,
              type,
              addFileChangeListeners,
-             displayShowMoreVersions,
              Arrays.asList(menuItems));
     }
 
@@ -186,34 +163,17 @@ public abstract class BaseEditor<T, M> {
                         final PlaceRequest place,
                         final ClientResourceType type,
                         final boolean addFileChangeListeners,
-                        final boolean displayShowMoreVersions,
                         final Collection<MenuItems> menuItems) {
         this.path = path;
         this.place = place;
         this.type = type;
         this.menuItems.addAll(menuItems);
-        this.displayShowMoreVersions = displayShowMoreVersions;
 
         baseView.showLoading();
 
         this.isReadOnly = this.place.getParameter("readOnly",
                                                   null) == null ? false : true;
 
-        versionRecordManager.init(
-                this.place.getParameter("version",
-                                        null),
-                path,
-                this::selectVersion);
-
-        if (displayShowMoreVersions) {
-            versionRecordManager.setShowMoreCommand(
-                    new Command() {
-                        @Override
-                        public void execute() {
-                            showVersions();
-                        }
-                    });
-        }
 
         if (addFileChangeListeners) {
             addFileChangeListeners(path);
@@ -237,22 +197,20 @@ public abstract class BaseEditor<T, M> {
         }
 
         if (menuItems.contains(COPY)) {
-            menuBuilder.addCopy(versionRecordManager.getCurrentPath(),
+            menuBuilder.addCopy(path,
                                 getCopyValidator(),
                                 getCopyServiceCaller());
         }
         if (menuItems.contains(RENAME)) {
-            menuBuilder.addRename(getSaveAndRename());
+            menuBuilder.addRename(path, getRenameServiceCaller());
         }
+        
         if (menuItems.contains(DELETE)) {
-            menuBuilder.addDelete(versionRecordManager.getCurrentPath(),
+            menuBuilder.addDelete(path,
                                   getDeleteServiceCaller());
         }
         if (menuItems.contains(VALIDATE)) {
             menuBuilder.addValidate(getValidateCommand());
-        }
-        if (menuItems.contains(HISTORY)) {
-            menuBuilder.addNewTopLevelMenu(versionRecordManager.buildMenu());
         }
         if (menuItems.contains(DOWNLOAD)) {
             addDownloadMenuItem(menuBuilder);
@@ -273,45 +231,13 @@ public abstract class BaseEditor<T, M> {
         return this::onSave;
     }
 
-    protected Command getSaveAndRename() {
-
-        return getSaveAndRenameCommandBuilder()
-                .addPathSupplier(getPathSupplier())
-                .addValidator(getRenameValidator())
-                .addValidator(getSaveValidator())
-                .addRenameService(getSaveAndRenameServiceCaller())
-                .addMetadataSupplier(getMetadataSupplier())
-                .addContentSupplier(getContentSupplier())
-                .addIsDirtySupplier(isDirtySupplier())
-                .addSuccessCallback(onSuccess())
-                .addBeforeSaveAndRenameCommand(getBeforeSaveAndRenameCommand())
-                .build();
-    }
-
     protected Command getBeforeSaveAndRenameCommand() {
         return () -> {
         };
     }
 
     protected Supplier<Boolean> getSaveValidator() {
-
-        return () -> {
-
-            if (isReadOnly && versionRecordManager.isCurrentLatest()) {
-                baseView.alertReadOnly();
-                return false;
-            } else if (isReadOnly && !versionRecordManager.isCurrentLatest()) {
-                versionRecordManager.restoreToCurrentVersion(saveWithComments);
-                return false;
-            }
-
-            if (concurrentUpdateSessionInfo != null) {
-                showConcurrentUpdatePopup();
-                return false;
-            } else {
-                return true;
-            }
-        };
+        return () ->  true;
     }
 
     protected ParameterizedCommand<Path> onSuccess() {
@@ -331,12 +257,8 @@ public abstract class BaseEditor<T, M> {
         };
     }
 
-    protected SaveAndRenameCommandBuilder<T, M> getSaveAndRenameCommandBuilder() {
-        return saveAndRenameCommandBuilder;
-    }
-
     protected Supplier<Path> getPathSupplier() {
-        return () -> versionRecordManager.getPathToLatest();
+        return () -> path;
     }
 
     /**
@@ -358,100 +280,14 @@ public abstract class BaseEditor<T, M> {
         return fileNameValidator;
     }
 
-    private void selectVersion(VersionRecord versionRecord) {
-        baseView.showBusyIndicator(CommonConstants.INSTANCE.Loading());
-
-        isReadOnly = !versionRecordManager.isLatest(versionRecord);
-
-        versionRecordManager.setVersion(versionRecord.id());
-
-        loadContent();
-    }
-
     public void setOriginalHash(Integer originalHash) {
         this.originalHash = originalHash;
     }
 
     private void addFileChangeListeners(final ObservablePath path) {
-        path.onRename(new Command() {
-            @Override
-            public void execute() {
-                onRename();
-            }
-        });
-        path.onDelete(new Command() {
-            @Override
-            public void execute() {
-                onDelete();
-            }
-        });
+        path.onRename(this::onRename);
+        path.onDelete(this::onDelete);
 
-        path.onConcurrentUpdate(new ParameterizedCommand<ObservablePath.OnConcurrentUpdateEvent>() {
-            @Override
-            public void execute(final ObservablePath.OnConcurrentUpdateEvent eventInfo) {
-                concurrentUpdateSessionInfo = eventInfo;
-                showConcurrentUpdatePopup();
-            }
-        });
-
-        path.onConcurrentRename(this::onConcurrentRename);
-
-        path.onConcurrentDelete(this::onConcurrentDelete);
-    }
-
-    void onConcurrentRename(final ObservablePath.OnConcurrentRenameEvent info) {
-        baseView.hideBusyIndicator();
-        if (concurrentChangePopup == null) {
-            concurrentChangePopup = newConcurrentRename(info.getSource(),
-                                                        info.getTarget(),
-                                                        onConcurrentRenameIgnoreCommand(path),
-                                                        onConcurrentRenameCloseCommand(path));
-        }
-        concurrentChangePopup.show();
-    }
-
-    Command onConcurrentRenameIgnoreCommand(final ObservablePath path) {
-        return () -> {
-            concurrentChangePopup = null;
-            disableMenus();
-            concurrentRenameIgnoredEvent.fire(new ConcurrentRenameIgnoredEvent(path));
-        };
-    }
-
-    Command onConcurrentRenameCloseCommand(final ObservablePath path) {
-        return () -> {
-            concurrentChangePopup = null;
-            reload();
-            concurrentRenameAcceptedEvent.fire(new ConcurrentRenameAcceptedEvent(path));
-        };
-    }
-
-    void onConcurrentDelete(final ObservablePath.OnConcurrentDelete info) {
-        baseView.hideBusyIndicator();
-        if (concurrentChangePopup == null) {
-            concurrentChangePopup = newConcurrentDelete(info.getPath(),
-                                                        onConcurrentDeleteIgnoreCommand(path),
-                                                        onConcurrentDeleteCloseCommand(path));
-        }
-        concurrentChangePopup.show();
-    }
-
-    Command onConcurrentDeleteIgnoreCommand(final ObservablePath path) {
-        return () -> {
-            concurrentChangePopup = null;
-            disableMenus();
-            disableDeletePopup();
-            concurrentDeleteIgnoredEvent.fire(new ConcurrentDeleteIgnoredEvent(path));
-        };
-    }
-
-    Command onConcurrentDeleteCloseCommand(final ObservablePath path) {
-        return () -> {
-            concurrentChangePopup = null;
-            disableDeletePopup();
-            placeManager.closePlace(place);
-            concurrentDeleteAcceptedEvent.fire(new ConcurrentDeleteAcceptedEvent(path));
-        };
     }
 
     private void disableDeletePopup() {
@@ -478,7 +314,7 @@ public abstract class BaseEditor<T, M> {
      * @return The widget for the title
      */
     protected IsWidget getTitle() {
-        refreshTitle(versionRecordManager.getCurrentPath());
+        refreshTitle(path);
         return getTitleWidget();
     }
 
@@ -487,7 +323,7 @@ public abstract class BaseEditor<T, M> {
     }
 
     public String getTitleText() {
-        return getTitleText(versionRecordManager.getCurrentPath());
+        return getTitleText(path);
     }
 
     String getTitleText(final ObservablePath observablePath) {
@@ -507,68 +343,21 @@ public abstract class BaseEditor<T, M> {
         }
     }
 
-    protected void showConcurrentUpdatePopup() {
-        baseView.hideBusyIndicator();
-        if (concurrentChangePopup == null) {
-            concurrentChangePopup = getConcurrentUpdatePopup();
-        }
-        concurrentChangePopup.show();
-    }
-
-    ConcurrentChangePopup getConcurrentUpdatePopup() {
-        return newConcurrentUpdate(concurrentUpdateSessionInfo.getPath(),
-                                                    new Command() {
-                                                        @Override
-                                                        public void execute() {
-                                                            save();
-                                                            concurrentChangePopup = null;
-                                                        }
-                                                    },
-                                                    new Command() {
-                                                        @Override
-                                                        public void execute() {
-                                                            concurrentChangePopup = null;
-                                                        }
-                                                    },
-                                                    new Command() {
-                                                        @Override
-                                                        public void execute() {
-                                                            reload();
-                                                            concurrentChangePopup = null;
-                                                        }
-                                                    });
-    }
 
     public RemoteCallback<Path> getSaveSuccessCallback(final int newHash) {
         return new RemoteCallback<Path>() {
             @Override
             public void callback(final Path path) {
                 baseView.hideBusyIndicator();
-                versionRecordManager.reloadVersions(path);
                 notification.fire(new NotificationEvent(CommonConstants.INSTANCE.ItemSavedSuccessfully()));
                 setOriginalHash(newHash);
             }
         };
     }
 
-    public void onRestore(@Observes RestoreEvent restore) {
-        if (versionRecordManager.getCurrentPath() == null || restore == null || restore.getPath() == null) {
-            return;
-        }
-        if (versionRecordManager.getCurrentPath().equals(restore.getPath())) {
-            //when a version is restored we don't want to add the concurrency listeners again -> false
-            init(versionRecordManager.getPathToLatest(),
-                 place,
-                 type,
-                 false,
-                 displayShowMoreVersions);
-            notification.fire(new NotificationEvent(CommonConstants.INSTANCE.ItemRestored()));
-        }
-    }
-
     public void reload() {
         concurrentUpdateSessionInfo = null;
-        reload(versionRecordManager.getCurrentPath());
+        reload(path);
     }
 
     void reload(final ObservablePath path) {
@@ -576,7 +365,6 @@ public abstract class BaseEditor<T, M> {
         showBusyIndicator();
         loadContent();
         notifyChangeTitle(path);
-        initVersionRecordManager();
     }
 
     void refreshTitle(final ObservablePath observablePath) {
@@ -601,18 +389,6 @@ public abstract class BaseEditor<T, M> {
         final EditorTitle titleWidget = getTitleWidget();
 
         return new ChangeTitleWidgetEvent(getPlace(), titleText, titleWidget);
-    }
-
-    void initVersionRecordManager() {
-
-        final String version = getPlace().getParameter("version", null);
-        final Callback<VersionRecord> selectVersion = getSelectVersion();
-
-        versionRecordManager.init(version, versionRecordManager.getCurrentPath(), selectVersion);
-    }
-
-    Callback<VersionRecord> getSelectVersion() {
-        return this::selectVersion;
     }
 
     PlaceRequest getPlace() {
@@ -780,10 +556,6 @@ public abstract class BaseEditor<T, M> {
         } else {
             return !originalHash.equals(currentHash);
         }
-    }
-
-    public VersionRecordManager getVersionRecordManager() {
-        return this.versionRecordManager;
     }
 
     public void setMetadataOriginalHash(final Integer metadataOriginalHash) {

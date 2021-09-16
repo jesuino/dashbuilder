@@ -18,26 +18,22 @@ package org.dashbuilder.client.screens.view;
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import elemental2.dom.HTMLDivElement;
-import elemental2.dom.HTMLElement;
-import org.dashbuilder.client.navigation.resources.i18n.NavigationConstants;
 import org.dashbuilder.client.resources.i18n.AppConstants;
 import org.dashbuilder.client.screens.HomeScreen;
 import org.jboss.errai.ui.shared.api.annotations.DataField;
 import org.jboss.errai.ui.shared.api.annotations.EventHandler;
 import org.jboss.errai.ui.shared.api.annotations.Templated;
-import org.uberfire.client.mvp.PlaceManager;
+
+import com.google.gwt.event.dom.client.ClickEvent;
+
+import elemental2.dom.HTMLDivElement;
+import elemental2.dom.HTMLElement;
 
 @Dependent
 @Templated
 public class HomeScreenView implements HomeScreen.View {
 
     private static final AppConstants i18n = AppConstants.INSTANCE;
-    
-    @Inject
-    @DataField 
-    HTMLDivElement sampleAction;
     
     @Inject
     @DataField 
@@ -65,11 +61,6 @@ public class HomeScreenView implements HomeScreen.View {
     @Override
     public HTMLElement getElement() {
         return homePage;
-    }
-    
-    @EventHandler("sampleAction")
-    public void onSampleAction(ClickEvent e) {
-        presenter.goToSample();
     }
     
     @EventHandler("datasetsAction")

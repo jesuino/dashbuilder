@@ -16,18 +16,17 @@
 
 package org.uberfire.mvp.impl;
 
+import static org.uberfire.util.URIUtil.encode;
+
 import java.util.Map;
 
 import javax.annotation.PreDestroy;
 
 import org.jboss.errai.common.client.api.annotations.Portable;
 import org.jboss.errai.ioc.client.container.IOC;
-import org.uberfire.backend.vfs.IsVersioned;
 import org.uberfire.backend.vfs.ObservablePath;
 import org.uberfire.backend.vfs.Path;
 import org.uberfire.mvp.PlaceRequest;
-
-import static org.uberfire.util.URIUtil.encode;
 
 @Portable
 public class PathPlaceRequest extends DefaultPlaceRequest {
@@ -84,10 +83,6 @@ public class PathPlaceRequest extends DefaultPlaceRequest {
 
         fullIdentifier.append("?").append("path_uri").append("=").append(encode(path.toURI())).append("&")
                 .append("file_name").append("=").append(encode(path.getFileName())).append("&");
-
-        if (path instanceof IsVersioned) {
-            fullIdentifier.append("has_version_support").append("=").append(((IsVersioned) path).hasVersionSupport()).append("&");
-        }
 
         for (String name : this.getParameterNames()) {
             fullIdentifier.append(name).append("=").append(this.getParameter(name,

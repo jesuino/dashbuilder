@@ -19,6 +19,7 @@ package org.dashbuilder.transfer;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -55,7 +56,6 @@ import org.slf4j.LoggerFactory;
 import org.uberfire.ext.plugin.event.PluginAdded;
 import org.uberfire.ext.plugin.model.Plugin;
 import org.uberfire.ext.plugin.type.TypeConverterUtil;
-import org.uberfire.java.nio.IOException;
 import org.uberfire.rpc.SessionInfo;
 
 @Service

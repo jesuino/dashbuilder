@@ -15,21 +15,9 @@
  */
 package org.dashbuilder.test;
 
-import java.net.URI;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import javax.enterprise.inject.Produces;
-import javax.inject.Named;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.uberfire.io.IOService;
-import org.uberfire.java.nio.file.FileSystem;
-import org.uberfire.java.nio.file.Path;
-
-import static org.mockito.Mockito.*;
 
 public class BaseCDITest {
 
@@ -43,35 +31,4 @@ public class BaseCDITest {
                 .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 
-    protected IOService ioService;
-
-    @Produces @Named("ioStrategy")
-    public IOService mockIOService() throws Exception {
-        return getIOService();
-    }
-
-    public IOService getIOService() throws Exception {
-        if (ioService == null) {
-            ioService = mock(IOService.class);
-            FileSystem fileSystem = mock(FileSystem.class);
-            Iterable iterable = mock(Iterable.class);
-            Iterator iterator = mock(Iterator.class);
-            Path path = mock(Path.class);
-
-            when(ioService.newFileSystem(any(URI.class), any(Map.class))).thenReturn(fileSystem);
-            when(ioService.getFileSystem(any(URI.class))).thenReturn(fileSystem);
-
-            when(fileSystem.getRootDirectories()).thenReturn(iterable);
-            when(fileSystem.supportedFileAttributeViews()).thenReturn(new HashSet<String>());
-            when(iterable.iterator()).thenReturn(iterator);
-            when(iterator.next()).thenReturn(path);
-
-            when(path.resolve(anyString())).thenReturn(path);
-            when(path.resolve(any(Path.class))).thenReturn(path);
-            when(path.toUri()).thenReturn(new URI("uri"));
-            when(path.getFileName()).thenReturn(path);
-            when(path.getFileSystem()).thenReturn(fileSystem);
-        }
-        return ioService;
-    }
 }

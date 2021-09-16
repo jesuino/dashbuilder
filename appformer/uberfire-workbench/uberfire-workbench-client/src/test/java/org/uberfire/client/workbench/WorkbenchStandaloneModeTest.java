@@ -16,12 +16,18 @@
 
 package org.uberfire.client.workbench;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.google.gwtmockito.GwtMockitoTestRunner;
 import org.jboss.errai.ioc.client.api.ManagedInstance;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,17 +36,13 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.uberfire.backend.vfs.Path;
 import org.uberfire.client.mvp.PlaceManager;
-import org.uberfire.mvp.ParameterizedCommand;
 import org.uberfire.mvp.PlaceRequest;
 import org.uberfire.mvp.impl.DefaultPlaceRequest;
 
-import static org.mockito.Mockito.*;
+import com.google.gwtmockito.GwtMockitoTestRunner;
 
 @RunWith(GwtMockitoTestRunner.class)
 public class WorkbenchStandaloneModeTest {
-
-    @Mock
-    private VFSServiceProxy vfsService;
 
     @Mock
     private PlaceManager placeManager;
@@ -89,32 +91,26 @@ public class WorkbenchStandaloneModeTest {
 
         verify(placeManager, times(1)).goTo(any(PlaceRequest.class));
         verify(placeManager).goTo(new DefaultPlaceRequest("MyCustomStandalonePerspective"));
-        verify(vfsService, never()).get(any(), any());
     }
 
     @Test
     public void handleStandaloneModeWithPathParameterAndCustomStandaloneEditorPerspectiveDefinitionOpeningEditorByDefaultTest() {
         doNothing().when(workbench).openEditor(any());
 
-        final Map<String, List<String>> parameters = new HashMap<>();
+        final var parameters = new HashMap<String, List<String>>();
         parameters.put("path", Collections.singletonList("git://main@MySpace/MyProject/src/main/java/com/myspace/myproject/myasset.java"));
 
-        final Path path = mock(Path.class);
+        final var path = mock(Path.class);
         doReturn(false).when(workbenchCustomStandalonePerspectiveDefinitions).isUnsatisfied();
-        final WorkbenchCustomStandalonePerspectiveDefinition workbenchCustomStandalonePerspectiveDefinition = mock(WorkbenchCustomStandalonePerspectiveDefinition.class);
+        final var workbenchCustomStandalonePerspectiveDefinition = mock(WorkbenchCustomStandalonePerspectiveDefinition.class);
         doReturn("MyCustomStandalonePerspective").when(workbenchCustomStandalonePerspectiveDefinition).getStandalonePerspectiveIdentifier();
         doReturn(true).when(workbenchCustomStandalonePerspectiveDefinition).openPathAutomatically();
         doReturn(workbenchCustomStandalonePerspectiveDefinition).when(workbenchCustomStandalonePerspectiveDefinitions).get();
-        doAnswer(invocationOnMock -> {
-            invocationOnMock.getArgument(1, ParameterizedCommand.class).execute(path);
-            return null;
-        }).when(vfsService).get(same(parameters.get("path").get(0)), any(ParameterizedCommand.class));
 
         workbench.handleStandaloneMode(parameters);
 
         verify(placeManager, times(1)).goTo(any(PlaceRequest.class));
         verify(placeManager).goTo(new DefaultPlaceRequest("MyCustomStandalonePerspective"));
-        verify(vfsService).get(same(parameters.get("path").get(0)), any(ParameterizedCommand.class));
         verify(workbench).openEditor(path);
     }
 }

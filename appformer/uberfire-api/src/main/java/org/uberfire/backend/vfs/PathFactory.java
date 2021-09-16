@@ -121,8 +121,7 @@ public final class PathFactory {
     }
 
     @Portable
-    public static class PathImpl implements Path,
-                                            IsVersioned {
+    public static class PathImpl implements Path {
 
         private String uri = null;
         private String fileName = null;
@@ -199,11 +198,6 @@ public final class PathFactory {
             final Path path = (Path) o;
 
             return this.toURI().equals(path.toURI());
-        }
-
-        @Override
-        public boolean hasVersionSupport() {
-            return hasVersionSupport;
         }
 
         @Override

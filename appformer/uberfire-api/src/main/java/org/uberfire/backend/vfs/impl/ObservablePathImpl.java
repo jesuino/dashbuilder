@@ -25,7 +25,6 @@ import javax.inject.Inject;
 
 import org.jboss.errai.common.client.api.annotations.Portable;
 import org.jboss.errai.ioc.client.container.IOC;
-import org.uberfire.backend.vfs.IsVersioned;
 import org.uberfire.backend.vfs.ObservablePath;
 import org.uberfire.backend.vfs.Path;
 import org.uberfire.mvp.Command;
@@ -42,8 +41,7 @@ import org.uberfire.workbench.events.ResourceUpdatedEvent;
 
 @Portable
 @Dependent
-public class ObservablePathImpl implements ObservablePath,
-                                           IsVersioned {
+public class ObservablePathImpl implements ObservablePath {
 
     private Path path;
     private transient Path original;
@@ -118,11 +116,6 @@ public class ObservablePathImpl implements ObservablePath,
     }
 
     @Override
-    public boolean hasVersionSupport() {
-        return path instanceof IsVersioned && ((IsVersioned) path).hasVersionSupport();
-    }
-
-    @Override
     public int compareTo(final Path o) {
         return path.compareTo(o);
     }
@@ -145,26 +138,6 @@ public class ObservablePathImpl implements ObservablePath,
     @Override
     public void onCopy(final Command command) {
         this.onCopyCommand.add(command);
-    }
-
-    @Override
-    public void onConcurrentRename(final ParameterizedCommand<OnConcurrentRenameEvent> command) {
-        this.onConcurrentRenameCommand.add(command);
-    }
-
-    @Override
-    public void onConcurrentDelete(final ParameterizedCommand<OnConcurrentDelete> command) {
-        this.onConcurrentDeleteCommand.add(command);
-    }
-
-    @Override
-    public void onConcurrentUpdate(final ParameterizedCommand<OnConcurrentUpdateEvent> command) {
-        this.onConcurrentUpdateCommand.add(command);
-    }
-
-    @Override
-    public void onConcurrentCopy(final ParameterizedCommand<OnConcurrentCopyEvent> command) {
-        this.onConcurrentCopyCommand.add(command);
     }
 
     @Override

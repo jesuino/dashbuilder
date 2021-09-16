@@ -38,7 +38,6 @@ import org.jboss.errai.common.client.api.Caller;
 import org.jboss.errai.ioc.client.container.SyncBeanDef;
 import org.jboss.errai.ioc.client.container.SyncBeanManager;
 import org.uberfire.backend.vfs.ObservablePath;
-import org.uberfire.backend.vfs.Path;
 import org.uberfire.client.annotations.WorkbenchEditor;
 import org.uberfire.client.annotations.WorkbenchMenu;
 import org.uberfire.client.annotations.WorkbenchPartTitle;
@@ -145,7 +144,6 @@ public class PerspectiveEditorPresenter extends BaseEditor<LayoutTemplate, Defau
                 place,
                 resourceType,
                 true,
-                false,
                 menuItems);
 
         // Init the drag component palette
@@ -247,7 +245,7 @@ public class PerspectiveEditorPresenter extends BaseEditor<LayoutTemplate, Defau
     @Override
     protected void loadContent() {
         baseView.hideBusyIndicator();
-        layoutEditorPlugin.load(versionRecordManager.getCurrentPath(), this::afterLoad);
+        layoutEditorPlugin.load(path, this::afterLoad);
     }
 
     @Override
@@ -259,12 +257,12 @@ public class PerspectiveEditorPresenter extends BaseEditor<LayoutTemplate, Defau
         setOriginalHash(getCurrentModelHash());
         plugin = new Plugin(layoutEditorPlugin.getLayout().getName(),
                 PluginType.PERSPECTIVE_LAYOUT,
-                versionRecordManager.getCurrentPath());
+                path);
     }
 
     @Override
     protected void save() {
-        layoutEditorPlugin.save(versionRecordManager.getCurrentPath(),
+        layoutEditorPlugin.save(path,
                 getSaveSuccessCallback(getCurrentModelHash()));
         concurrentUpdateSessionInfo = null;
     }
@@ -275,8 +273,7 @@ public class PerspectiveEditorPresenter extends BaseEditor<LayoutTemplate, Defau
 
     @Override
     protected void onRename() {
-        Path currentPath = versionRecordManager.getCurrentPath();
-        layoutEditorPlugin.load(currentPath, this::afterRename);
+        layoutEditorPlugin.load(path, this::afterRename);
     }
 
     protected void afterRename() {

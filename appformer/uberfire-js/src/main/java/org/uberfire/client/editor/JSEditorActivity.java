@@ -42,7 +42,7 @@ public class JSEditorActivity extends AbstractWorkbenchEditorActivity {
     public void onStartup(final ObservablePath path,
                           final PlaceRequest place) {
         super.onStartup(path,
-                        place);
+                place);
         setupObservablePathCallBacks();
         nativeEditor.onStartup(path.toURI());
     }
@@ -71,54 +71,10 @@ public class JSEditorActivity extends AbstractWorkbenchEditorActivity {
     }
 
     private void setupObservablePathCallBacks() {
-        path.onConcurrentUpdate(new ParameterizedCommand<ObservablePath.OnConcurrentUpdateEvent>() {
-            @Override
-            public void execute(ObservablePath.OnConcurrentUpdateEvent parameter) {
-                nativeEditor.onConcurrentUpdate();
-            }
-        });
-        path.onConcurrentDelete(new ParameterizedCommand<ObservablePath.OnConcurrentDelete>() {
-            @Override
-            public void execute(ObservablePath.OnConcurrentDelete parameter) {
-                nativeEditor.onConcurrentDelete();
-            }
-        });
-        path.onConcurrentRename(new ParameterizedCommand<ObservablePath.OnConcurrentRenameEvent>() {
-            @Override
-            public void execute(ObservablePath.OnConcurrentRenameEvent parameter) {
-                nativeEditor.onConcurrentRename();
-            }
-        });
-        path.onConcurrentCopy(new ParameterizedCommand<ObservablePath.OnConcurrentCopyEvent>() {
-            @Override
-            public void execute(ObservablePath.OnConcurrentCopyEvent parameter) {
-                nativeEditor.onConcurrentCopy();
-            }
-        });
-        path.onRename(new Command() {
-            @Override
-            public void execute() {
-                nativeEditor.onRename();
-            }
-        });
-        path.onDelete(new Command() {
-            @Override
-            public void execute() {
-                nativeEditor.onDelete();
-            }
-        });
-        path.onUpdate(new Command() {
-            @Override
-            public void execute() {
-                nativeEditor.onUpdate();
-            }
-        });
-        path.onCopy(new Command() {
-            @Override
-            public void execute() {
-                nativeEditor.onCopy();
-            }
-        });
+        path.onRename(() -> nativeEditor.onRename());
+        path.onDelete(() -> nativeEditor.onDelete());
+        path.onUpdate(() -> nativeEditor.onUpdate());
+        path.onCopy(() -> nativeEditor.onCopy());
     }
 
     @Override

@@ -15,81 +15,30 @@
  */
 package org.uberfire.ext.services.backend.preferences;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
-import com.thoughtworks.xstream.XStream;
 import org.jboss.errai.bus.server.annotations.Service;
-import org.kie.soup.xstream.XStreamUtils;
-import org.uberfire.backend.server.UserServicesBackendImpl;
 import org.uberfire.ext.services.shared.preferences.UserPreference;
 import org.uberfire.ext.services.shared.preferences.UserPreferencesService;
 import org.uberfire.ext.services.shared.preferences.UserPreferencesType;
-import org.uberfire.io.IOService;
-import org.uberfire.java.nio.file.Path;
 
+// TODO: Remove when cleaning user preference
 @Service
 public class UserPreferencesServiceImpl implements UserPreferencesService {
 
-    private static final String USER_NAME = "Any";
-
-    @Inject
-    private UserServicesBackendImpl userServicesBackend;
-
-    @Inject
-    @Named("configIO")
-    private IOService ioServiceConfig;
-
-    private XStream xs = XStreamUtils.createTrustingXStream();
-
     @Override
-    public void saveUserPreferences(final UserPreference preferences) {
-        final Path preferencesPath = userServicesBackend.buildPath(USER_NAME,
-                                                                   preferences.getType().getExt(),
-                                                                   preferences.getPreferenceKey());
-        saveUserPreferences(preferences,
-                            preferencesPath);
+    public void saveUserPreferences(UserPreference preferences) {
+        // TODO Auto-generated method stub
+        
     }
 
     @Override
-    public UserPreference loadUserPreferences(final String key,
-                                              final UserPreferencesType type) {
-        final Path preferencesPath = userServicesBackend.buildPath(USER_NAME,
-                                                                   type.getExt(),
-                                                                   key);
-        return loadUserPreferences(preferencesPath);
-    }
-
-    private void saveUserPreferences(final UserPreference preferences,
-                                     final Path path) {
-        try {
-            ioServiceConfig.startBatch(path.getFileSystem());
-            ioServiceConfig.write(path,
-                                  xs.toXML(preferences));
-        } catch (final Exception e) {
-            throw new RuntimeException(e);
-        } finally {
-            ioServiceConfig.endBatch();
-        }
-    }
-
-    private UserPreference loadUserPreferences(final Path path) {
-        try {
-            if (ioServiceConfig.exists(path)) {
-                final String xml = ioServiceConfig.readAllString(path);
-                return (UserPreference) xs.fromXML(xml);
-            }
-        } catch (final Exception e) {
-            throw new RuntimeException(e);
-        }
+    public UserPreference loadUserPreferences(String key, UserPreferencesType type) {
+        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public UserPreference loadUserPreferences(final UserPreference preferences) {
-        final Path preferencesPath = userServicesBackend.buildPath(USER_NAME,
-                                                                   preferences.getType().getExt(),
-                                                                   preferences.getPreferenceKey());
-        return loadUserPreferences(preferencesPath);
+    public UserPreference loadUserPreferences(UserPreference preferences) {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

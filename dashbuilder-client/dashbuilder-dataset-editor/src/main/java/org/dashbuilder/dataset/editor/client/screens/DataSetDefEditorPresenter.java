@@ -15,6 +15,14 @@
  */
 package org.dashbuilder.dataset.editor.client.screens;
 
+import static org.kie.soup.commons.validation.PortablePreconditions.checkNotNull;
+import static org.uberfire.ext.editor.commons.client.menu.MenuItems.COPY;
+import static org.uberfire.ext.editor.commons.client.menu.MenuItems.DELETE;
+import static org.uberfire.ext.editor.commons.client.menu.MenuItems.SAVE;
+import static org.uberfire.ext.editor.commons.client.menu.MenuItems.VALIDATE;
+import static org.uberfire.workbench.events.NotificationEvent.NotificationType.ERROR;
+import static org.uberfire.workbench.events.NotificationEvent.NotificationType.SUCCESS;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -23,8 +31,6 @@ import javax.enterprise.context.Dependent;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
-import com.google.gwt.user.client.ui.IsWidget;
-import com.google.gwt.user.client.ui.Widget;
 import org.dashbuilder.client.widgets.dataset.editor.DataSetEditor;
 import org.dashbuilder.client.widgets.dataset.editor.workflow.DataSetEditorWorkflow;
 import org.dashbuilder.client.widgets.dataset.editor.workflow.DataSetEditorWorkflowFactory;
@@ -71,13 +77,8 @@ import org.uberfire.mvp.PlaceRequest;
 import org.uberfire.workbench.events.NotificationEvent;
 import org.uberfire.workbench.model.menu.Menus;
 
-import static org.kie.soup.commons.validation.PortablePreconditions.checkNotNull;
-import static org.uberfire.ext.editor.commons.client.menu.MenuItems.COPY;
-import static org.uberfire.ext.editor.commons.client.menu.MenuItems.DELETE;
-import static org.uberfire.ext.editor.commons.client.menu.MenuItems.SAVE;
-import static org.uberfire.ext.editor.commons.client.menu.MenuItems.VALIDATE;
-import static org.uberfire.workbench.events.NotificationEvent.NotificationType.ERROR;
-import static org.uberfire.workbench.events.NotificationEvent.NotificationType.SUCCESS;
+import com.google.gwt.user.client.ui.IsWidget;
+import com.google.gwt.user.client.ui.Widget;
 
 @Dependent
 @WorkbenchEditor(identifier = DataSetDefEditorPresenter.ID, supportedTypes = {DataSetDefType.class}, priority = Integer.MAX_VALUE)
@@ -111,7 +112,6 @@ public class DataSetDefEditorPresenter extends BaseEditor<DataSetDef, DefaultMet
              place,
              resourceType,
              true,
-             false,
              VALIDATE,
              SAVE,
              COPY,
@@ -163,7 +163,7 @@ public class DataSetDefEditorPresenter extends BaseEditor<DataSetDef, DefaultMet
     protected void loadContent() {
         try {
             services.call(loadCallback,
-                          errorCallback).load(versionRecordManager.getCurrentPath());
+                          errorCallback).load(path);
         } catch (final Exception e) {
             // Edit only the definition, so user can fix the wrong attributes, if any.
             loadDefinition();
@@ -172,7 +172,7 @@ public class DataSetDefEditorPresenter extends BaseEditor<DataSetDef, DefaultMet
 
     private void loadDefinition() {
         services.call(getDefinitionCallback,
-                      getDefinitionErrorCallback).get(versionRecordManager.getCurrentPath());
+                      getDefinitionErrorCallback).get(path);
     }
 
     public DataSetDef getDataSetDef() {
@@ -242,7 +242,7 @@ public class DataSetDefEditorPresenter extends BaseEditor<DataSetDef, DefaultMet
     protected void save() {
         workflow.flush();
         if (!workflow.hasErrors()) {
-            savePopUpPresenter.show(versionRecordManager.getCurrentPath(),
+            savePopUpPresenter.show(path,
                                     commitMessage -> {
                                         final DataSetDef def = getDataSetDef();
                                         services.call(new RemoteCallback<Path>() {

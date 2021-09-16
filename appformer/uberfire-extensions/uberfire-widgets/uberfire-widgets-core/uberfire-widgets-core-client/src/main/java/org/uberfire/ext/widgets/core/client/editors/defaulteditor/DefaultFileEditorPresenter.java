@@ -19,11 +19,8 @@ package org.uberfire.ext.widgets.core.client.editors.defaulteditor;
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 
-import com.google.gwt.user.client.ui.IsWidget;
-import org.jboss.errai.common.client.api.Caller;
 import org.uberfire.backend.vfs.ObservablePath;
 import org.uberfire.backend.vfs.Path;
-import org.uberfire.backend.vfs.VFSService;
 import org.uberfire.client.annotations.WorkbenchEditor;
 import org.uberfire.client.annotations.WorkbenchPartTitle;
 import org.uberfire.client.annotations.WorkbenchPartView;
@@ -32,14 +29,14 @@ import org.uberfire.ext.widgets.core.client.resources.i18n.CoreConstants;
 import org.uberfire.lifecycle.OnClose;
 import org.uberfire.lifecycle.OnStartup;
 
+import com.google.gwt.user.client.ui.IsWidget;
+
 @Dependent
 @WorkbenchEditor(identifier = "DefaultFileEditor", supportedTypes = {AnyResourceType.class}, priority = Integer.MIN_VALUE)
 public class DefaultFileEditorPresenter {
 
     @Inject
     public DefaultFileEditorView view;
-    @Inject
-    private Caller<VFSService> vfsServices;
     private Path path;
 
     @OnStartup

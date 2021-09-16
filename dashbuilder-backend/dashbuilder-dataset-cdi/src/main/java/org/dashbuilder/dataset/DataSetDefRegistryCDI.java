@@ -43,9 +43,7 @@ import org.dashbuilder.dataset.uuid.UUIDGenerator;
 import org.dashbuilder.exception.ExceptionManager;
 import org.dashbuilder.project.storage.ProjectStorageServices;
 import org.dashbuilder.scheduler.SchedulerCDI;
-import org.uberfire.backend.server.util.Paths;
 import org.uberfire.backend.vfs.PathFactory;
-import org.uberfire.java.nio.file.Path;
 
 /**
  * Data set definition registry implementation which stores data sets under GIT
@@ -247,13 +245,6 @@ public class DataSetDefRegistryCDI extends DataSetDefRegistryImpl implements CSV
     }
 
 
-    protected org.uberfire.backend.vfs.Path convert(Path path) {
-        return Paths.convert(path);
-    }
-
-    protected Path convert(org.uberfire.backend.vfs.Path path) {
-        return Paths.convert(path);
-    }
 
     //
     // CSV files storage

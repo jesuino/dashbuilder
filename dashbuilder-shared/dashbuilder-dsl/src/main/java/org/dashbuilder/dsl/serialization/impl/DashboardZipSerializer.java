@@ -54,13 +54,14 @@ import org.dashbuilder.navigation.json.NavTreeJSONMarshaller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.uberfire.ext.layout.editor.api.editor.LayoutTemplate;
-import org.uberfire.java.nio.base.NotImplementedException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.dashbuilder.dsl.helper.ComponentsHelper.listComponents;
 import static org.dashbuilder.dsl.helper.ComponentsHelper.listPagesComponents;
 
 public class DashboardZipSerializer implements DashboardSerializer {
+    
+    
 
     private static final String PATH_SEPARATOR = "/";
 
@@ -85,43 +86,10 @@ public class DashboardZipSerializer implements DashboardSerializer {
 
     private static final Gson gson = new GsonBuilder().create();
 
+    
     @Override
     public Dashboard deserialize(InputStream model) {
-        throw new NotImplementedException();
-    }
-    
-    /**
-     * Does not support: CSV files and components files
-     */
-    Dashboard internalDeserialize(InputStream model) {
-        Map<String, String> importContent = readAllEntriesContent(model);
-
-        List<Page> pages = new ArrayList<>();
-        List<DataSetDef> datasets = new ArrayList<>();
-        AtomicReference<Navigation> navigationRef = new AtomicReference<>(NavigationFactory.emptyNavigation());
-
-        importContent.forEach((path, content) -> {
-            if (path.startsWith(LAYOUTS_PATH) && path.endsWith(PERSPECTIVE_LAYOUT)) {
-                LayoutTemplate template = gson.fromJson(content, LayoutTemplate.class);
-                pages.add(Page.create(template));
-            }
-
-            if (path.startsWith(DATA_SETS_PATH) && path.endsWith(DATASET_EXT)) {
-                DataSetDef def;
-                try {
-                    def = DATA_SET_MARSHALLER.fromJson(content);
-                    datasets.add(def);
-                } catch (Exception e) {
-                    logger.warn("Error reading dataset content {}", path);
-                    logger.debug("Error reading dataset content.", e);
-                }
-            }
-
-            if (path.startsWith(NAVIGATION_PATH)) {
-                navigationRef.set(Navigation.of(NavTreeJSONMarshaller.get().fromJson(content)));
-            }
-        });
-        return DashboardFactory.dashboard(pages, datasets, navigationRef.get(), null);
+        throw new IllegalArgumentException("Method not supported");
     }
 
     @Override
@@ -161,6 +129,40 @@ public class DashboardZipSerializer implements DashboardSerializer {
         } catch (IOException e) {
             throw new RuntimeException("Error closing ZIP", e);
         }
+    }
+    
+    /**
+     * Does not support: CSV files and components files
+     */
+    Dashboard internalDeserialize(InputStream model) {
+        Map<String, String> importContent = readAllEntriesContent(model);
+
+        List<Page> pages = new ArrayList<>();
+        List<DataSetDef> datasets = new ArrayList<>();
+        AtomicReference<Navigation> navigationRef = new AtomicReference<>(NavigationFactory.emptyNavigation());
+
+        importContent.forEach((path, content) -> {
+            if (path.startsWith(LAYOUTS_PATH) && path.endsWith(PERSPECTIVE_LAYOUT)) {
+                LayoutTemplate template = gson.fromJson(content, LayoutTemplate.class);
+                pages.add(Page.create(template));
+            }
+
+            if (path.startsWith(DATA_SETS_PATH) && path.endsWith(DATASET_EXT)) {
+                DataSetDef def;
+                try {
+                    def = DATA_SET_MARSHALLER.fromJson(content);
+                    datasets.add(def);
+                } catch (Exception e) {
+                    logger.warn("Error reading dataset content {}", path);
+                    logger.debug("Error reading dataset content.", e);
+                }
+            }
+
+            if (path.startsWith(NAVIGATION_PATH)) {
+                navigationRef.set(Navigation.of(NavTreeJSONMarshaller.get().fromJson(content)));
+            }
+        });
+        return DashboardFactory.dashboard(pages, datasets, navigationRef.get(), null);
     }
 
     private void writeCSVFile(ZipOutputStream zos, CSVDataSetDef def) {
@@ -272,5 +274,6 @@ public class DashboardZipSerializer implements DashboardSerializer {
         }
         return entriesContent;
     }
+
 
 }

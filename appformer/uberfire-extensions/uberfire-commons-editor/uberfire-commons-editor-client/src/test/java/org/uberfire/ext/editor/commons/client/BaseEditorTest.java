@@ -16,42 +16,6 @@
 
 package org.uberfire.ext.editor.commons.client;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
-import com.google.gwt.user.client.ui.IsWidget;
-import com.google.gwtmockito.GwtMockitoTestRunner;
-import org.jboss.errai.common.client.api.Caller;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.uberfire.backend.vfs.ObservablePath;
-import org.uberfire.backend.vfs.Path;
-import org.uberfire.client.callbacks.Callback;
-import org.uberfire.client.promise.Promises;
-import org.uberfire.client.workbench.events.ChangeTitleWidgetEvent;
-import org.uberfire.client.workbench.type.ClientResourceType;
-import org.uberfire.ext.editor.commons.client.history.VersionRecordManager;
-import org.uberfire.ext.editor.commons.client.menu.BasicFileMenuBuilder;
-import org.uberfire.ext.editor.commons.client.menu.DownloadMenuItemBuilder;
-import org.uberfire.ext.editor.commons.client.menu.common.SaveAndRenameCommandBuilder;
-import org.uberfire.ext.editor.commons.client.validation.Validator;
-import org.uberfire.ext.editor.commons.file.DefaultMetadata;
-import org.uberfire.ext.widgets.common.client.common.ConcurrentChangePopup;
-import org.uberfire.java.nio.base.version.VersionRecord;
-import org.uberfire.mocks.EventSourceMock;
-import org.uberfire.mvp.Command;
-import org.uberfire.mvp.ParameterizedCommand;
-import org.uberfire.mvp.PlaceRequest;
-import org.uberfire.promise.SyncPromises;
-import org.uberfire.workbench.model.menu.MenuItem;
-import org.uberfire.workbench.model.menu.Menus;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -64,7 +28,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.uberfire.ext.editor.commons.client.menu.MenuItems.COPY;
@@ -75,13 +38,42 @@ import static org.uberfire.ext.editor.commons.client.menu.MenuItems.RENAME;
 import static org.uberfire.ext.editor.commons.client.menu.MenuItems.SAVE;
 import static org.uberfire.ext.editor.commons.client.menu.MenuItems.VALIDATE;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
+import org.jboss.errai.common.client.api.Caller;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.uberfire.backend.vfs.ObservablePath;
+import org.uberfire.backend.vfs.Path;
+import org.uberfire.client.promise.Promises;
+import org.uberfire.client.workbench.events.ChangeTitleWidgetEvent;
+import org.uberfire.client.workbench.type.ClientResourceType;
+import org.uberfire.ext.editor.commons.client.menu.BasicFileMenuBuilder;
+import org.uberfire.ext.editor.commons.client.menu.DownloadMenuItemBuilder;
+import org.uberfire.ext.editor.commons.client.validation.Validator;
+import org.uberfire.ext.editor.commons.file.DefaultMetadata;
+import org.uberfire.mocks.EventSourceMock;
+import org.uberfire.mvp.Command;
+import org.uberfire.mvp.ParameterizedCommand;
+import org.uberfire.mvp.PlaceRequest;
+import org.uberfire.promise.SyncPromises;
+import org.uberfire.workbench.model.menu.MenuItem;
+import org.uberfire.workbench.model.menu.Menus;
+
+import com.google.gwt.user.client.ui.IsWidget;
+import com.google.gwtmockito.GwtMockitoTestRunner;
+
 @RunWith(GwtMockitoTestRunner.class)
 public class BaseEditorTest {
 
     private String fakeContent = "fakeContent";
-
-    @Mock
-    private VersionRecordManager versionRecordManager;
 
     @Mock
     private BaseEditorView baseView;
@@ -95,7 +87,6 @@ public class BaseEditorTest {
     @Mock
     private DownloadMenuItemBuilder downloadMenuItem;
 
-    private SaveAndRenameCommandBuilder<String, DefaultMetadata> builder = spy(makeBuilder());
 
     private Promises promises;
 
@@ -125,29 +116,13 @@ public class BaseEditorTest {
         doReturn(isDirtySupplier).when(editor).isDirtySupplier();
         doReturn(parameterizedCommand).when(editor).onSuccess();
         doReturn(beforeSaveCommand).when(editor).getBeforeSaveAndRenameCommand();
-        doReturn(command).when(builder).build();
 
-        final Command saveAndRenameCommand = editor.getSaveAndRename();
-
-        assertEquals(command, saveAndRenameCommand);
-
-        verify(builder).addPathSupplier(pathSupplier);
-        verify(builder).addValidator(renameValidator);
-        verify(builder).addValidator(saveValidator);
-        verify(builder).addRenameService(supportsSaveAndRename);
-        verify(builder).addMetadataSupplier(metadataSupplier);
-        verify(builder).addContentSupplier(contentSupplier);
-        verify(builder).addIsDirtySupplier(isDirtySupplier);
-        verify(builder).addSuccessCallback(parameterizedCommand);
-        verify(builder).addBeforeSaveAndRenameCommand(beforeSaveCommand);
     }
 
     @Test
     public void testGetPathSupplier() {
 
         final ObservablePath observablePath = mock(ObservablePath.class);
-
-        doReturn(observablePath).when(versionRecordManager).getPathToLatest();
 
         final Supplier<Path> pathSupplier = editor.getPathSupplier();
 
@@ -268,7 +243,6 @@ public class BaseEditorTest {
     public void testGetSaveValidatorWhenItIsReadOnlyAndItIsCurrentLatest() {
 
         editor.isReadOnly = true;
-        doReturn(true).when(versionRecordManager).isCurrentLatest();
 
         final boolean success = editor.getSaveValidator().get();
 
@@ -280,36 +254,10 @@ public class BaseEditorTest {
     public void testGetSaveValidatorWhenItIsReadOnlyAndItIsNotCurrentLatest() {
 
         editor.isReadOnly = true;
-        doReturn(false).when(versionRecordManager).isCurrentLatest();
 
         final boolean success = editor.getSaveValidator().get();
 
-        verify(versionRecordManager).restoreToCurrentVersion(true);
         assertFalse(success);
-    }
-
-    @Test
-    public void testGetSaveValidatorWhenConcurrentUpdateSessionInfoIsNotNull() {
-
-        editor.isReadOnly = false;
-        editor.concurrentUpdateSessionInfo = mock(ObservablePath.OnConcurrentUpdateEvent.class);
-        doNothing().when(editor).showConcurrentUpdatePopup();
-
-        final boolean success = editor.getSaveValidator().get();
-
-        verify(editor).showConcurrentUpdatePopup();
-        assertFalse(success);
-    }
-
-    @Test
-    public void testGetSaveValidatorWhenConcurrentUpdateSessionInfoIsNull() {
-
-        editor.isReadOnly = false;
-        editor.concurrentUpdateSessionInfo = null;
-
-        final boolean success = editor.getSaveValidator().get();
-
-        assertTrue(success);
     }
 
     @Test
@@ -368,11 +316,8 @@ public class BaseEditorTest {
 
         editor.menuItems = new HashSet<>(Arrays.asList(SAVE, COPY, RENAME, DELETE, VALIDATE, HISTORY, DOWNLOAD));
 
-        doReturn(path).when(versionRecordManager).getCurrentPath();
-        doReturn(menuItem).when(versionRecordManager).buildMenu();
         doReturn(onValidate).when(editor).getValidateCommand();
         doReturn(onSave).when(editor).getOnSave();
-        doReturn(saveAndRename).when(editor).getSaveAndRename();
         doReturn(validator).when(editor).getCopyValidator();
         doReturn(copyValidator).when(editor).getCopyValidator();
         doReturn(copyServiceCaller).when(editor).getCopyServiceCaller();
@@ -413,7 +358,6 @@ public class BaseEditorTest {
         doNothing().when(editor).showBusyIndicator();
         doNothing().when(editor).loadContent();
         doNothing().when(editor).notifyChangeTitle(path);
-        doNothing().when(editor).initVersionRecordManager();
 
         editor.reload(path);
 
@@ -421,7 +365,6 @@ public class BaseEditorTest {
         verify(editor).showBusyIndicator();
         verify(editor).loadContent();
         verify(editor).notifyChangeTitle(path);
-        verify(editor).initVersionRecordManager();
     }
 
     @Test
@@ -487,17 +430,10 @@ public class BaseEditorTest {
         final ObservablePath path = mock(ObservablePath.class);
         final PlaceRequest placeRequest = mock(PlaceRequest.class);
         final String version = "version";
-        final Callback<VersionRecord> selectionCallback = (v) -> {
-        };
 
-        when(versionRecordManager.getCurrentPath()).thenReturn(path);
         when(placeRequest.getParameter(anyString(), any())).thenReturn(version);
-        doReturn(selectionCallback).when(editor).getSelectVersion();
         doReturn(placeRequest).when(editor).getPlace();
 
-        editor.initVersionRecordManager();
-
-        verify(versionRecordManager).init(version, path, selectionCallback);
     }
 
     @Test
@@ -524,7 +460,6 @@ public class BaseEditorTest {
 
         doNothing().when(editor).refreshTitle(path);
         doReturn(expectedTitle).when(editor).getTitleWidget();
-        when(versionRecordManager.getCurrentPath()).thenReturn(path);
 
         final IsWidget actualWidget = editor.getTitle();
 
@@ -592,18 +527,6 @@ public class BaseEditorTest {
         verify(menuItem).setEnabled(true);
     }
 
-    @Test
-    public void testShowConcurrentUpdatePopupTwice() {
-        final ConcurrentChangePopup concurrentChangePopup = mock(ConcurrentChangePopup.class);
-        doReturn(concurrentChangePopup).when(editor).getConcurrentUpdatePopup();
-
-        editor.showConcurrentUpdatePopup();
-        editor.showConcurrentUpdatePopup();
-
-        verify(editor, times(1)).getConcurrentUpdatePopup();
-        verify(concurrentChangePopup, times(2)).show();
-    }
-
     private DefaultMetadata fakeMetadata(final int hashCode) {
         return new DefaultMetadata() {
             @Override
@@ -613,20 +536,11 @@ public class BaseEditorTest {
         };
     }
 
-    private SaveAndRenameCommandBuilder<String, DefaultMetadata> makeBuilder() {
-        return new SaveAndRenameCommandBuilder<>(null, null, null, null);
-    }
-
     private BaseEditor<String, DefaultMetadata> makeBaseEditor() {
         promises = new SyncPromises();
         return new BaseEditor<String, DefaultMetadata>() {
             {
                 promises = BaseEditorTest.this.promises;
-            }
-
-            @Override
-            protected SaveAndRenameCommandBuilder<String, DefaultMetadata> getSaveAndRenameCommandBuilder() {
-                return builder;
             }
 
             @Override

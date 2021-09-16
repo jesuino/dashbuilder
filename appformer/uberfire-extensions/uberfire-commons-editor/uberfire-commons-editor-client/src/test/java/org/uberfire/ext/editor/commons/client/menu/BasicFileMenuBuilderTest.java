@@ -60,9 +60,6 @@ public class BasicFileMenuBuilderTest {
     private Validator validator;
 
     @Mock
-    private RestoreVersionCommandProvider restoreVersionCommandProvider;
-
-    @Mock
     private EventSourceMock<NotificationEvent> notification;
 
     @Mock
@@ -98,8 +95,7 @@ public class BasicFileMenuBuilderTest {
                                                copyPopUpPresenter,
                                                renamePopUpPresenter,
                                                busyIndicatorView,
-                                               notification,
-                                               restoreVersionCommandProvider);
+                                               notification);
         deleteCaller = new CallerMock<>(deleteService);
         renameCaller = new CallerMock<>(renameService);
         when(provider.getPath()).thenReturn(mockPath);
@@ -219,10 +215,6 @@ public class BasicFileMenuBuilderTest {
     public void testAddRestoreVersion() {
         CurrentBranch currentBranch = new DefaultCurrentBranch();
         ArgumentCaptor<CurrentBranch> currentBranchCaptor = ArgumentCaptor.forClass(CurrentBranch.class);
-        builder.addRestoreVersion(mock(Path.class),
-                                  currentBranch);
-        verify(restoreVersionCommandProvider).getCommand(any(Path.class),
-                                                         currentBranchCaptor.capture());
         assertEquals(currentBranch,
                      currentBranchCaptor.getValue());
     };

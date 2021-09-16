@@ -16,12 +16,16 @@
 
 package org.uberfire.backend.vfs.impl;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -43,11 +47,6 @@ import org.uberfire.workbench.events.ResourceRenamed;
 import org.uberfire.workbench.events.ResourceRenamedEvent;
 import org.uberfire.workbench.events.ResourceUpdated;
 import org.uberfire.workbench.events.ResourceUpdatedEvent;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ObservablePathImplTest {
@@ -78,15 +77,6 @@ public class ObservablePathImplTest {
             ASSET_PATH = "default://project/package/Asset.java",
             OBSERVE_SESSION_ID = "observeSession",
             RESOURCE_SESSION_ID = "resourceSession";
-
-    @Before
-    public void setup() {
-        observablePathImpl.onConcurrentDelete(onDelete);
-        observablePathImpl.onConcurrentUpdate(onUpdate);
-        observablePathImpl.onConcurrentRename(onRename);
-        observablePathImpl.onConcurrentCopy(onCopy);
-        observablePathImpl.sessionInfo = new SessionInfoImpl(OBSERVE_SESSION_ID);
-    }
 
     @Test
     public void testResourceDeleteEvent() {

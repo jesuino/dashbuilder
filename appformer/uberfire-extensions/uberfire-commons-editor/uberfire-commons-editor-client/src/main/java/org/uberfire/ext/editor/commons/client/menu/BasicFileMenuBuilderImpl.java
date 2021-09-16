@@ -16,15 +16,17 @@
 
 package org.uberfire.ext.editor.commons.client.menu;
 
+import static org.uberfire.workbench.model.menu.MenuFactory.newSimpleItem;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.enterprise.event.Event;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
-import org.jboss.errai.bus.client.api.messaging.Message;
 import org.jboss.errai.common.client.api.Caller;
 import org.jboss.errai.common.client.api.RemoteCallback;
 import org.kie.soup.commons.validation.PortablePreconditions;
@@ -37,13 +39,11 @@ import org.uberfire.ext.editor.commons.client.file.popups.CopyPopUpPresenter;
 import org.uberfire.ext.editor.commons.client.file.popups.DeletePopUpPresenter;
 import org.uberfire.ext.editor.commons.client.file.popups.RenamePopUpPresenter;
 import org.uberfire.ext.editor.commons.client.menu.HasLockSyncMenuStateHelper.LockSyncMenuStateHelper.Operation;
-import org.uberfire.ext.editor.commons.version.CurrentBranch;
 import org.uberfire.ext.editor.commons.client.resources.i18n.CommonConstants;
 import org.uberfire.ext.editor.commons.client.validation.Validator;
 import org.uberfire.ext.editor.commons.service.support.SupportsCopy;
 import org.uberfire.ext.editor.commons.service.support.SupportsDelete;
 import org.uberfire.ext.editor.commons.service.support.SupportsRename;
-import org.uberfire.ext.widgets.common.client.callbacks.HasBusyIndicatorDefaultErrorCallback;
 import org.uberfire.ext.widgets.common.client.common.BusyIndicatorView;
 import org.uberfire.mvp.Command;
 import org.uberfire.workbench.events.NotificationEvent;
@@ -52,11 +52,8 @@ import org.uberfire.workbench.model.menu.MenuItem;
 import org.uberfire.workbench.model.menu.MenuVisitor;
 import org.uberfire.workbench.model.menu.Menus;
 
-import static org.uberfire.workbench.model.menu.MenuFactory.newSimpleItem;
-
 public class BasicFileMenuBuilderImpl implements BasicFileMenuBuilder {
 
-    private RestoreVersionCommandProvider restoreVersionCommandProvider;
     private Event<NotificationEvent> notification;
     private BusyIndicatorView busyIndicatorView;
     private DeletePopUpPresenter deletePopUpPresenter;
@@ -82,14 +79,12 @@ public class BasicFileMenuBuilderImpl implements BasicFileMenuBuilder {
                                     final CopyPopUpPresenter copyPopUpPresenter,
                                     final RenamePopUpPresenter renamePopUpPresenter,
                                     final BusyIndicatorView busyIndicatorView,
-                                    final Event<NotificationEvent> notification,
-                                    final RestoreVersionCommandProvider restoreVersionCommandProvider) {
+                                    final Event<NotificationEvent> notification) {
         this.deletePopUpPresenter = deletePopUpPresenter;
         this.copyPopUpPresenter = copyPopUpPresenter;
         this.renamePopUpPresenter = renamePopUpPresenter;
         this.busyIndicatorView = busyIndicatorView;
         this.notification = notification;
-        this.restoreVersionCommandProvider = restoreVersionCommandProvider;
     }
 
     @Override
@@ -120,9 +115,7 @@ public class BasicFileMenuBuilderImpl implements BasicFileMenuBuilder {
             deletePopUpPresenter.show(validator,
                                       (String comment) -> {
                                           busyIndicatorView.showBusyIndicator(CommonConstants.INSTANCE.Deleting());
-                                          deleteCaller.call(getDeleteSuccessCallback(),
-                                                            new HasBusyIndicatorDefaultErrorCallback(busyIndicatorView)).delete(path,
-                                                                                                                                comment);
+                                          deleteCaller.call(getDeleteSuccessCallback()).delete(path, comment);
                                       });
         });
     }
@@ -144,9 +137,7 @@ public class BasicFileMenuBuilderImpl implements BasicFileMenuBuilder {
             deletePopUpPresenter.show(validator,
                                       (String comment) -> {
                                           busyIndicatorView.showBusyIndicator(CommonConstants.INSTANCE.Deleting());
-                                          deleteCaller.call(getDeleteSuccessCallback(),
-                                                            new HasBusyIndicatorDefaultErrorCallback(busyIndicatorView)).delete(path,
-                                                                                                                                comment);
+                                          deleteCaller.call(getDeleteSuccessCallback()).delete(path, comment);
                                       });
         });
     }
@@ -216,9 +207,7 @@ public class BasicFileMenuBuilderImpl implements BasicFileMenuBuilder {
                                                                       final RenamePopUpPresenter.View renamePopupView) {
         return (FileNameAndCommitMessage details) -> {
             busyIndicatorView.showBusyIndicator(CommonConstants.INSTANCE.Renaming());
-            renameCaller.call(getRenameSuccessCallback(renamePopupView),
-                              getRenameErrorCallback(renamePopupView,
-                                                     busyIndicatorView)).rename(path,
+            renameCaller.call(getRenameSuccessCallback(renamePopupView)).rename(path,
                                                                                 details.getNewFileName(),
                                                                                 details.getCommitMessage());
         };
@@ -232,25 +221,6 @@ public class BasicFileMenuBuilderImpl implements BasicFileMenuBuilder {
         };
     }
 
-    private HasBusyIndicatorDefaultErrorCallback getRenameErrorCallback(final RenamePopUpPresenter.View renamePopupView,
-                                                                        BusyIndicatorView busyIndicatorView) {
-        return new HasBusyIndicatorDefaultErrorCallback(busyIndicatorView) {
-
-            @Override
-            public boolean error(final Message message,
-                                 final Throwable throwable) {
-                if (fileAlreadyExists(throwable)) {
-                    hideBusyIndicator();
-                    renamePopupView.handleDuplicatedFileName();
-                    return false;
-                }
-
-                renamePopupView.hide();
-                return super.error(message,
-                                   throwable);
-            }
-        };
-    }
 
     @Override
     public BasicFileMenuBuilder addCopy(final Command command) {
@@ -296,9 +266,7 @@ public class BasicFileMenuBuilderImpl implements BasicFileMenuBuilder {
                                                                     final CopyPopUpPresenter.View copyPopupView) {
         return (FileNameAndCommitMessage details) -> {
             busyIndicatorView.showBusyIndicator(CommonConstants.INSTANCE.Copying());
-            copyCaller.call(getCopySuccessCallback(copyPopupView),
-                            getCopyErrorCallback(copyPopupView,
-                                                 busyIndicatorView)).copy(path,
+            copyCaller.call(getCopySuccessCallback(copyPopupView)).copy(path,
                                                                           details.getNewFileName(),
                                                                           copyPopupView.getTargetPath(),
                                                                           details.getCommitMessage());
@@ -313,26 +281,6 @@ public class BasicFileMenuBuilderImpl implements BasicFileMenuBuilder {
         };
     }
 
-    public HasBusyIndicatorDefaultErrorCallback getCopyErrorCallback(final CopyPopUpPresenter.View copyPopupView,
-                                                                     BusyIndicatorView busyIndicatorView) {
-        return new HasBusyIndicatorDefaultErrorCallback(busyIndicatorView) {
-
-            @Override
-            public boolean error(final Message message,
-                                 final Throwable throwable) {
-                if (fileAlreadyExists(throwable)) {
-                    hideBusyIndicator();
-                    copyPopupView.handleDuplicatedFileName();
-                    return false;
-                }
-
-                copyPopupView.hide();
-                return super.error(message,
-                                   throwable);
-            }
-        };
-    }
-
     private boolean fileAlreadyExists(final Throwable throwable) {
         return throwable != null && throwable.getMessage() != null && throwable.getMessage().contains("FileAlreadyExistsException");
     }
@@ -340,14 +288,6 @@ public class BasicFileMenuBuilderImpl implements BasicFileMenuBuilder {
     @Override
     public BasicFileMenuBuilder addValidate(final Command validateCommand) {
         this.validateCommand = validateCommand;
-        return this;
-    }
-
-    @Override
-    public BasicFileMenuBuilder addRestoreVersion(final Path path,
-                                                  final CurrentBranch currentBranch) {
-        this.restoreCommand = restoreVersionCommandProvider.getCommand(path,
-                                                                       currentBranch);
         return this;
     }
 

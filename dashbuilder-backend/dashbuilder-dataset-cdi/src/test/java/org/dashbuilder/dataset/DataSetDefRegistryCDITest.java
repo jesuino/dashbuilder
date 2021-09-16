@@ -16,13 +16,8 @@
 package org.dashbuilder.dataset;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import javax.enterprise.event.Event;
 
@@ -44,8 +39,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.uberfire.java.nio.file.Path;
-import org.uberfire.java.nio.file.StandardDeleteOption;
 
 @RunWith(Arquillian.class)
 @Ignore("see https://issues.jboss.org/browse/RHPAM-832")
@@ -96,27 +89,20 @@ public class DataSetDefRegistryCDITest extends BaseCDITest {
 
         dataSetDefRegistry.init();
 
-        when(dataSetDefRegistry.convert(any(org.uberfire.java.nio.file.Path.class)))
-                .thenReturn(mock(org.uberfire.backend.vfs.Path.class));
-        when(dataSetDefRegistry.convert(any(org.uberfire.backend.vfs.Path.class)))
-                .thenReturn(mock(org.uberfire.java.nio.file.Path.class));
     }
 
     @Test
     public void testRegistryDataSetDef() throws Exception {
         dataSetDefRegistry.registerDataSetDef(dataSetDef);
 
-        verify(getIOService()).write(any(Path.class), anyString());
         verify(dataSetDefRegisteredEvent).fire(any(DataSetDefRegisteredEvent.class));
     }
 
     @Test
     public void testDeleteDataSetDef() throws Exception {
-        when(ioService.exists(any(Path.class))).thenReturn(true);
         dataSetDefRegistry.registerDataSetDef(dataSetDef);
         dataSetDefRegistry.removeDataSetDef(dataSetDef.getUUID());
 
-        verify(getIOService(), atLeastOnce()).deleteIfExists(any(Path.class), eq(StandardDeleteOption.NON_EMPTY_DIRECTORIES));
         verify(dataSetDefRemovedEvent).fire(any(DataSetDefRemovedEvent.class));
     }
 }

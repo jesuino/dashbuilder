@@ -32,16 +32,12 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.uberfire.io.IOService;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DataTransferResourceTest {
 
     @Mock
     private DataTransferServices dataTransferServices;
-
-    @Mock
-    private IOService ioService;
 
     @InjectMocks
     DataTransferResource dataTransferResource;
@@ -51,7 +47,7 @@ public class DataTransferResourceTest {
         var empty = getClass().getResource("/empty.zip").toURI();
         
         when(dataTransferServices.doExport(any())).thenReturn(Paths.get(empty).toString());
-        Response response = dataTransferResource.export();
+        var response = dataTransferResource.export();
         assertEquals(Response.Status.OK.getStatusCode(),
                      response.getStatus());
     }
@@ -59,7 +55,7 @@ public class DataTransferResourceTest {
     @Test
     public void testBadExport() throws IOException {
         when(dataTransferServices.doExport(any())).thenThrow(new IOException());
-        Response response = dataTransferResource.export();
+        var response = dataTransferResource.export();
         assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),
                      response.getStatus());
     }

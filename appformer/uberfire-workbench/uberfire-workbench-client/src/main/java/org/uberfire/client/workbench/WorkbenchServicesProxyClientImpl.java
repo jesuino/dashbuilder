@@ -17,15 +17,15 @@
 package org.uberfire.client.workbench;
 
 import java.util.Set;
+
 import javax.enterprise.context.Dependent;
-import javax.enterprise.inject.Alternative;
 
 import org.uberfire.mvp.Command;
 import org.uberfire.mvp.ParameterizedCommand;
 import org.uberfire.workbench.model.PerspectiveDefinition;
 import org.uberfire.workbench.model.SplashScreenFilter;
 
-@Alternative
+// TODO: Completely remove later?
 @Dependent
 public class WorkbenchServicesProxyClientImpl implements WorkbenchServicesProxy {
 

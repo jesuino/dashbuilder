@@ -21,7 +21,6 @@ import java.lang.reflect.Type;
 import java.net.URI;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -38,10 +37,8 @@ import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.InjectionPoint;
-import javax.enterprise.inject.spi.InjectionTarget;
 import javax.enterprise.inject.spi.ProcessAnnotatedType;
 import javax.enterprise.inject.spi.ProcessBean;
-import javax.enterprise.inject.spi.ProcessProducer;
 import javax.enterprise.inject.spi.WithAnnotations;
 import javax.enterprise.util.AnnotationLiteral;
 import javax.inject.Named;
@@ -49,26 +46,10 @@ import javax.inject.Singleton;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.uberfire.commons.lifecycle.PriorityDisposableRegistry;
 import org.uberfire.commons.services.cdi.Startable;
 import org.uberfire.commons.services.cdi.Startup;
 import org.uberfire.commons.services.cdi.StartupType;
 import org.uberfire.commons.services.cdi.Veto;
-import org.uberfire.io.IOService;
-import org.uberfire.io.impl.IOServiceNio2WrapperImpl;
-import org.uberfire.java.nio.IOException;
-import org.uberfire.java.nio.base.FileSystemState;
-import org.uberfire.java.nio.file.FileStore;
-import org.uberfire.java.nio.file.FileSystem;
-import org.uberfire.java.nio.file.FileSystemAlreadyExistsException;
-import org.uberfire.java.nio.file.InvalidPathException;
-import org.uberfire.java.nio.file.LockableFileSystem;
-import org.uberfire.java.nio.file.Path;
-import org.uberfire.java.nio.file.PathMatcher;
-import org.uberfire.java.nio.file.PatternSyntaxException;
-import org.uberfire.java.nio.file.WatchService;
-import org.uberfire.java.nio.file.attribute.UserPrincipalLookupService;
-import org.uberfire.java.nio.file.spi.FileSystemProvider;
 import org.uberfire.spaces.Space;
 import org.uberfire.spaces.SpacesAPI;
 
@@ -88,18 +69,6 @@ public class SystemConfigProducer implements Extension {
     private boolean systemFSNotExists = true;
     private boolean ioStrategyBeanNotFound = true;
 
-    public void processSystemFSProducer(@Observes ProcessProducer<?, FileSystem> pp) {
-        if (pp.getAnnotatedMember().getJavaMember().getName().equals("systemFS")) {
-            systemFSNotExists = false;
-        }
-    }
-
-
-    public void processIOServiceProducer(@Observes ProcessProducer<?, IOService> pp) {
-        if (pp.getAnnotatedMember().getJavaMember().getName().equals("ioStrategy")) {
-            ioStrategyBeanNotFound = false;
-        }
-    }
 
     public <X> void processBean(@Observes final ProcessBean<X> event) {
         if (event.getBean().getName() != null && event.getBean().getName().equals("systemFS")) {
@@ -168,152 +137,11 @@ public class SystemConfigProducer implements Extension {
 
     void afterBeanDiscovery(@Observes final AfterBeanDiscovery abd,
                             final BeanManager bm) {
-
-        if (systemFSNotExists) {
-            buildSystemFS(abd,
-                          bm);
-        }
-
-        if (ioStrategyBeanNotFound) {
-            buildIOStrategy(abd,
-                            bm);
-        }
         if (!CDI_METHOD.equalsIgnoreCase(START_METHOD)) {
-            buildStartableBean(abd,
-                               bm);
+            buildStartableBean(abd, bm);
         }
     }
 
-    void buildPluginsFS(final AfterBeanDiscovery abd,
-                        final BeanManager bm) {
-        final InjectionTarget<DummyFileSystem> it = bm.createInjectionTarget(bm.createAnnotatedType(DummyFileSystem.class));
-
-        abd.addBean(createFileSystemBean(bm,
-                                         it,
-                                         SpacesAPI.DEFAULT_SPACE,
-                                         "ioStrategy",
-                                         "pluginsFS",
-                                         "plugins"));
-    }
-
-
-    void buildSystemFS(final AfterBeanDiscovery abd,
-                       final BeanManager bm) {
-        final InjectionTarget<DummyFileSystem> it = bm.createInjectionTarget(bm.createAnnotatedType(DummyFileSystem.class));
-
-        abd.addBean(createFileSystemBean(bm,
-                                         it,
-                                         SpacesAPI.DEFAULT_SPACE,
-                                         "configIO",
-                                         "systemFS",
-                                         SYSTEM));
-    }
-
-    Bean<FileSystem> createFileSystemBean(final BeanManager bm,
-                                          final InjectionTarget<DummyFileSystem> it,
-                                          final Space space,
-                                          String ioService,
-                                          String beanName,
-                                          String fsName) {
-        return new Bean<FileSystem>() {
-
-            @Override
-            public Class<?> getBeanClass() {
-                return FileSystem.class;
-            }
-
-            @Override
-            public Set<InjectionPoint> getInjectionPoints() {
-                return it.getInjectionPoints();
-            }
-
-            @Override
-            public String getName() {
-                return beanName;
-            }
-
-            @Override
-            public Set<Annotation> getQualifiers() {
-
-                return new HashSet<Annotation>() {{
-                    add(new AnnotationLiteral<Default>() {
-                    });
-                    add(new AnnotationLiteral<Any>() {
-                    });
-                    add(new NamedLiteral(beanName));
-                }};
-            }
-
-            @Override
-            public Class<? extends Annotation> getScope() {
-                return ApplicationScoped.class;
-            }
-
-            @Override
-            public Set<Class<? extends Annotation>> getStereotypes() {
-                return Collections.emptySet();
-            }
-
-            @Override
-            public Set<Type> getTypes() {
-                return new HashSet<Type>() {{
-                    add(FileSystem.class);
-                    add(LockableFileSystem.class);
-                    add(Object.class);
-                }};
-            }
-
-            @Override
-            public boolean isAlternative() {
-                return false;
-            }
-
-            @Override
-            public boolean isNullable() {
-                return false;
-            }
-
-            @Override
-            public FileSystem create(CreationalContext<FileSystem> ctx) {
-                final SpacesAPI spaces = getSpaces(bm);
-                final Bean<IOService> bean = (Bean<IOService>) bm.getBeans(ioService).iterator().next();
-                final CreationalContext<IOService> _ctx = bm.createCreationalContext(bean);
-                final IOService ioService = (IOService) bm.getReference(bean,
-                                                                        IOService.class,
-                                                                        _ctx);
-
-                FileSystem fs;
-                URI uri = resolveFSURI(spaces, space, fsName);
-                try {
-                    fs = ioService.newFileSystem(
-                            uri,
-                            new HashMap<String, Object>() {{
-                                put("init", Boolean.TRUE);
-                                put("internal", Boolean.TRUE);
-                            }});
-                } catch (FileSystemAlreadyExistsException e) {
-                    fs = ioService.getFileSystem(uri);
-                }
-
-                PriorityDisposableRegistry.register(beanName, fs);
-
-                return fs;
-            }
-
-            @Override
-            public void destroy(final FileSystem instance,
-                                final CreationalContext<FileSystem> ctx) {
-                try {
-                    instance.dispose();
-                    PriorityDisposableRegistry.unregister(beanName);
-                } catch (final Exception ex) {
-                    logger.warn(ex.getMessage(),
-                                ex);
-                }
-                ctx.release();
-            }
-        };
-    }
 
     URI resolveFSURI(SpacesAPI spaces, Space space, String fsName) {
 
@@ -330,81 +158,6 @@ public class SystemConfigProducer implements Extension {
                                            spacesCtx);
     }
 
-    private void buildIOStrategy(final AfterBeanDiscovery abd,
-                                 final BeanManager bm) {
-
-        final InjectionTarget<IOServiceNio2WrapperImpl> it = bm.createInjectionTarget(bm.createAnnotatedType(IOServiceNio2WrapperImpl.class));
-
-        abd.addBean(new Bean<IOService>() {
-
-            @Override
-            public Class<?> getBeanClass() {
-                return IOService.class;
-            }
-
-            @Override
-            public Set<InjectionPoint> getInjectionPoints() {
-                return it.getInjectionPoints();
-            }
-
-            @Override
-            public String getName() {
-                return "ioStrategy";
-            }
-
-            @Override
-            public Set<Annotation> getQualifiers() {
-
-                return new HashSet<Annotation>() {{
-                    add(new AnnotationLiteral<Default>() {
-                    });
-                    add(new AnnotationLiteral<Any>() {
-                    });
-                    add(new NamedLiteral("ioStrategy"));
-                }};
-            }
-
-            @Override
-            public Class<? extends Annotation> getScope() {
-                return ApplicationScoped.class;
-            }
-
-            @Override
-            public Set<Class<? extends Annotation>> getStereotypes() {
-                return Collections.emptySet();
-            }
-
-            @Override
-            public Set<Type> getTypes() {
-                return new HashSet<Type>() {{
-                    add(IOService.class);
-                    add(Object.class);
-                }};
-            }
-
-            @Override
-            public boolean isAlternative() {
-                return false;
-            }
-
-            @Override
-            public boolean isNullable() {
-                return false;
-            }
-
-            @Override
-            public IOService create(CreationalContext<IOService> ctx) {
-
-                return new IOServiceNio2WrapperImpl();
-            }
-
-            @Override
-            public void destroy(final IOService instance,
-                                final CreationalContext<IOService> ctx) {
-                ctx.release();
-            }
-        });
-    }
 
     private <T> T getBean(BeanManager bm,
                           Class<T> clazz) {
@@ -521,82 +274,6 @@ public class SystemConfigProducer implements Extension {
                 ctx.release();
             }
         });
-    }
-
-    public static class DummyFileSystem implements FileSystem {
-
-        private FileSystemState state = FileSystemState.NORMAL;
-
-        @Override
-        public FileSystemProvider provider() {
-            return null;
-        }
-
-        @Override
-        public boolean isOpen() {
-            return false;
-        }
-
-        @Override
-        public boolean isReadOnly() {
-            return false;
-        }
-
-        @Override
-        public String getSeparator() {
-            return null;
-        }
-
-        @Override
-        public Iterable<Path> getRootDirectories() {
-            return null;
-        }
-
-        @Override
-        public Iterable<FileStore> getFileStores() {
-            return null;
-        }
-
-        @Override
-        public Set<String> supportedFileAttributeViews() {
-            return null;
-        }
-
-        @Override
-        public Path getPath(String first,
-                            String... more) throws InvalidPathException {
-            return null;
-        }
-
-        @Override
-        public PathMatcher getPathMatcher(String syntaxAndPattern) throws IllegalArgumentException, PatternSyntaxException, UnsupportedOperationException {
-            return null;
-        }
-
-        @Override
-        public UserPrincipalLookupService getUserPrincipalLookupService() throws UnsupportedOperationException {
-            return null;
-        }
-
-        @Override
-        public WatchService newWatchService() throws UnsupportedOperationException, IOException {
-            return null;
-        }
-
-        @Override
-        public String getName() {
-            return "DummyFileSystem";
-        }
-
-        @Override
-        public void close() throws IOException {
-
-        }
-
-        @Override
-        public void dispose() {
-
-        }
     }
 
     private class OrderedBean {
