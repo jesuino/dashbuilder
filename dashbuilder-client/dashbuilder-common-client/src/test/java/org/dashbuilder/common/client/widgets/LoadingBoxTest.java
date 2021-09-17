@@ -1,4 +1,4 @@
-package org.dashbuilder.client.widgets.common;
+package org.dashbuilder.common.client.widgets;
 
 import com.google.gwtmockito.GwtMockitoTestRunner;
 import org.junit.Before;

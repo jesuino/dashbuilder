@@ -34,5 +34,6 @@ public interface DashbuilderCommonConstants extends ConstantsWithLookup {
     String uploadFailed();
     String uploadFailedAlreadyExists();
     String clearAll();
+    String loading();
 
 }

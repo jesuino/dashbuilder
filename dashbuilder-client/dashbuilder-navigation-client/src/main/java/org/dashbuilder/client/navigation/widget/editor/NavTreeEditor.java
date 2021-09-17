@@ -27,7 +27,7 @@ import org.dashbuilder.client.navigation.event.NavItemEditCancelledEvent;
 import org.dashbuilder.client.navigation.event.NavItemEditStartedEvent;
 import org.dashbuilder.client.navigation.plugin.PerspectivePluginManager;
 import org.dashbuilder.client.navigation.resources.i18n.NavigationConstants;
-import org.dashbuilder.client.widgets.common.LoadingBox;
+import org.dashbuilder.common.client.widgets.LoadingBox;
 import org.dashbuilder.navigation.NavFactory;
 import org.dashbuilder.navigation.NavGroup;
 import org.dashbuilder.navigation.NavTree;

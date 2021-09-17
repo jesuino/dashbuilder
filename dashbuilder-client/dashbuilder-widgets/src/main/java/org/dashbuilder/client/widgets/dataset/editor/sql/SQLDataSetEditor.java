@@ -15,7 +15,11 @@
  */
 package org.dashbuilder.client.widgets.dataset.editor.sql;
 
-import org.dashbuilder.client.widgets.common.LoadingBox;
+import javax.annotation.PostConstruct;
+import javax.enterprise.context.Dependent;
+import javax.enterprise.event.Event;
+import javax.inject.Inject;
+
 import org.dashbuilder.client.widgets.dataset.editor.DataSetDefColumnsFilterEditor;
 import org.dashbuilder.client.widgets.dataset.editor.DataSetDefPreviewTable;
 import org.dashbuilder.client.widgets.dataset.editor.DataSetEditor;
@@ -27,13 +31,9 @@ import org.dashbuilder.client.widgets.dataset.event.ErrorEvent;
 import org.dashbuilder.client.widgets.dataset.event.TabChangedEvent;
 import org.dashbuilder.common.client.editor.ValueBoxEditor;
 import org.dashbuilder.common.client.editor.list.DropDownEditor;
+import org.dashbuilder.common.client.widgets.LoadingBox;
 import org.dashbuilder.dataset.client.DataSetClientServices;
 import org.dashbuilder.dataset.def.SQLDataSetDef;
-
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.Dependent;
-import javax.enterprise.event.Event;
-import javax.inject.Inject;
 
 /**
  * <p>SQL Data Set editor presenter.</p>

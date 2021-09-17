@@ -1,7 +1,9 @@
 package org.dashbuilder.client.widgets.dataset.editor.bean;
 
-import com.google.gwtmockito.GwtMockitoTestRunner;
-import org.dashbuilder.client.widgets.common.LoadingBox;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.when;
+
 import org.dashbuilder.client.widgets.dataset.editor.DataSetDefColumnsFilterEditor;
 import org.dashbuilder.client.widgets.dataset.editor.DataSetDefPreviewTable;
 import org.dashbuilder.client.widgets.dataset.editor.DataSetEditor;
@@ -11,6 +13,7 @@ import org.dashbuilder.client.widgets.dataset.editor.attributes.DataSetDefClient
 import org.dashbuilder.client.widgets.dataset.editor.attributes.DataSetDefRefreshAttributesEditor;
 import org.dashbuilder.client.widgets.dataset.event.ErrorEvent;
 import org.dashbuilder.client.widgets.dataset.event.TabChangedEvent;
+import org.dashbuilder.common.client.widgets.LoadingBox;
 import org.dashbuilder.dataprovider.DataSetProviderType;
 import org.dashbuilder.dataset.client.DataSetClientServices;
 import org.dashbuilder.dataset.def.BeanDataSetDef;
@@ -20,9 +23,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.uberfire.mocks.EventSourceMock;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.mockito.Mockito.when;
+import com.google.gwtmockito.GwtMockitoTestRunner;
 
 @RunWith(GwtMockitoTestRunner.class)
 public class BeanDataSetEditorTest {

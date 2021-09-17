@@ -15,19 +15,30 @@
  */
 package org.dashbuilder.client.widgets.dataset.editor;
 
-import com.google.gwt.editor.client.EditorDelegate;
-import com.google.gwt.safehtml.shared.SafeHtml;
-import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
-import com.google.gwt.user.client.ui.IsWidget;
-import com.google.gwt.user.client.ui.Widget;
-import org.dashbuilder.client.widgets.common.LoadingBox;
-import org.dashbuilder.client.widgets.dataset.editor.attributes.*;
+import static org.dashbuilder.dataprovider.DataSetProviderType.BEAN;
+import static org.dashbuilder.dataprovider.DataSetProviderType.CSV;
+import static org.dashbuilder.dataprovider.DataSetProviderType.ELASTICSEARCH;
+import static org.dashbuilder.dataprovider.DataSetProviderType.SQL;
+import static org.kie.soup.commons.validation.PortablePreconditions.checkNotNull;
+
+import java.util.List;
+
+import javax.enterprise.event.Event;
+import javax.enterprise.event.Observes;
+import javax.inject.Inject;
+
+import org.dashbuilder.client.widgets.dataset.editor.attributes.DataSetDefBackendCacheAttributesEditor;
+import org.dashbuilder.client.widgets.dataset.editor.attributes.DataSetDefBasicAttributesEditor;
+import org.dashbuilder.client.widgets.dataset.editor.attributes.DataSetDefCacheAttributesEditorView;
+import org.dashbuilder.client.widgets.dataset.editor.attributes.DataSetDefClientCacheAttributesEditor;
+import org.dashbuilder.client.widgets.dataset.editor.attributes.DataSetDefRefreshAttributesEditor;
 import org.dashbuilder.client.widgets.dataset.event.ColumnsChangedEvent;
 import org.dashbuilder.client.widgets.dataset.event.ErrorEvent;
 import org.dashbuilder.client.widgets.dataset.event.FilterChangedEvent;
 import org.dashbuilder.client.widgets.dataset.event.TabChangedEvent;
 import org.dashbuilder.client.widgets.resources.i18n.DataSetEditorConstants;
 import org.dashbuilder.common.client.error.ClientRuntimeError;
+import org.dashbuilder.common.client.widgets.LoadingBox;
 import org.dashbuilder.dataprovider.DataSetProviderType;
 import org.dashbuilder.dataset.DataSet;
 import org.dashbuilder.dataset.client.DataSetClientServices;
@@ -35,20 +46,16 @@ import org.dashbuilder.dataset.client.editor.DataSetDefEditor;
 import org.dashbuilder.dataset.def.DataColumnDef;
 import org.dashbuilder.dataset.def.DataSetDef;
 import org.dashbuilder.dataset.filter.DataSetFilter;
-import org.dashbuilder.dataset.group.DataSetGroup;
 import org.dashbuilder.displayer.client.AbstractDisplayerListener;
 import org.dashbuilder.displayer.client.Displayer;
 import org.uberfire.client.mvp.UberView;
 import org.uberfire.mvp.Command;
 
-import javax.enterprise.event.Event;
-import javax.enterprise.event.Observes;
-import javax.inject.Inject;
-
-import java.util.List;
-
-import static org.dashbuilder.dataprovider.DataSetProviderType.*;
-import static org.kie.soup.commons.validation.PortablePreconditions.checkNotNull;
+import com.google.gwt.editor.client.EditorDelegate;
+import com.google.gwt.safehtml.shared.SafeHtml;
+import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
+import com.google.gwt.user.client.ui.IsWidget;
+import com.google.gwt.user.client.ui.Widget;
 
 /**
  * <p>Data Set Editor presenter.</p>

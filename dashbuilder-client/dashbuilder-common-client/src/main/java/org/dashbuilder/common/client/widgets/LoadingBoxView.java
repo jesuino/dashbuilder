@@ -1,4 +1,4 @@
-package org.dashbuilder.client.widgets.common;
+package org.dashbuilder.common.client.widgets;
 
 import org.uberfire.ext.widgets.common.client.common.BusyPopup;
 

@@ -116,21 +116,16 @@
 
     <dependency>
       <groupId>org.dashbuilder</groupId>
-      <artifactId>dashbuilder-client-all</artifactId>
+      <artifactId>dashbuilder-common-client</artifactId>
       <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.dashbuilder</groupId>
-          <artifactId>dashbuilder-cms-client</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <dependency>
       <groupId>org.dashbuilder</groupId>
-      <artifactId>dashbuilder-common-client</artifactId>
+      <artifactId>dashbuilder-dataset-client</artifactId>
       <scope>provided</scope>
     </dependency>
+
 
     <dependency>
       <groupId>org.dashbuilder</groupId>
@@ -495,9 +490,10 @@
             <!-- Dashbuilder -->
             <compileSourcesArtifact>org.kie.soup:kie-soup-json</compileSourcesArtifact>
             <compileSourcesArtifact>org.dashbuilder:dashbuilder-kie-server-api</compileSourcesArtifact>
-            <compileSourcesArtifact>org.dashbuilder:dashbuilder-widgets</compileSourcesArtifact>
+	    <!--            <compileSourcesArtifact>org.dashbuilder:dashbuilder-widgets</compileSourcesArtifact>-->
             <compileSourcesArtifact>org.dashbuilder:dashbuilder-validations</compileSourcesArtifact>
-            <compileSourcesArtifact>org.dashbuilder:dashbuilder-common-client</compileSourcesArtifact>
+	    <compileSourcesArtifact>org.dashbuilder:dashbuilder-common-client</compileSourcesArtifact>
+            <compileSourcesArtifact>org.dashbuilder:dashbuilder-dataset-client</compileSourcesArtifact>
             <compileSourcesArtifact>org.dashbuilder:dashbuilder-services-api</compileSourcesArtifact>
             <compileSourcesArtifact>org.kie.soup:kie-soup-dataset-api</compileSourcesArtifact>
             <compileSourcesArtifact>org.kie.soup:kie-soup-dataset-shared</compileSourcesArtifact>

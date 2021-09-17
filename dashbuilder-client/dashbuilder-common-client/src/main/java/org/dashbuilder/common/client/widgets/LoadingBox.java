@@ -1,9 +1,9 @@
-package org.dashbuilder.client.widgets.common;
-
-import org.dashbuilder.client.widgets.resources.i18n.DataSetEditorConstants;
+package org.dashbuilder.common.client.widgets;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+
+import org.dashbuilder.common.client.resources.i18n.DashbuilderCommonConstants;
 
 /**
  * <p>A loading box presenter.</p>
@@ -29,7 +29,7 @@ public class LoadingBox {
     }
 
     public void show() {
-        view.show(DataSetEditorConstants.INSTANCE.loading());
+        view.show(DashbuilderCommonConstants.INSTANCE.loading());
     }
     
     public void hide() {
