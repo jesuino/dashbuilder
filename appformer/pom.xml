@@ -698,7 +698,6 @@
     <module>uberfire-client-api</module>
     <module>uberfire-server</module>
     <module>uberfire-backend</module>
-    <module>uberfire-js</module>
     <module>uberfire-testing-utils</module>
     <module>uberfire-workbench</module>
     <module>uberfire-packaging</module>

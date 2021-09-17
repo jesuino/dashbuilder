@@ -15,11 +15,11 @@
  */
 package org.dashbuilder.dataset.editor.client.perspectives;
 
+import javax.enterprise.context.ApplicationScoped;
+
 import org.uberfire.client.annotations.Perspective;
 import org.uberfire.client.annotations.WorkbenchPerspective;
 import org.uberfire.client.workbench.panels.impl.MultiListWorkbenchPanelPresenter;
-import org.uberfire.client.workbench.panels.impl.MultiTabWorkbenchPanelPresenter;
-import org.uberfire.client.workbench.panels.impl.SimpleWorkbenchPanelPresenter;
 import org.uberfire.mvp.impl.DefaultPlaceRequest;
 import org.uberfire.workbench.model.CompassPosition;
 import org.uberfire.workbench.model.PanelDefinition;
@@ -27,8 +27,6 @@ import org.uberfire.workbench.model.PerspectiveDefinition;
 import org.uberfire.workbench.model.impl.PanelDefinitionImpl;
 import org.uberfire.workbench.model.impl.PartDefinitionImpl;
 import org.uberfire.workbench.model.impl.PerspectiveDefinitionImpl;
-
-import javax.enterprise.context.ApplicationScoped;
 
 /**
  * <p>The authoring perspective for the management of data sets using the UI.</p>
@@ -43,11 +41,10 @@ import javax.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 @WorkbenchPerspective(identifier = "DataSetAuthoringPerspective")
 public class DataSetAuthoringPerspective {
-
+    
     @Perspective
-    public PerspectiveDefinition buildPerspective() {
-
-        PerspectiveDefinition perspective = new PerspectiveDefinitionImpl(MultiListWorkbenchPanelPresenter.class.getName());
+    public PerspectiveDefinition getPerspective() {
+        var perspective = new PerspectiveDefinitionImpl(MultiListWorkbenchPanelPresenter.class.getName());
         perspective.setName("Data Set Authoring");
 
         perspective.getRoot().addPart(new PartDefinitionImpl(new DefaultPlaceRequest("DataSetAuthoringHome")));
