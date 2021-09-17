@@ -18,7 +18,6 @@ package org.uberfire.backend.server.cdi;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
-import java.net.URI;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -44,38 +43,23 @@ import javax.enterprise.util.AnnotationLiteral;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.uberfire.commons.services.cdi.Startable;
 import org.uberfire.commons.services.cdi.Startup;
 import org.uberfire.commons.services.cdi.StartupType;
 import org.uberfire.commons.services.cdi.Veto;
-import org.uberfire.spaces.Space;
-import org.uberfire.spaces.SpacesAPI;
 
 public class SystemConfigProducer implements Extension {
 
-    private static final Logger logger = LoggerFactory.getLogger(SystemConfigProducer.class);
-
     private static final String CDI_METHOD = "cdi";
 
-    private static final String START_METHOD = System.getProperty("org.uberfire.start.method",
-                                                                  "cdi");
+    private static final String START_METHOD = System.getProperty("org.uberfire.start.method", "cdi");
     protected static final String SYSTEM = "system";
 
     private final List<OrderedBean> startupEagerBeans = new LinkedList<>();
     private final List<OrderedBean> startupBootstrapBeans = new LinkedList<>();
     private final Comparator<OrderedBean> priorityComparator = (o1, o2) -> o1.priority - o2.priority;
-    private boolean systemFSNotExists = true;
-    private boolean ioStrategyBeanNotFound = true;
-
 
     public <X> void processBean(@Observes final ProcessBean<X> event) {
-        if (event.getBean().getName() != null && event.getBean().getName().equals("systemFS")) {
-            systemFSNotExists = false;
-        } else if (event.getBean().getName() != null && event.getBean().getName().equals("ioStrategy")) {
-            ioStrategyBeanNotFound = false;
-        }
         if (event.getAnnotated().isAnnotationPresent(Startup.class) && (event.getAnnotated().isAnnotationPresent(ApplicationScoped.class)
                 || event.getAnnotated().isAnnotationPresent(Singleton.class))) {
             final Startup startupAnnotation = event.getAnnotated().getAnnotation(Startup.class);
@@ -140,22 +124,6 @@ public class SystemConfigProducer implements Extension {
         if (!CDI_METHOD.equalsIgnoreCase(START_METHOD)) {
             buildStartableBean(abd, bm);
         }
-    }
-
-
-    URI resolveFSURI(SpacesAPI spaces, Space space, String fsName) {
-
-        return spaces.resolveFileSystemURI(SpacesAPI.Scheme.DEFAULT,
-                                           space,
-                                           fsName);
-    }
-
-    SpacesAPI getSpaces(BeanManager bm) {
-        final Bean<SpacesAPI> spacesBean = (Bean<SpacesAPI>) bm.getBeans(SpacesAPI.class).iterator().next();
-        final CreationalContext<SpacesAPI> spacesCtx = bm.createCreationalContext(spacesBean);
-        return (SpacesAPI) bm.getReference(spacesBean,
-                                           SpacesAPI.class,
-                                           spacesCtx);
     }
 
 
