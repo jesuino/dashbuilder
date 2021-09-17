@@ -53,7 +53,4 @@ public interface PluginCss extends CssResource {
 
     @ClassName("top-inverted")
     String topInverted();
-
-    @ClassName("media-lib")
-    String mediaLib();
 }

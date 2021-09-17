@@ -14,26 +14,25 @@
  * limitations under the License.
  */
 
-package org.uberfire.ext.plugin.client.resources;
+package org.uberfire.ext.plugin.client;
 
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.resources.client.ClientBundle;
-import com.google.gwt.resources.client.DataResource;
+import javax.annotation.PostConstruct;
 
-public interface WebAppResource
-        extends
-        ClientBundle {
+import org.jboss.errai.bus.client.util.BusToolsCli;
+import org.jboss.errai.ioc.client.api.EntryPoint;
+import org.jboss.errai.ui.shared.api.annotations.Bundle;
+import org.uberfire.ext.plugin.client.resources.WebAppResource;
 
-    WebAppResource INSTANCE = GWT.create(WebAppResource.class);
-
-    @Source("css/plugin.css")
-    PluginCss CSS();
+@EntryPoint
+@Bundle("resources/i18n/Constants.properties")
+public class RuntimePluginsEntryPoint {
     
-    @Source("images/handle-v.png")
-    DataResource handleVertical();
-
-    @Source("images/handle-h.png")
-    DataResource handleHorizontal();
-
+    @PostConstruct
+    public void init() {
+        if (!BusToolsCli.isRemoteCommunicationEnabled()) {
+            return;
+        }
+        WebAppResource.INSTANCE.CSS().ensureInjected();
+    }
 
 }

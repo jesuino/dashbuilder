@@ -197,7 +197,6 @@ public class PerspectiveEditorPresenterTest {
 
         verify(menuBuilder).addSave(any(Command.class));
         verify(menuBuilder).addCopy(Mockito.<Path>any(), any(), any(Caller.class));
-        verify(menuBuilder).addRename(any(Command.class));
         verify(menuBuilder).addDelete(Mockito.<Path>any(), any(Caller.class));
         verify(menuBuilder).addDelete(Mockito.<Path>any(), any(Caller.class));
         verify(menuBuilder, never()).addNewTopLevelMenu(any());
@@ -210,7 +209,6 @@ public class PerspectiveEditorPresenterTest {
 
         verify(menuBuilder).addSave(any(Command.class));
         verify(menuBuilder).addCopy(Mockito.<Path>any(), any(), any(Caller.class));
-        verify(menuBuilder).addRename(any(Command.class));
         verify(menuBuilder).addDelete(Mockito.<Path>any(), any(Caller.class));
         verify(menuBuilder).addDelete(Mockito.<Path>any(), any(Caller.class));
         verify(menuBuilder).addNewTopLevelMenu(any());

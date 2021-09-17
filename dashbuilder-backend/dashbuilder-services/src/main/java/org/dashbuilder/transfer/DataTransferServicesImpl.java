@@ -57,7 +57,6 @@ import org.uberfire.backend.vfs.PathFactory;
 import org.uberfire.ext.plugin.event.PluginAdded;
 import org.uberfire.ext.plugin.model.Plugin;
 import org.uberfire.ext.plugin.model.PluginType;
-import org.uberfire.ext.plugin.type.TypeConverterUtil;
 import org.uberfire.rpc.SessionInfo;
 
 @Service
@@ -142,13 +141,9 @@ public class DataTransferServicesImpl implements DataTransferServices {
                         .resolve(p.getFileName()).toString(),
                 zos);
         createReadme(ProjectStorageServices.getPerspectivesExportPath(), zos);
-
         exportNavigation(exportNavigation, zos);
-
         createReadme(ProjectStorageServices.getNavigationExportPath().getParent(), zos);
-
         exportComponents(exportModel, zos);
-
         createVersionInformation(zos);
 
         zos.close();
@@ -303,9 +298,7 @@ public class DataTransferServicesImpl implements DataTransferServices {
 
             }
         }
-
         FileUtils.deleteDirectory(destDir);
-
         return imported;
     }
 
@@ -360,9 +353,8 @@ public class DataTransferServicesImpl implements DataTransferServices {
 
     private void fireDatasetEvent(String json) {
         try {
-            DataSetDef newDef = dataSetDefRegistryCDI.getDataSetDefJsonMarshaller().fromJson(json);
+            var newDef = dataSetDefRegistryCDI.getDataSetDefJsonMarshaller().fromJson(json);
             dataSetDefRegisteredEvent.fire(new DataSetDefRegisteredEvent(newDef));
-
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         }
