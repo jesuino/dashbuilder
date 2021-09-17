@@ -20,8 +20,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.dashbuilder.client.cms.screen.transfer.export.wizard.ExportWizard;
 import org.dashbuilder.transfer.DataTransferExportModel;
@@ -94,22 +92,4 @@ public class DataTransferScreenTest {
         verify(view).exportError(exception);
     }
 
-    @Test
-    public void doImportTest() throws Exception {
-        List<String> list = new ArrayList<>();
-        when(dataTransferServices.doImport()).thenReturn(list);
-        dataTransferScreen.doImport();
-        verify(dataTransferServices).doImport();
-        verify(view).importOK();
-        verify(dataTransferPopUp).show(list);
-    }
-
-    @Test
-    public void doImportFailureTest() throws Exception {
-        Exception exception = new Exception();
-        when(dataTransferServices.doImport()).thenThrow(exception);
-        dataTransferScreen.doImport();
-        verify(dataTransferServices).doImport();
-        verify(view).importError(exception);
-    }
 }

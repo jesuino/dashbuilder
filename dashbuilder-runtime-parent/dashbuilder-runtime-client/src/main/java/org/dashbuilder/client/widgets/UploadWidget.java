@@ -47,9 +47,6 @@ public class UploadWidget implements IsElement {
     @Inject
     RouterScreen routerScreen;
 
-    @Inject
-    PlaceManager placeManager;
-
     public interface View extends UberElemental<UploadWidget> {
 
         void loading();
@@ -77,7 +74,7 @@ public class UploadWidget implements IsElement {
     }
 
     public void submit(String fileName, final HTMLFormElement uploadForm) {
-        RequestInit request = RequestInit.create();
+        var request = RequestInit.create();
         request.setMethod("POST");
         request.setBody(new FormData(uploadForm));
         view.loading();

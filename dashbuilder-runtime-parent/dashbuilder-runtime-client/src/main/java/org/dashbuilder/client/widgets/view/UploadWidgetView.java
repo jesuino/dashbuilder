@@ -106,7 +106,7 @@ public class UploadWidgetView implements UploadWidget.View {
 
     @EventHandler("inputFile")
     public void handleInputFileChange(ChangeEvent e) {
-        String importName = presenter.retrieveFileName(inputFile.value);
+        var importName = presenter.retrieveFileName(inputFile.value);
         inputFileName.value = importName;
         presenter.submit(importName, uploadForm);
     }

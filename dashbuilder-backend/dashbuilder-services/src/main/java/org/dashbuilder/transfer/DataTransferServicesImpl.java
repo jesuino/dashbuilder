@@ -53,8 +53,10 @@ import org.dashbuilder.project.storage.ProjectStorageServices;
 import org.jboss.errai.bus.server.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.uberfire.backend.vfs.PathFactory;
 import org.uberfire.ext.plugin.event.PluginAdded;
 import org.uberfire.ext.plugin.model.Plugin;
+import org.uberfire.ext.plugin.model.PluginType;
 import org.uberfire.ext.plugin.type.TypeConverterUtil;
 import org.uberfire.rpc.SessionInfo;
 
@@ -165,7 +167,6 @@ public class DataTransferServicesImpl implements DataTransferServices {
 
     @Override
     public ExportInfo exportInfo() {
-
         var pages = projectStorageServices.listPerspectives()
                 .keySet()
                 .stream()
@@ -173,11 +174,11 @@ public class DataTransferServicesImpl implements DataTransferServices {
                 .collect(Collectors.toList());
 
         var datasetsDefs = projectStorageServices.listDataSets()
-                                                 .values()
-                                                 .stream()
-                                                 .map(this::parseDataSetDefinition)
-                                                 .filter(DataSetDef::isPublic)
-                                                 .collect(Collectors.toList());
+                .values()
+                .stream()
+                .map(this::parseDataSetDefinition)
+                .filter(DataSetDef::isPublic)
+                .collect(Collectors.toList());
 
         return new ExportInfo(datasetsDefs, pages, isExternalServerConfigured());
     }
@@ -188,8 +189,8 @@ public class DataTransferServicesImpl implements DataTransferServices {
             throw new RuntimeException("External Server is not configured.");
         }
         try {
-            String path = this.doExport(exportModel);
-            String destination = new StringBuilder().append(exportDir)
+            var path = this.doExport(exportModel);
+            var destination = new StringBuilder().append(exportDir)
                     .append(File.separator)
                     .append(DASHBOARD_LATEST)
                     .append(".zip")
@@ -217,9 +218,9 @@ public class DataTransferServicesImpl implements DataTransferServices {
                         .filter(Files::exists)
                         .forEach(componentPath -> {
                             zipComponentFiles(componentsBasePath,
-                                              componentPath,
-                                              zos,
-                                              p -> p.toFile().isFile());
+                                    componentPath,
+                                    zos,
+                                    p -> p.toFile().isFile());
                         });
             }
         }
@@ -342,8 +343,9 @@ public class DataTransferServicesImpl implements DataTransferServices {
 
         if (filePath.startsWith(ProjectStorageServices.getPerspectivesExportPath().toString()) &&
             filePath.endsWith(ProjectStorageServices.PERSPECTIVE_LAYOUT)) {
-            projectStorageServices.savePerspective(newFile.toPath().getParent().getFileName().toString(), content);
-            firePerspectiveEvent(newFile, filePath);
+            var perspectiveName = newFile.toPath().getParent().getFileName().toString();
+            projectStorageServices.savePerspective(perspectiveName, content);
+            firePerspectiveEvent(perspectiveName);
             addedFile = Optional.of(filePath);
         }
 
@@ -366,31 +368,9 @@ public class DataTransferServicesImpl implements DataTransferServices {
         }
     }
 
-    private void firePerspectiveEvent(File newFile, String newFilePath) {
-        org.uberfire.backend.vfs.Path pluginPath = new org.uberfire.backend.vfs.Path() {
-
-            @Override
-            public int compareTo(org.uberfire.backend.vfs.Path o) {
-                return toURI().compareTo(o.toURI());
-            }
-
-            @Override
-            public String getFileName() {
-                return newFilePath;
-            }
-
-            @Override
-            public String toURI() {
-                return newFilePath;
-            }
-
-        };
-
-        Plugin plugin = new Plugin(
-                newFile.toPath().getParent().toString(),
-                TypeConverterUtil.fromPath(pluginPath),
-                pluginPath);
-
+    private void firePerspectiveEvent(String perspectiveName) {
+        var pluginPath = PathFactory.newPath(perspectiveName, perspectiveName);
+        var plugin = new Plugin(perspectiveName, PluginType.PERSPECTIVE_LAYOUT, pluginPath);
         pluginAddedEvent.fire(new PluginAdded(plugin, sessionInfo));
     }
 

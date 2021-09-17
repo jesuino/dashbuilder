@@ -16,13 +16,17 @@
 
 package org.dashbuilder.client.cms.screen.transfer;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-
 import java.util.List;
 
 import javax.annotation.PostConstruct;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
+import org.dashbuilder.client.cms.resources.i18n.ContentManagerConstants;
+import org.dashbuilder.client.cms.screen.transfer.export.wizard.ExportWizard;
+import org.dashbuilder.transfer.DataTransferExportModel;
+import org.dashbuilder.transfer.DataTransferServices;
+import org.dashbuilder.transfer.ExportInfo;
 import org.jboss.errai.common.client.api.Caller;
 import org.jboss.errai.common.client.api.ErrorCallback;
 import org.jboss.errai.common.client.api.RemoteCallback;
@@ -32,11 +36,11 @@ import org.uberfire.client.annotations.WorkbenchScreen;
 import org.uberfire.client.mvp.UberElemental;
 import org.uberfire.ext.widgets.common.client.common.BusyIndicatorView;
 import org.uberfire.mvp.ParameterizedCommand;
-import org.dashbuilder.transfer.ExportInfo;
-import org.dashbuilder.transfer.DataTransferExportModel;
-import org.dashbuilder.transfer.DataTransferServices;
-import org.dashbuilder.client.cms.resources.i18n.ContentManagerConstants;
-import org.dashbuilder.client.cms.screen.transfer.export.wizard.ExportWizard;
+
+import elemental2.dom.DomGlobal;
+import elemental2.dom.FormData;
+import elemental2.dom.HTMLFormElement;
+import elemental2.dom.RequestInit;
 
 @ApplicationScoped
 @WorkbenchScreen(identifier = DataTransferScreen.ID)
@@ -100,21 +104,44 @@ public class DataTransferScreen {
         }).exportInfo();
     }
 
-    public void doImport() {
+    public void doImport(final HTMLFormElement uploadForm) {
+        var request = RequestInit.create();
+        request.setMethod("POST");
+        request.setBody(new FormData(uploadForm));
+        DomGlobal.window.fetch("./rest/dashbuilder/import", request)
+                .then(response -> response.text().then(newImportName -> {
+                    if (response.status == 201) {
+                        callImportService();
+
+                    } else {
+                        uploadError();
+                    }
+                    return null;
+                }), error -> {
+                    uploadError();
+                    return null;
+                });
+    }
+    @SuppressWarnings("unchecked")
+    private void callImportService() {
         try {
-            dataTransferServices.call((RemoteCallback<List<String>>) imported -> {
-                                          view.importOK();
-                                          popUp.show(imported);
+            dataTransferServices.call(imported -> {
+                view.importOK();
+                popUp.show((List<String>) imported);
 
-                                      }, (ErrorCallback<Throwable>) (message, throwable) -> {
-                                          view.importError(throwable);
-                                          return false;
+            }, (message, throwable) -> {
+                view.importError(throwable);
+                return false;
 
-                                      }).doImport();
+            }).doImport();
 
         } catch (Exception e) {
             view.importError(e);
         }
+    }
+
+    private void uploadError() {
+        view.importError(new Throwable("Error uploading import file"));
     }
 
     public interface View extends UberElemental<DataTransferScreen> {
@@ -152,7 +179,7 @@ public class DataTransferScreen {
                 view.exportOK();
                 view.download(path);
 
-            }, (ErrorCallback<Exception>) (message, throwable) -> {
+            }, (message, throwable) -> {
                 busyIndicatorView.hideBusyIndicator();
                 view.exportError(throwable);
                 return false;
@@ -163,7 +190,7 @@ public class DataTransferScreen {
             view.exportError(e);
         }
     }
-    
+
     private void openExportedModel(DataTransferExportModel dataTransferExportModel) {
         busyIndicatorView.showBusyIndicator(i18n.preparingExportDownload());
         try {

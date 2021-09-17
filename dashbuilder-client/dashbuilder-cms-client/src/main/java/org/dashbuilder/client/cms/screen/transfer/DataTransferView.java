@@ -17,29 +17,27 @@
 package org.dashbuilder.client.cms.screen.transfer;
 
 import javax.enterprise.event.Event;
-import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import elemental2.dom.DomGlobal;
-import elemental2.dom.HTMLButtonElement;
-import elemental2.dom.HTMLDivElement;
-import elemental2.dom.HTMLElement;
 import org.dashbuilder.client.cms.resources.i18n.ContentManagerConstants;
-import org.dashbuilder.client.cms.screen.transfer.export.wizard.widget.PagesTable;
 import org.dashbuilder.common.client.backend.PathUrlFactory;
-import org.dashbuilder.common.client.editor.file.FileUploadEditor;
-import org.dashbuilder.common.client.editor.file.FileUploadEditor.FileUploadEditorCallback;
-import org.dashbuilder.common.client.event.ValueChangeEvent;
 import org.jboss.errai.common.client.api.elemental2.IsElement;
-import org.jboss.errai.common.client.dom.elemental2.Elemental2DomUtil;
 import org.jboss.errai.ui.shared.api.annotations.DataField;
 import org.jboss.errai.ui.shared.api.annotations.EventHandler;
 import org.jboss.errai.ui.shared.api.annotations.Templated;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.uberfire.spaces.SpacesAPI;
 import org.uberfire.workbench.events.NotificationEvent;
+
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ClickEvent;
+
+import elemental2.dom.DomGlobal;
+import elemental2.dom.HTMLButtonElement;
+import elemental2.dom.HTMLDivElement;
+import elemental2.dom.HTMLElement;
+import elemental2.dom.HTMLFormElement;
+import elemental2.dom.HTMLInputElement;
 
 @Templated
 public class DataTransferView implements DataTransferScreen.View, IsElement {
@@ -48,35 +46,30 @@ public class DataTransferView implements DataTransferScreen.View, IsElement {
     private DataTransferScreen presenter;
     private ContentManagerConstants i18n = ContentManagerConstants.INSTANCE;
     private HTMLDivElement root;
-    private HTMLDivElement fileUploadContainer;
     private HTMLButtonElement btnImport;
-    private FileUploadEditor fileUploadEditor;
-    private Elemental2DomUtil elem2Dom;
     private Event<NotificationEvent> workbenchNotification;
     private PathUrlFactory pathUrlFactory;
+    private HTMLInputElement inputFile;
+    private HTMLFormElement uploadForm;
     
-    @Inject PagesTable pagesTable;
-
     public DataTransferView() {
     }
 
     @Inject
     public DataTransferView(
             final @DataField HTMLDivElement root,
-            final @DataField HTMLDivElement fileUploadContainer,
             final @DataField HTMLButtonElement btnImport,
             final @DataField HTMLButtonElement btnExport,
             final @DataField HTMLButtonElement btnGradualExport,
-            final FileUploadEditor fileUploadEditor,
-            final Elemental2DomUtil elem2Dom,
+            final @DataField HTMLInputElement inputFile,
+            final @DataField HTMLFormElement uploadForm,
             final Event<NotificationEvent> workbenchNotification,
             final PathUrlFactory pathUrlFactory) {
 
         this.root = root;
-        this.fileUploadContainer = fileUploadContainer;
         this.btnImport = btnImport;
-        this.fileUploadEditor = fileUploadEditor;
-        this.elem2Dom = elem2Dom;
+        this.inputFile = inputFile;
+        this.uploadForm = uploadForm;
         this.workbenchNotification = workbenchNotification;
         this.pathUrlFactory = pathUrlFactory;
     }
@@ -84,34 +77,6 @@ public class DataTransferView implements DataTransferScreen.View, IsElement {
     @Override
     public void init(DataTransferScreen presenter) {
         this.presenter = presenter;
-
-        btnImport.disabled = true;
-
-        elem2Dom.appendWidgetToElement(fileUploadContainer, fileUploadEditor.asWidget());
-
-        fileUploadEditor.setAccept(".zip");
-        
-        fileUploadEditor.configure("fileUpload", new FileUploadEditorCallback() {
-            @Override
-            public String getUploadFileUrl() {
-                String path = new StringBuilder()
-                    .append(SpacesAPI.Scheme.DEFAULT)
-                    .append("://")
-                    .append("system/system")
-                    .append("/")
-                    .append(presenter.getFilePath())
-                    .append("/")
-                    .append(presenter.getImportFileName())
-                    .toString();
-
-                return pathUrlFactory.getUploadFileUrl(path);
-            }
-
-            @Override
-            public String getUploadFileName() {
-                return presenter.getImportFileName();
-            }
-        });
     }
 
     @Override
@@ -136,8 +101,6 @@ public class DataTransferView implements DataTransferScreen.View, IsElement {
 
     @Override
     public void importError(Throwable throwable) {
-        btnImport.disabled = true;
-        fileUploadEditor.view.clear();
         LOGGER.error(throwable.getMessage(), throwable);
         workbenchNotification.fire(
             new NotificationEvent(
@@ -147,8 +110,6 @@ public class DataTransferView implements DataTransferScreen.View, IsElement {
 
     @Override
     public void importOK() {
-        btnImport.disabled = true;
-        fileUploadEditor.view.clear();
         workbenchNotification.fire(
             new NotificationEvent(
                 i18n.importOK(),
@@ -165,7 +126,7 @@ public class DataTransferView implements DataTransferScreen.View, IsElement {
 
     @EventHandler("btnImport")
     public void onImport(ClickEvent event) {
-        presenter.doImport();
+        inputFile.click();
     }
 
     @EventHandler("btnExport")
@@ -177,15 +138,19 @@ public class DataTransferView implements DataTransferScreen.View, IsElement {
     public void onGradualExport(ClickEvent event) {
         presenter.doGradualExport();
     }
-
-    void newFileUploaded(@Observes ValueChangeEvent<String> valueChangeEvent) {
-        if (valueChangeEvent.getContext() == fileUploadEditor) {
-            btnImport.disabled = false;
-        }
+    
+    @EventHandler("inputFile")
+    public void handleInputFileChange(ChangeEvent e) {
+        presenter.doImport(uploadForm);
+    }
+    
+    public void clearSelection() {
+        uploadForm.reset();
     }
 
     @Override
     public void openUrl(String url) {
         DomGlobal.window.open(url, "_blank");
     }
+    
 }

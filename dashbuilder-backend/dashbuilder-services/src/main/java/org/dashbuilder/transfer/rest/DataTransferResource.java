@@ -16,19 +16,25 @@
 
 package org.dashbuilder.transfer.rest;
 
+import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.inject.Named;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.dashbuilder.project.storage.ProjectStorageServices;
 import org.dashbuilder.transfer.DataTransferExportModel;
 import org.dashbuilder.transfer.DataTransferServices;
+import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,6 +46,9 @@ public class DataTransferResource {
 
     @Inject
     private DataTransferServices dataTransferServices;
+    
+    @Inject
+    private ProjectStorageServices projectStorageServices;
 
     @GET
     @Path("export")
@@ -58,5 +67,16 @@ public class DataTransferResource {
                            .build();
         }
     }
+    
 
+    @POST
+    @Path("import")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public Response uploadFile(@MultipartForm FileUploadModel form) throws IOException {
+        var inputBytes = form.getFileData();
+        var importPath = projectStorageServices.createTempPath(DataTransferServices.IMPORT_FILE_NAME);
+        Files.write(importPath, inputBytes);
+        return Response.created(URI.create(DataTransferServices.IMPORT_FILE_NAME)).build();
+    }
+    
 }
