@@ -16,6 +16,7 @@
   <inherits name="org.dashbuilder.renderer.DefaultRenderer"/>
   <inherits name="org.gwtbootstrap3.extras.slider.Slider"/>
   <inherits name="org.gwtbootstrap3.GwtBootstrap3NoTheme"/>
+  <inherits name="org.dashbuilder.DashbuilderKieServerAPI"/>
 
   <source path='client'/>
 

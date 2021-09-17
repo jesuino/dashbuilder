@@ -13,17 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dashbuilder.client.kieserver.dataset.editor.workflow;
+package org.dashbuilder.client.widgets.dataset.editor.workflow.edit;
 
 import javax.enterprise.context.Dependent;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.validation.ConstraintViolation;
 
-import com.google.gwt.editor.client.SimpleBeanEditorDriver;
-import org.dashbuilder.client.kieserver.dataset.editor.RemoteDataSetDefEditor;
-import org.dashbuilder.client.kieserver.dataset.editor.driver.RemoteDataSetDefDriver;
-import org.dashbuilder.client.widgets.dataset.editor.workflow.edit.DataSetEditWorkflow;
+import org.dashbuilder.client.widgets.dataset.editor.driver.RemoteDataSetDefDriver;
 import org.dashbuilder.client.widgets.dataset.event.CancelRequestEvent;
 import org.dashbuilder.client.widgets.dataset.event.SaveRequestEvent;
 import org.dashbuilder.client.widgets.dataset.event.TestDataSetRequestEvent;
@@ -34,6 +31,7 @@ import org.dashbuilder.dataset.DataSetFactory;
 import org.dashbuilder.dataset.DataSetLookup;
 import org.dashbuilder.dataset.client.DataSetClientServices;
 import org.dashbuilder.dataset.client.DataSetReadyCallback;
+import org.dashbuilder.dataset.client.editor.RemoteDataSetDefEditor;
 import org.dashbuilder.dataset.def.DataSetDef;
 import org.dashbuilder.displayer.client.DataSetEditHandler;
 import org.dashbuilder.displayer.client.DataSetHandler;
@@ -41,6 +39,8 @@ import org.dashbuilder.kieserver.ConsoleDataSetLookup;
 import org.dashbuilder.kieserver.RemoteDataSetDef;
 import org.dashbuilder.validations.DataSetValidatorProvider;
 import org.jboss.errai.ioc.client.container.SyncBeanManager;
+
+import com.google.gwt.editor.client.SimpleBeanEditorDriver;
 
 /**
  * <p>SQL Data Set Editor workflow presenter for editing a data set definition instance.</p>

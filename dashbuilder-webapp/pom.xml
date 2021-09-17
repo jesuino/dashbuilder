@@ -98,12 +98,6 @@
 
     <dependency>
       <groupId>org.dashbuilder</groupId>
-      <artifactId>dashbuilder-kie-server-client</artifactId>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.dashbuilder</groupId>
       <artifactId>dashbuilder-kie-server-api</artifactId>
     </dependency>
 

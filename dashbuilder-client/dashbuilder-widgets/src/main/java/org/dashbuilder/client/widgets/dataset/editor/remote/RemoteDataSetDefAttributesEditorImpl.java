@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.dashbuilder.client.kieserver.dataset.editor.impl;
+package org.dashbuilder.client.widgets.dataset.editor.remote;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,18 +24,19 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 
-import com.google.gwt.editor.client.EditorDelegate;
-import com.google.gwt.user.client.ui.IsWidget;
-import com.google.gwt.user.client.ui.Widget;
-import org.dashbuilder.client.kieserver.dataset.editor.RemoteDataSetDefAttributesEditor;
-import org.dashbuilder.client.kieserver.resources.i18n.KieServerClientConstants;
+import org.dashbuilder.client.widgets.resources.i18n.DataSetEditorConstants;
 import org.dashbuilder.common.client.editor.ValueBoxEditor;
 import org.dashbuilder.common.client.editor.list.DropDownEditor;
+import org.dashbuilder.dataset.client.editor.RemoteDataSetDefAttributesEditor;
 import org.dashbuilder.kieserver.KieServerConnectionInfoProvider;
 import org.dashbuilder.kieserver.RemoteDataSetDef;
 import org.gwtbootstrap3.client.ui.constants.Placement;
 import org.jboss.errai.common.client.api.Caller;
 import org.uberfire.client.mvp.UberView;
+
+import com.google.gwt.editor.client.EditorDelegate;
+import com.google.gwt.user.client.ui.IsWidget;
+import com.google.gwt.user.client.ui.Widget;
 
 /**
  * <p>KIE Server/Remote Data Set specific attributes editor presenter.</p>
@@ -85,7 +86,7 @@ public class RemoteDataSetDefAttributesEditorImpl implements IsWidget, RemoteDat
         view.init(this);
         view.initWidgets(queryTarget.view, serverTemplateId.view, dataSource.view, dbSQL.view);
 
-        queryTarget.setSelectHint(KieServerClientConstants.INSTANCE.remoteQueryTargetHint());
+        queryTarget.setSelectHint(DataSetEditorConstants.INSTANCE.remoteQueryTargetHint());
         List<DropDownEditor.Entry> entries = Stream.of("CUSTOM",
                                                        "PROCESS",
                                                        "TASK",
@@ -98,24 +99,24 @@ public class RemoteDataSetDefAttributesEditorImpl implements IsWidget, RemoteDat
                                                    .map(s -> queryTarget.newEntry(s, s)).collect(Collectors.toList());
         queryTarget.setEntries(entries);
 
-        queryTarget.addHelpContent(KieServerClientConstants.INSTANCE.remoteQueryTarget(),
-                                   KieServerClientConstants.INSTANCE.remoteQueryTargetDescription(),
+        queryTarget.addHelpContent(DataSetEditorConstants.INSTANCE.remoteQueryTarget(),
+                                   DataSetEditorConstants.INSTANCE.remoteQueryTargetDescription(),
                                    Placement.RIGHT); //bottom placement would interfere with the dropdown
 
-        serverTemplateId.setSelectHint(KieServerClientConstants.INSTANCE.remoteServerTemplateHint());
+        serverTemplateId.setSelectHint(DataSetEditorConstants.INSTANCE.remoteServerTemplateHint());
 
         kieServerConnectionInfoProvider.call((List<String> serverTemplates) -> onServerTemplateLoad(serverTemplates)).serverTemplates();
 
-        serverTemplateId.addHelpContent(KieServerClientConstants.INSTANCE.remoteServerTemplate(),
-                                        KieServerClientConstants.INSTANCE.remoteServerTemplateDescription(),
+        serverTemplateId.addHelpContent(DataSetEditorConstants.INSTANCE.remoteServerTemplate(),
+                                        DataSetEditorConstants.INSTANCE.remoteServerTemplateDescription(),
                                         Placement.RIGHT);
 
-        dataSource.addHelpContent(KieServerClientConstants.INSTANCE.remoteDataSetEditor(),
-                                  KieServerClientConstants.INSTANCE.remoteDatasourceDescription(),
+        dataSource.addHelpContent(DataSetEditorConstants.INSTANCE.remoteDataSetEditor(),
+                                  DataSetEditorConstants.INSTANCE.remoteDatasourceDescription(),
                                   Placement.BOTTOM);
 
-        dbSQL.addHelpContent(KieServerClientConstants.INSTANCE.remoteDataSetEditor(),
-                             KieServerClientConstants.INSTANCE.remoteDatasourceDescription(),
+        dbSQL.addHelpContent(DataSetEditorConstants.INSTANCE.remoteDataSetEditor(),
+                             DataSetEditorConstants.INSTANCE.remoteDatasourceDescription(),
                              Placement.BOTTOM);
     }
 

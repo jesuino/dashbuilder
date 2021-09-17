@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.dashbuilder.client.kieserver.dataset.editor.impl;
+package org.dashbuilder.client.widgets.dataset.editor.remote;
 
 import javax.enterprise.context.Dependent;
 

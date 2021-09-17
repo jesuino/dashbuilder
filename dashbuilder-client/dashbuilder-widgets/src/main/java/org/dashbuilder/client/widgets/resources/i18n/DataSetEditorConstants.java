@@ -17,9 +17,6 @@ package org.dashbuilder.client.widgets.resources.i18n;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.i18n.client.Messages;
-import com.google.gwt.uibinder.client.UiField;
-import org.dashbuilder.common.client.editor.ValueBoxEditor;
-import org.dashbuilder.common.client.editor.list.DropDownEditor;
 
 /**
  * <p>Data set editor constants.</p>
@@ -180,4 +177,18 @@ public interface DataSetEditorConstants extends Messages {
     String kafka_topic_description();
     String kafka_partition();
     String kafka_partition_description();
+    
+    String remoteDataSetEditor();
+    String remoteDataSetEditorDescription();
+    String remoteQueryTarget();
+    String remoteQueryTargetHint();
+    String remoteServerTemplateHint();
+    String remoteServerTemplate();
+    String remoteServerTemplateDescription();
+    String remoteDatasourceDescription();
+    String remoteQueryTargetDescription();
+    String remoteSourceDescription();
+    String remoteQueryPlaceHolder();
+    String remoteSqlSource();
+    String remoteSqlDatasource();
 }

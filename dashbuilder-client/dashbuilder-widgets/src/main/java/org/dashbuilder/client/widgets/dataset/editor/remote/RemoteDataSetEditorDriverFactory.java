@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-package org.dashbuilder.client.kieserver.dataset.editor;
+package org.dashbuilder.client.widgets.dataset.editor.remote;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 
+import org.dashbuilder.client.widgets.dataset.editor.driver.RemoteDataSetDefAttributesDriver;
+import org.dashbuilder.client.widgets.dataset.editor.driver.RemoteDataSetDefDriver;
+
 import com.google.gwt.core.client.GWT;
-import org.dashbuilder.client.kieserver.dataset.editor.driver.RemoteDataSetDefAttributesDriver;
-import org.dashbuilder.client.kieserver.dataset.editor.driver.RemoteDataSetDefDriver;
 
 
 @ApplicationScoped

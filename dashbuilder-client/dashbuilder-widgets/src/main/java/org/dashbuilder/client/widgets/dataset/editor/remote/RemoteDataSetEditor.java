@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dashbuilder.client.kieserver.dataset.editor.impl;
+package org.dashbuilder.client.widgets.dataset.editor.remote;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.Dependent;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 
-import org.dashbuilder.client.kieserver.dataset.editor.RemoteDataSetDefEditor;
 import org.dashbuilder.client.widgets.common.LoadingBox;
 import org.dashbuilder.client.widgets.dataset.editor.DataSetDefColumnsFilterEditor;
 import org.dashbuilder.client.widgets.dataset.editor.DataSetDefPreviewTable;
@@ -34,6 +33,7 @@ import org.dashbuilder.client.widgets.dataset.event.TabChangedEvent;
 import org.dashbuilder.common.client.editor.ValueBoxEditor;
 import org.dashbuilder.common.client.editor.list.DropDownEditor;
 import org.dashbuilder.dataset.client.DataSetClientServices;
+import org.dashbuilder.dataset.client.editor.RemoteDataSetDefEditor;
 import org.dashbuilder.kieserver.RemoteDataSetDef;
 
 /**

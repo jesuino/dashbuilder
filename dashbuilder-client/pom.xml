@@ -52,7 +52,6 @@
     <module>dashbuilder-renderers</module>
     <module>dashbuilder-navigation-client</module>
     <module>dashbuilder-cms-client</module>
-    <module>dashbuilder-kie-server-client</module>
   </modules>
 
   <dependencies>

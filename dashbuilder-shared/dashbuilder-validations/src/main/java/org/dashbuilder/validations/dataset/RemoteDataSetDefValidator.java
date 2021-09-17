@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.dashbuilder.client.kieserver.dataset.editor.validator;
+package org.dashbuilder.validations.dataset;
 
 import java.util.Set;
 

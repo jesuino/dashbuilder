@@ -14,18 +14,16 @@
  * limitations under the License.
  */
 
-package org.dashbuilder.client.kieserver.dataset.editor;
+package org.dashbuilder.client.widgets.dataset.editor.driver;
 
-import org.dashbuilder.common.client.editor.LeafAttributeEditor;
-import org.dashbuilder.common.client.editor.ValueBoxEditor;
-import org.dashbuilder.dataset.client.editor.DataSetDefEditor;
+import org.dashbuilder.dataset.client.editor.RemoteDataSetDefEditor;
 import org.dashbuilder.kieserver.RemoteDataSetDef;
 
-public interface RemoteDataSetDefEditor extends DataSetDefEditor<RemoteDataSetDef> {
+import com.google.gwt.editor.client.SimpleBeanEditorDriver;
 
-    LeafAttributeEditor<String> queryTarget();
-    LeafAttributeEditor<String> serverTemplateId();
-    public ValueBoxEditor<String> dataSource();
-    LeafAttributeEditor<String> dbSQL();
-    
+/**
+ * <p>Driver for RemoteDataSetDefEditor.</p>
+ * 
+ */
+public interface RemoteDataSetDefDriver extends SimpleBeanEditorDriver<RemoteDataSetDef, RemoteDataSetDefEditor> {
 }

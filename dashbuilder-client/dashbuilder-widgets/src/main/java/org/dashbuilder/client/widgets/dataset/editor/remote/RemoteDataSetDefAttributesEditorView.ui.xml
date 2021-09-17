@@ -5,7 +5,7 @@
              xmlns:editor="urn:import:org.dashbuilder.common.client.editor"
              xmlns:ddwn="urn:import:org.dashbuilder.common.client.editor.list">
 
-  <ui:with field="i18n" type="org.dashbuilder.client.kieserver.resources.i18n.KieServerClientConstants"/>
+  <ui:with field="i18n" type="org.dashbuilder.client.widgets.resources.i18n.DataSetEditorConstants"/>
 
   <ui:style>
     .sourceSelectorButton {
