@@ -11,11 +11,11 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>dashbuilder-webapp</artifactId>
+  <artifactId>dashbuilder-authoring</artifactId>
   <packaging>war</packaging>
 
-  <name>Dashbuilder WebApp</name>
-  <description>Dashbuilder WebApp</description>
+  <name>Dashbuilder Authoring</name>
+  <description>Dashbuilder Authoring tool</description>
 
   <properties>
     <!-- Add the absolute path for $JBOSS_HOME below to manage another instance -->
@@ -87,7 +87,7 @@
       <groupId>org.kie.soup</groupId>
       <artifactId>kie-soup-dataset-elasticsearch</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>org.dashbuilder</groupId>
       <artifactId>dashbuilder-dataset-cdi</artifactId>
@@ -465,12 +465,6 @@
     </dependency>
 
     <dependency>
-      <groupId>com.sun.xml.bind</groupId>
-      <artifactId>jaxb-impl</artifactId>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
       <groupId>org.jboss.resteasy</groupId>
       <artifactId>resteasy-cdi</artifactId>
       <scope>provided</scope>
@@ -549,7 +543,7 @@
         <configuration>
           <deploy>${project.build.directory}/gwt-symbols-deploy</deploy>
           <localWorkers>${gwt.compiler.localWorkers}</localWorkers>
-          <module>org.dashbuilder.FastCompiledDashbuilderShowcase</module>
+          <module>org.dashbuilder.FastCompiledDashbuilderAuthoring</module>
           <draftCompile>true</draftCompile>
           <logLevel>INFO</logLevel>
           <strict>true</strict>
@@ -659,7 +653,7 @@
             <fileset>
               <directory>${basedir}</directory>
               <includes>
-                <include>src/main/webapp/org.dashbuilder.DashbuilderShowcase/</include>
+                <include>src/main/webapp/org.dashbuilder.DashbuilderAuthoring/</include>
                 <include>src/main/webapp/WEB-INF/classes/</include>
                 <include>src/main/webapp/WEB-INF/deploy/</include>
                 <include>src/main/webapp/WEB-INF/lib/</include>
@@ -742,25 +736,9 @@
             <artifactId>gwt-maven-plugin</artifactId>
             <configuration>
               <!-- Build all GWT permutations and optimize them -->
-              <module>org.dashbuilder.DashbuilderShowcase</module>
+              <module>org.dashbuilder.DashbuilderAuthoring</module>
               <draftCompile>false</draftCompile>
               <force>true</force>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <!-- profile to disable GWT compilation of showcase (useful in full downstream 
-      builds) -->
-    <profile>
-      <id>no-showcase</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>gwt-maven-plugin</artifactId>
-            <configuration>
-              <skip>true</skip>
             </configuration>
           </plugin>
         </plugins>

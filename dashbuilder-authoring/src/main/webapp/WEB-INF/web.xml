@@ -47,7 +47,7 @@
   </servlet>
   <servlet-mapping>
     <servlet-name>UberfireFileDownloadServlet</servlet-name>
-    <url-pattern>/org.dashbuilder.DashbuilderShowcase/defaulteditor/download/*</url-pattern>
+    <url-pattern>/org.dashbuilder.DashbuilderAuthoring/defaulteditor/download/*</url-pattern>
   </servlet-mapping>
 
   <!-- Component assets server -->

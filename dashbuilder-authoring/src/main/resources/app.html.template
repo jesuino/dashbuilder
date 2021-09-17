@@ -19,7 +19,7 @@
 </div>
 
 <!-- The GWT js file generated at run time -->
-<script type="text/javascript" src='org.dashbuilder.DashbuilderShowcase.nocache.js'></script>
+<script type="text/javascript" src='org.dashbuilder.DashbuilderAuthoring.nocache.js'></script>
 
 </body>
 </html>
