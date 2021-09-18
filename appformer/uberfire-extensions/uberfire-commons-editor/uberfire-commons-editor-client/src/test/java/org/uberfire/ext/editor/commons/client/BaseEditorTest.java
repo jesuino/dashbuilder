@@ -30,15 +30,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.uberfire.ext.editor.commons.client.menu.MenuItems.COPY;
-import static org.uberfire.ext.editor.commons.client.menu.MenuItems.DELETE;
-import static org.uberfire.ext.editor.commons.client.menu.MenuItems.DOWNLOAD;
-import static org.uberfire.ext.editor.commons.client.menu.MenuItems.HISTORY;
-import static org.uberfire.ext.editor.commons.client.menu.MenuItems.RENAME;
 import static org.uberfire.ext.editor.commons.client.menu.MenuItems.SAVE;
-import static org.uberfire.ext.editor.commons.client.menu.MenuItems.VALIDATE;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -67,7 +60,6 @@ import org.uberfire.promise.SyncPromises;
 import org.uberfire.workbench.model.menu.MenuItem;
 import org.uberfire.workbench.model.menu.Menus;
 
-import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwtmockito.GwtMockitoTestRunner;
 
 @RunWith(GwtMockitoTestRunner.class)
@@ -117,16 +109,6 @@ public class BaseEditorTest {
         doReturn(parameterizedCommand).when(editor).onSuccess();
         doReturn(beforeSaveCommand).when(editor).getBeforeSaveAndRenameCommand();
 
-    }
-
-    @Test
-    public void testGetPathSupplier() {
-
-        final ObservablePath observablePath = mock(ObservablePath.class);
-
-        final Supplier<Path> pathSupplier = editor.getPathSupplier();
-
-        assertEquals(observablePath, pathSupplier.get());
     }
 
     @Test
@@ -240,27 +222,6 @@ public class BaseEditorTest {
     }
 
     @Test
-    public void testGetSaveValidatorWhenItIsReadOnlyAndItIsCurrentLatest() {
-
-        editor.isReadOnly = true;
-
-        final boolean success = editor.getSaveValidator().get();
-
-        verify(baseView).alertReadOnly();
-        assertFalse(success);
-    }
-
-    @Test
-    public void testGetSaveValidatorWhenItIsReadOnlyAndItIsNotCurrentLatest() {
-
-        editor.isReadOnly = true;
-
-        final boolean success = editor.getSaveValidator().get();
-
-        assertFalse(success);
-    }
-
-    @Test
     public void testOnSuccess() {
 
         final Path path = mock(Path.class);
@@ -296,42 +257,6 @@ public class BaseEditorTest {
 
         verify(editor).setOriginalHash(contentHash);
         verify(editor, never()).setMetadataOriginalHash(metadataHash);
-    }
-
-    @Test
-    public void testMakeMenuBarWhenItContainsAllMenuItems() {
-
-        final ObservablePath path = mock(ObservablePath.class);
-        final MenuItem menuItem = mock(MenuItem.class);
-        final Command onValidate = mock(Command.class);
-        final Command onSave = mock(Command.class);
-        final Command saveAndRename = mock(Command.class);
-        final Validator validator = mock(Validator.class);
-        final Validator copyValidator = mock(Validator.class);
-        final Caller copyServiceCaller = mock(Caller.class);
-        final Caller deleteServiceCaller = mock(Caller.class);
-        final MenuItem downloadMenuItemButton = mock(MenuItem.class);
-
-        when(downloadMenuItem.build(any())).thenReturn(downloadMenuItemButton);
-
-        editor.menuItems = new HashSet<>(Arrays.asList(SAVE, COPY, RENAME, DELETE, VALIDATE, HISTORY, DOWNLOAD));
-
-        doReturn(onValidate).when(editor).getValidateCommand();
-        doReturn(onSave).when(editor).getOnSave();
-        doReturn(validator).when(editor).getCopyValidator();
-        doReturn(copyValidator).when(editor).getCopyValidator();
-        doReturn(copyServiceCaller).when(editor).getCopyServiceCaller();
-        doReturn(deleteServiceCaller).when(editor).getDeleteServiceCaller();
-
-        editor.makeMenuBar();
-
-        verify(menuBuilder).addSave(onSave);
-        verify(menuBuilder).addCopy(path, copyValidator, copyServiceCaller);
-        verify(menuBuilder).addRename(saveAndRename);
-        verify(menuBuilder).addDelete(path, deleteServiceCaller);
-        verify(menuBuilder).addValidate(onValidate);
-        verify(menuBuilder).addNewTopLevelMenu(menuItem);
-        verify(menuBuilder).addNewTopLevelMenu(downloadMenuItemButton);
     }
 
     @Test
@@ -450,21 +375,6 @@ public class BaseEditorTest {
         final String actualTitle = editor.getTitleText(path);
 
         assertEquals(expectedTitle, actualTitle);
-    }
-
-    @Test
-    public void testGetTitle() {
-
-        final ObservablePath path = mock(ObservablePath.class);
-        final EditorTitle expectedTitle = mock(EditorTitle.class);
-
-        doNothing().when(editor).refreshTitle(path);
-        doReturn(expectedTitle).when(editor).getTitleWidget();
-
-        final IsWidget actualWidget = editor.getTitle();
-
-        verify(editor).refreshTitle(path);
-        assertEquals(expectedTitle, actualWidget);
     }
 
     @Test

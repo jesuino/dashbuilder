@@ -70,17 +70,6 @@ public class SavePopUpPresenterTest {
     }
 
     @Test
-    public void testShowWithAPathThatIsVersioned() throws Exception {
-        final Path versionedPath = getVersionedPath();
-
-        presenter.show(versionedPath,
-                       command);
-
-        verify(view).show();
-        verifyNoMoreInteractions(saveInProgressEvent);
-    }
-
-    @Test
     public void testShowWithAPathThatIsNotVersioned() throws Exception {
         presenter.show(path,
                        command);

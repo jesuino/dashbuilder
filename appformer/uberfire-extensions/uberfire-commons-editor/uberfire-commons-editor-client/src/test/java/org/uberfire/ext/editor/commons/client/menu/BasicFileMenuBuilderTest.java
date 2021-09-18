@@ -212,14 +212,6 @@ public class BasicFileMenuBuilderTest {
     }
 
     @Test
-    public void testAddRestoreVersion() {
-        CurrentBranch currentBranch = new DefaultCurrentBranch();
-        ArgumentCaptor<CurrentBranch> currentBranchCaptor = ArgumentCaptor.forClass(CurrentBranch.class);
-        assertEquals(currentBranch,
-                     currentBranchCaptor.getValue());
-    };
-
-    @Test
     public void menuItemsDisabledWhenLockedByDifferentUser() {
         builder.addSave(new MockSaveButton());
         builder.addRename(mock(Command.class));

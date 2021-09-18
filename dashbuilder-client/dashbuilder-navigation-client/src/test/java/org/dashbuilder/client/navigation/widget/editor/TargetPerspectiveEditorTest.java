@@ -111,7 +111,6 @@ public class TargetPerspectiveEditorTest {
 
     @Test
     public void testPerspectiveName() {
-        when(perspectivePluginManager.isRuntimePerspective("A.1")).thenReturn(true);
         assertEquals(presenter.getPerspectiveName("A.1"), "A.1");
     }
 }

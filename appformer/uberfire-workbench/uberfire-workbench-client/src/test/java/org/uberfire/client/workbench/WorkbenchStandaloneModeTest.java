@@ -93,24 +93,4 @@ public class WorkbenchStandaloneModeTest {
         verify(placeManager).goTo(new DefaultPlaceRequest("MyCustomStandalonePerspective"));
     }
 
-    @Test
-    public void handleStandaloneModeWithPathParameterAndCustomStandaloneEditorPerspectiveDefinitionOpeningEditorByDefaultTest() {
-        doNothing().when(workbench).openEditor(any());
-
-        final var parameters = new HashMap<String, List<String>>();
-        parameters.put("path", Collections.singletonList("git://main@MySpace/MyProject/src/main/java/com/myspace/myproject/myasset.java"));
-
-        final var path = mock(Path.class);
-        doReturn(false).when(workbenchCustomStandalonePerspectiveDefinitions).isUnsatisfied();
-        final var workbenchCustomStandalonePerspectiveDefinition = mock(WorkbenchCustomStandalonePerspectiveDefinition.class);
-        doReturn("MyCustomStandalonePerspective").when(workbenchCustomStandalonePerspectiveDefinition).getStandalonePerspectiveIdentifier();
-        doReturn(true).when(workbenchCustomStandalonePerspectiveDefinition).openPathAutomatically();
-        doReturn(workbenchCustomStandalonePerspectiveDefinition).when(workbenchCustomStandalonePerspectiveDefinitions).get();
-
-        workbench.handleStandaloneMode(parameters);
-
-        verify(placeManager, times(1)).goTo(any(PlaceRequest.class));
-        verify(placeManager).goTo(new DefaultPlaceRequest("MyCustomStandalonePerspective"));
-        verify(workbench).openEditor(path);
-    }
 }

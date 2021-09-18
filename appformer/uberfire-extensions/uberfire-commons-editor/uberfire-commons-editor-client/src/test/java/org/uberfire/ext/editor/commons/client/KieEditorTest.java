@@ -122,54 +122,6 @@ public class KieEditorTest {
         verify(kieEditor).save();
     }
 
-    @Test
-    public void testSaveReadOnly() throws Exception {
-
-        kieEditor.isReadOnly = true;
-
-        kieEditor.onSave();
-
-        verify(kieEditor,
-               never()).save();
-        verify(view).alertReadOnly();
-    }
-
-    @Test
-    public void testRestore() throws Exception {
-
-        kieEditor.isReadOnly = true;
-
-
-        kieEditor.onSave();
-
-        verify(kieEditor,
-               never()).save();
-    }
-
-    @Test
-    public void testConcurrentSave() throws Exception {
-        kieEditor.isReadOnly = false;
-
-
-        kieEditor.concurrentUpdateSessionInfo = new ObservablePath.OnConcurrentUpdateEvent() {
-            @Override
-            public Path getPath() {
-                return null;
-            }
-
-            @Override
-            public String getId() {
-                return null;
-            }
-
-        };
-
-        kieEditor.onSave();
-
-        verify(kieEditor,
-               never()).save();
-    }
-
     // Calling init reloads the latest version of the content. Therefore save
     // shouldn't cause a concurrent modification popup if no update happened
     // after init.
