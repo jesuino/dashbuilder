@@ -289,29 +289,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.kie.soup</groupId>
-      <artifactId>kie-soup-dataset-elasticsearch</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.mockito</groupId>
-          <artifactId>mockito-core</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.logging.log4j</groupId>
-          <artifactId>log4j-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.logging.log4j</groupId>
-          <artifactId>log4j-core</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.kie.soup</groupId>
-          <artifactId>kie-soup-commons</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
-    <dependency>
       <groupId>org.dashbuilder</groupId>
       <artifactId>dashbuilder-kie-server-api</artifactId>
       <exclusions>

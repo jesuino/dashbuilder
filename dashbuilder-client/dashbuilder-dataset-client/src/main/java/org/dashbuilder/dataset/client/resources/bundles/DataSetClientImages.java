@@ -42,12 +42,6 @@ public interface DataSetClientImages extends ClientBundle {
 
     @Source("images/sql_icon_32.png")
     DataResource sqlIcon32();
-
-    @Source("images/el_icon_160.png")
-    DataResource elIcon160();
-
-    @Source("images/el_icon_32.png")
-    DataResource elIcon32();
     
     @Source("images/excel_icon.png")
     DataResource excelIcon();

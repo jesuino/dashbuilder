@@ -40,7 +40,6 @@ public class ClientDataSetMetadataJSONMarshaller extends DataSetMetadataJSONMars
                                            DataSetProviderType.BEAN,
                                            DataSetProviderType.SQL,
                                            DataSetProviderType.CSV,
-                                           DataSetProviderType.ELASTICSEARCH,
                                            DataSetProviderType.PROMETHEUS,
                                            DataSetProviderType.KAFKA
         };

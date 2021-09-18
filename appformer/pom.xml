@@ -86,7 +86,6 @@
     <jboss.releases.repo.url>https://repository.jboss.org/nexus/service/local/staging/deploy/maven2/</jboss.releases.repo.url>
     <jboss.snapshots.repo.url>https://repository.jboss.org/nexus/content/repositories/snapshots/</jboss.snapshots.repo.url>
 
-    <version.org.elasticsearch>5.6.15</version.org.elasticsearch>
     <version.org.infinispan.protostream>4.3.5.Final</version.org.infinispan.protostream>
 
     <!-- Newer version in kie-parent causes ServiceLoader error -->
@@ -842,33 +841,6 @@
 
 
       <!-- INDEXING -->
-      <dependency>
-        <groupId>org.elasticsearch.client</groupId>
-        <artifactId>transport</artifactId>
-        <version>${version.org.elasticsearch}</version>
-        <exclusions>
-          <exclusion>
-            <artifactId>commons-logging</artifactId>
-            <groupId>commons-logging</groupId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-      <dependency>
-        <groupId>org.elasticsearch</groupId>
-        <artifactId>elasticsearch</artifactId>
-        <version>${version.org.elasticsearch}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.elasticsearch.client</groupId>
-        <artifactId>elasticsearch-rest-client</artifactId>
-        <version>${version.org.elasticsearch}</version>
-        <exclusions>
-          <exclusion>
-            <artifactId>commons-logging</artifactId>
-            <groupId>commons-logging</groupId>
-          </exclusion>
-        </exclusions>
-      </dependency>
       <dependency>
         <groupId>io.netty</groupId>
         <artifactId>netty</artifactId>

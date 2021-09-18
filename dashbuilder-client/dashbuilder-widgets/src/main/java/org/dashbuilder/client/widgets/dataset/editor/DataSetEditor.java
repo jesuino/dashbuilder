@@ -17,7 +17,6 @@ package org.dashbuilder.client.widgets.dataset.editor;
 
 import static org.dashbuilder.dataprovider.DataSetProviderType.BEAN;
 import static org.dashbuilder.dataprovider.DataSetProviderType.CSV;
-import static org.dashbuilder.dataprovider.DataSetProviderType.ELASTICSEARCH;
 import static org.dashbuilder.dataprovider.DataSetProviderType.SQL;
 import static org.kie.soup.commons.validation.PortablePreconditions.checkNotNull;
 
@@ -364,9 +363,6 @@ public abstract class DataSetEditor<T extends DataSetDef> implements IsWidget,
         }
         if (SQL.equals(type)) {
             return DataSetEditorConstants.INSTANCE.sql();
-        }
-        if (ELASTICSEARCH.equals(type)) {
-            return DataSetEditorConstants.INSTANCE.elasticSearch();
         }
         return "";
     }

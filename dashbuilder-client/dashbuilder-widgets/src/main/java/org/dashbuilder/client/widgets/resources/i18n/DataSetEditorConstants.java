@@ -38,11 +38,9 @@ public interface DataSetEditorConstants extends Messages {
     String bean();
     String csv();
     String sql();
-    String elasticSearch();
     String bean_description();
     String csv_description();
     String sql_description();
-    String elasticSearch_description();
     String next();
     String next_description();
     String updateTest_description();
