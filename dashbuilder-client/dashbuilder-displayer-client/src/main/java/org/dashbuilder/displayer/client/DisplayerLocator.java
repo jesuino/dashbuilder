@@ -62,21 +62,22 @@ public class DisplayerLocator {
         RendererLibrary renderer = rendererManager.getRendererForDisplayer(target);
         Displayer displayer = renderer.lookupDisplayer(target);
         if (displayer == null) {
-            String rendererUuid = target.getRenderer();
+            var rendererUuid = target.getRenderer();
             if (StringUtils.isBlank(rendererUuid)) throw new RuntimeException(CommonConstants.INSTANCE.displayerlocator_default_renderer_undeclared(target.getType().toString()));
             throw new RuntimeException(CommonConstants.INSTANCE.displayerlocator_unsupported_displayer_renderer(target.getType().toString(), rendererUuid));
         }
         displayer.setDisplayerSettings(target);
 
         // Check if a DataSet has been set instead of a DataSetLookup.
-        DataSetLookup dataSetLookup = target.getDataSetLookup();
+        var dataSetLookup = target.getDataSetLookup();
         if (target.getDataSet() != null) {
-            DataSet dataSet = target.getDataSet();
+            var dataSet = target.getDataSet();
+            var uuid = dataSet.getUUID();
             clientDataSetManager.registerDataSet(dataSet);
             dataSetLookup = new DataSetLookup(dataSet.getUUID());
         }
 
-        DataSetHandler handler = new DataSetHandlerImpl(clientServices, dataSetLookup);
+        var handler = new DataSetHandlerImpl(clientServices, dataSetLookup);
         displayer.setDataSetHandler(handler);
         setValueFormatters(displayer);
         return displayer;

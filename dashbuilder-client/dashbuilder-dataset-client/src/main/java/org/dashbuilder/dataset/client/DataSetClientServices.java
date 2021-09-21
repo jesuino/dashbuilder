@@ -37,7 +37,7 @@ public interface DataSetClientServices {
     /**
      * Enable/disable the ability to push remote data sets from server.
      */
-    public void setPushRemoteDataSetEnabled(boolean pushRemoteDataSetEnabled);
+    void setPushRemoteDataSetEnabled(boolean pushRemoteDataSetEnabled);
 
     /**
      * Fetch the metadata instance for the specified data set.
@@ -45,7 +45,7 @@ public interface DataSetClientServices {
      * @param uuid The UUID of the data set
      * @throws Exception It there is an unexpected error trying to execute the lookup request.
      */
-    public void fetchMetadata(final String uuid,
+    void fetchMetadata(final String uuid,
                               final DataSetMetadataCallback listener) throws Exception ;
 
     /**
@@ -53,7 +53,7 @@ public interface DataSetClientServices {
      *
      * @param uuid The UUID of the data set. Null if the metadata is not stored on client yet.
      */
-    public DataSetMetadata getMetadata(String uuid);
+    DataSetMetadata getMetadata(String uuid);
 
     /**
      * Export a data set, specified by a data set lookup request, to CSV format.
@@ -61,7 +61,7 @@ public interface DataSetClientServices {
      * @param request The data set lookup request
      * @throws Exception It there is an unexpected error during the export.
      */
-    public void exportDataSetCSV(final DataSetLookup request,
+    void exportDataSetCSV(final DataSetLookup request,
                                  final DataSetExportReadyCallback listener) throws Exception;
 
     /**
@@ -70,7 +70,7 @@ public interface DataSetClientServices {
      * @param request The data set lookup request
      * @throws Exception It there is an unexpected error during the export.
      */
-    public void exportDataSetExcel(final DataSetLookup request,
+    void exportDataSetExcel(final DataSetLookup request,
                                    final DataSetExportReadyCallback listener) throws Exception;
 
     /**
@@ -79,7 +79,7 @@ public interface DataSetClientServices {
      * @param type The provider type
      * @return A data set definition instance
      */
-    public void newDataSet(DataSetProviderType type,
+    void newDataSet(DataSetProviderType type,
                            RemoteCallback<DataSetDef> callback) throws Exception;
     /**
      * Process the specified data set lookup request for a given definition.
@@ -88,7 +88,7 @@ public interface DataSetClientServices {
      * @param request The data set lookup request
      * @throws Exception It there is an unexpected error trying to execute the lookup request.
      */
-    public void lookupDataSet(final DataSetDef def,
+    void lookupDataSet(final DataSetDef def,
                               final DataSetLookup request,
                               final DataSetReadyCallback listener) throws Exception;
 
@@ -98,23 +98,23 @@ public interface DataSetClientServices {
      * @param request The data set lookup request
      * @throws Exception It there is an unexpected error trying to execute the lookup request.
      */
-    public void lookupDataSet(final DataSetLookup request,
+    void lookupDataSet(final DataSetLookup request,
                               final DataSetReadyCallback listener) throws Exception;
 
-    public void getPublicDataSetDefs(RemoteCallback<List<DataSetDef>> callback);
+    void getPublicDataSetDefs(RemoteCallback<List<DataSetDef>> callback);
 
     /**
      * <p>Returns the download URL for a given file provided by a servlet method.</p>
      *
      * @param path The path of the file.
      */
-    public String getDownloadFileUrl(final Path path);
+    String getDownloadFileUrl(final Path path);
 
     /**
      * <p>Returns the upload URL for a given file provided by a servlet method.</p>
      *
      * @param path The path of the file.
      */
-    public String getUploadFileUrl(String path) ;
-
+    String getUploadFileUrl(String path);
+    
 }

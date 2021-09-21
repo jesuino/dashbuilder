@@ -54,7 +54,6 @@ public class DataSetResource {
     @POST
     @Path("lookup")
     public Response lookupDataSet(DataSetLookup lookup) {
-
         return checkError(() -> getDataSetDef(lookup).map(def -> Response.ok(manager.lookupDataSet(lookup)))
                                                      .orElse(Response.status(Status.NOT_FOUND))
                                                      .build());
@@ -85,7 +84,7 @@ public class DataSetResource {
     }
 
     private Response error(Exception e) {
-        String message = e.getCause() == null ? e.getMessage() : e.getCause().getMessage();
+        var message = e.getCause() == null ? e.getMessage() : e.getCause().getMessage();
         return Response.serverError().entity(message).build();
     }
 

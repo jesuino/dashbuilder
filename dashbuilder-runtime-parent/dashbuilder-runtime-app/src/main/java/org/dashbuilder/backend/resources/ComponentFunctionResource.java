@@ -50,7 +50,7 @@ public class ComponentFunctionResource {
     @Path("{name}")
     public Response invoke(@PathParam("name") String name, Map<String, Object> params) {
         try {
-            Object result = backendComponentFunctionService.callFunction(name, params);
+            var result = backendComponentFunctionService.callFunction(name, params);
             return Response.ok(result).build();
         } catch (Exception e) {
             logger.debug("Error invoking component function", e);

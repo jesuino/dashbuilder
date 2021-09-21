@@ -36,6 +36,7 @@ import org.dashbuilder.dataprovider.DataSetProviderType;
 import org.dashbuilder.dataset.DataSet;
 import org.dashbuilder.dataset.DataSetLookup;
 import org.dashbuilder.dataset.DataSetMetadata;
+import org.dashbuilder.dataset.client.ClientDataSetManager;
 import org.dashbuilder.dataset.client.DataSetClientServices;
 import org.dashbuilder.dataset.client.DataSetExportReadyCallback;
 import org.dashbuilder.dataset.client.DataSetMetadataCallback;
@@ -57,156 +58,165 @@ import elemental2.promise.IThenable;
 @ApplicationScoped
 public class RuntimeDataSetClientServices implements DataSetClientServices {
 
-	private static final String LOOKUP_ENDPOINT = "/rest/dataset/lookup";
+    private static final String LOOKUP_ENDPOINT = "/rest/dataset/lookup";
 
-	@Inject
-	ClientDataSetMetadataJSONMarshaller dataSetMetadataJsonMarshaller;
+    @Inject
+    ClientDataSetMetadataJSONMarshaller dataSetMetadataJsonMarshaller;
 
-	@Inject
-	ErrorResponseVerifier verifier;
+    @Inject
+    ErrorResponseVerifier verifier;
 
-	@Inject
-	DefaultRuntimeErrorCallback errorCallback;
+    @Inject
+    DefaultRuntimeErrorCallback errorCallback;
+    
+    @Inject
+    ClientDataSetManager clientDataSetManager;
 
-	Map<String, DataSetMetadata> metadataCache = new HashMap<>();
+    Map<String, DataSetMetadata> metadataCache = new HashMap<>();
+    
+    public RuntimeDataSetClientServices() {
+        // empty
+    }
 
-	public RuntimeDataSetClientServices() {
-		// empty
-	}
+    @Override
+    public void setPushRemoteDataSetEnabled(boolean pushRemoteDataSetEnabled) {
+        // ignored
+    }
 
-	@Override
-	public void setPushRemoteDataSetEnabled(boolean pushRemoteDataSetEnabled) {
-		// ignored
-	}
+    @Override
+    public void fetchMetadata(String uuid, DataSetMetadataCallback listener) throws Exception {
+        if (metadataCache.containsKey(uuid)) {
+            listener.callback(metadataCache.get(uuid));
+            return;
+        }
+        fetch(LOOKUP_ENDPOINT).then((Response response) -> {
+            verifier.verify(response);
+            response.text().then(responseText -> {
+                if (response.status == HttpResponseCodes.SC_INTERNAL_SERVER_ERROR) {
+                    listener.onError(new ClientRuntimeError("Not able to retrieve dataset metadata",
+                            new Exception(responseText)));
+                } else {
+                    var meta = parseMetadata(responseText);
+                    listener.callback(meta);
+                    metadataCache.put(uuid, meta);
+                }
+                return null;
+            }, error -> {
+                listener.onError(new ClientRuntimeError("Not able to read dataset metadata"));
+                return null;
+            });
 
-	@Override
-	public void fetchMetadata(String uuid, DataSetMetadataCallback listener) throws Exception {
-		if (metadataCache.containsKey(uuid)) {
-			listener.callback(metadataCache.get(uuid));
-			return;
-		}
-		fetch(LOOKUP_ENDPOINT).then((Response response) -> {
-			verifier.verify(response);
-			response.text().then(responseText -> {
-				if (response.status == HttpResponseCodes.SC_INTERNAL_SERVER_ERROR) {
-					listener.onError(new ClientRuntimeError("Not able to retrieve dataset metadata",
-							new Exception(responseText)));
-				} else {
-					DataSetMetadata meta = parseMetadata(responseText);
-					listener.callback(meta);
-					metadataCache.put(uuid, meta);
-				}
-				return null;
-			}, error -> {
-				listener.onError(new ClientRuntimeError("Not able to read dataset metadata"));
-				return null;
-			});
+            return null;
+        }).catch_(this::handleError);
+    }
 
-			return null;
-		}).catch_(this::handleError);
-	}
+    @Override
+    public DataSetMetadata getMetadata(String uuid) {
+        if (metadataCache.containsKey(uuid)) {
+            return metadataCache.get(uuid);
+        }
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "/rest/dataset/" + uuid + "/metadata", false);
+        xhr.send();
+        verifier.verify(xhr);
+        if (xhr.status == HttpResponseCodes.SC_INTERNAL_SERVER_ERROR) {
+            throw new RuntimeException("Not able to retrieve data set metadata: " + xhr.responseText);
+        }
+        var metadata = parseMetadata(xhr.responseText);
+        metadataCache.put(uuid, metadata);
+        return metadata;
+    }
 
-	@Override
-	public DataSetMetadata getMetadata(String uuid) {
-		if (metadataCache.containsKey(uuid)) {
-			return metadataCache.get(uuid);
-		}
-		XMLHttpRequest xhr = new XMLHttpRequest();
-		xhr.open("GET", "/rest/dataset/" + uuid + "/metadata", false);
-		xhr.send();
-		verifier.verify(xhr);
-		if (xhr.status == HttpResponseCodes.SC_INTERNAL_SERVER_ERROR) {
-			throw new RuntimeException("Not able to retrieve data set metadata: " + xhr.responseText);
-		}
-		DataSetMetadata metadata = parseMetadata(xhr.responseText);
-		metadataCache.put(uuid, metadata);
-		return metadata;
-	}
+    @Override
+    public void lookupDataSet(DataSetDef def, DataSetLookup lookup, DataSetReadyCallback listener) throws Exception {
+        var uuid = lookup.getDataSetUUID();
+        var clientDataSet = clientDataSetManager.getDataSet(uuid);
+        if (clientDataSet != null) {
+            listener.callback(clientDataSet);
+            return;
+        }
+        var request = RequestInit.create();
+        var headers = new Headers();
+        request.setMethod("POST");
+        request.setBody(toJson(lookup));
+        headers.append(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+        request.setHeaders(headers);
+        fetch(LOOKUP_ENDPOINT, request).then((Response response) -> {
+            verifier.verify(response);
+            response.text().then(responseText -> {
+                if (response.status == HttpResponseCodes.SC_INTERNAL_SERVER_ERROR) {
+                    listener.onError(new ClientRuntimeError("Not able to retrieve data set: " + getName(lookup, def),
+                            new Exception(responseText)));
+                } else if (response.status == HttpResponseCodes.SC_NOT_FOUND) {
+                    listener.onError(new ClientRuntimeError("Data Set not found: " + getName(lookup, def),
+                            new Exception(responseText)));
+                } else {
+                    var dataSet = parseDataSet(responseText);
+                    listener.callback(dataSet);
+                }
+                return null;
+            }, error -> {
+                listener.onError(new ClientRuntimeError("Error reading data set content: " + error));
+                return null;
+            });
+            return null;
+        }).catch_(this::handleError);
+    }
 
-	@Override
-	public void lookupDataSet(DataSetDef def, DataSetLookup lookup, DataSetReadyCallback listener) throws Exception {
-		var request = RequestInit.create();
-		request.setMethod("POST");
-		request.setBody(toJson(lookup));
-		Headers headers = new Headers();
-		headers.append(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-		request.setHeaders(headers);
-		fetch(LOOKUP_ENDPOINT, request).then((Response response) -> {
-			verifier.verify(response);
-			response.text().then(responseText -> {
-				if (response.status == HttpResponseCodes.SC_INTERNAL_SERVER_ERROR) {
-					listener.onError(new ClientRuntimeError("Not able to retrieve data set: " + getName(lookup, def),
-							new Exception(responseText)));
-				} else if (response.status == HttpResponseCodes.SC_NOT_FOUND) {
-					listener.onError(new ClientRuntimeError("Data Set not found: " + getName(lookup, def),
-							new Exception(responseText)));
-				} else {
-					DataSet dataSet = parseDataSet(responseText);
-					listener.callback(dataSet);
-				}
-				return null;
-			}, error -> {
-				listener.onError(new ClientRuntimeError("Error reading data set content: " + error));
-				return null;
-			});
-			return null;
-		}).catch_(this::handleError);
-	}
+    @Override
+    public void lookupDataSet(DataSetLookup request, DataSetReadyCallback listener) throws Exception {
+        this.lookupDataSet(null, request, listener);
+    }
 
-	@Override
-	public void lookupDataSet(DataSetLookup request, DataSetReadyCallback listener) throws Exception {
-		this.lookupDataSet(null, request, listener);
-	}
+    @Override
+    public void exportDataSetCSV(DataSetLookup request, DataSetExportReadyCallback listener) throws Exception {
+        throw new IllegalArgumentException("Export to CSV not supported");
+    }
 
-	@Override
-	public void exportDataSetCSV(DataSetLookup request, DataSetExportReadyCallback listener) throws Exception {
-		throw new IllegalArgumentException("Export to CSV not supported");
-	}
+    @Override
+    public void exportDataSetExcel(DataSetLookup request, DataSetExportReadyCallback listener) throws Exception {
+        throw new IllegalArgumentException("Export to excel not supported");
+    }
 
-	@Override
-	public void exportDataSetExcel(DataSetLookup request, DataSetExportReadyCallback listener) throws Exception {
-		throw new IllegalArgumentException("Export to excel not supported");
-	}
+    @Override
+    public void newDataSet(DataSetProviderType type, RemoteCallback<DataSetDef> callback) throws Exception {
+        throw new IllegalArgumentException("New data sets are not supported");
+    }
 
-	@Override
-	public void newDataSet(DataSetProviderType type, RemoteCallback<DataSetDef> callback) throws Exception {
-		throw new IllegalArgumentException("New data sets are not supported");
-	}
+    @Override
+    public void getPublicDataSetDefs(RemoteCallback<List<DataSetDef>> callback) {
+        // ignored in runtime
+    }
 
-	@Override
-	public void getPublicDataSetDefs(RemoteCallback<List<DataSetDef>> callback) {
-		// ignored in runtime
-	}
+    @Override
+    public String getDownloadFileUrl(Path path) {
+        throw new IllegalArgumentException("Download URL not supported");
+    }
 
-	@Override
-	public String getDownloadFileUrl(Path path) {
-		throw new IllegalArgumentException("Download URL not supported");
-	}
+    @Override
+    public String getUploadFileUrl(String path) {
+        throw new IllegalArgumentException("Uploaded not supported");
+    }
 
-	@Override
-	public String getUploadFileUrl(String path) {
-		throw new IllegalArgumentException("Uploaded not supported");
-	}
+    private DataSetMetadata parseMetadata(String jsonContent) {
+        return dataSetMetadataJsonMarshaller.fromJSON(jsonContent);
+    }
 
-	private DataSetMetadata parseMetadata(String jsonContent) {
-		return dataSetMetadataJsonMarshaller.fromJSON(jsonContent);
-	}
+    private String toJson(DataSetLookup lookup) {
+        return DataSetLookupJSONMarshaller.get().toJson(lookup).toJson();
+    }
 
-	private String toJson(DataSetLookup lookup) {
-		return DataSetLookupJSONMarshaller.get().toJson(lookup).toJson();
-	}
+    private DataSet parseDataSet(String dataSetJson) {
+        return DataSetJSONMarshaller.get().fromJson(dataSetJson);
+    }
 
-	private DataSet parseDataSet(String dataSetJson) {
-		return DataSetJSONMarshaller.get().fromJson(dataSetJson);
-	}
+    private IThenable<?> handleError(Object e) {
+        errorCallback.error(DefaultErrorType.OTHER, "Unexpected error retrieving data set metadata:" + e);
+        return null;
+    }
 
-	private IThenable<?> handleError(Object e) {
-		errorCallback.error(DefaultErrorType.OTHER, "Unexpected error retrieving data set metadata:" + e);
-		return null;
-	}
-
-	private String getName(DataSetLookup lookup, DataSetDef def) {
-		return def == null ? lookup.getDataSetUUID() : (def.getName() == null ? def.getUUID() : def.getName());
-	}
+    private String getName(DataSetLookup lookup, DataSetDef def) {
+        return def == null ? lookup.getDataSetUUID() : (def.getName() == null ? def.getUUID() : def.getName());
+    }
 
 }

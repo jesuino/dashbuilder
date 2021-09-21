@@ -58,11 +58,10 @@ public class DataSetServicesProducer {
     @ApplicationScoped
     public SQLDataSetProvider produceSQLDataSetProvider(StaticDataSetProvider staticDataSetProvider,
                                                         RuntimeSQLDataSourceLocator sqlDataSourceLocator) {
-
-        SQLDataSetProvider provider = new SQLDataSetProvider(staticDataSetProvider,
-                                                             DataSetCore.get().getIntervalBuilderLocator(),
-                                                             DataSetCore.get().getIntervalBuilderDynamicDate(),
-                                                             DataSetCore.get().getSharedDataSetOpEngine());
+        var provider = new SQLDataSetProvider(staticDataSetProvider,
+                DataSetCore.get().getIntervalBuilderLocator(),
+                DataSetCore.get().getIntervalBuilderDynamicDate(),
+                DataSetCore.get().getSharedDataSetOpEngine());
 
         provider.setDataSourceLocator(sqlDataSourceLocator);
         return provider;
@@ -83,7 +82,7 @@ public class DataSetServicesProducer {
     @Produces
     @ApplicationScoped
     public DataSetDefRegistry produceDataSetDefRegistry(RuntimeDataSetProviderRegistry providerRegistry) {
-        Scheduler scheduler = new Scheduler();
+        var scheduler = new Scheduler();
         scheduler.init(10);
         return new DataSetDefRegistryImpl(providerRegistry, scheduler);
     }
@@ -94,10 +93,10 @@ public class DataSetServicesProducer {
                                                 DataSetDefRegistry dataSetDefRegistry,
                                                 RuntimeDataSetProviderRegistry dataSetProviderRegistry) {
         return new DataSetManagerImpl(dataSetDefRegistry,
-                                      dataSetProviderRegistry,
-                                      staticDataSetProvider,
-                                      true,
-                                      1024);
+                dataSetProviderRegistry,
+                staticDataSetProvider,
+                true,
+                1024);
     }
 
     @Produces

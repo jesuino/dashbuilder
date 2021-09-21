@@ -52,10 +52,10 @@ public class RuntimeBeanDataSetProvider extends BeanDataSetProvider {
 
     @PostConstruct
     protected void init() {
-        Set<Bean<?>> beans = beanManager.getBeans(DataSetGenerator.class);
-        for (Bean<?> bean : beans) {
-            CreationalContext<?> ctx = beanManager.createCreationalContext(bean);
-            DataSetGenerator generator = (DataSetGenerator) beanManager.getReference(bean, DataSetGenerator.class, ctx);
+        var beans = beanManager.getBeans(DataSetGenerator.class);
+        for (var bean : beans) {
+            var ctx = beanManager.createCreationalContext(bean);
+            var generator = (DataSetGenerator) beanManager.getReference(bean, DataSetGenerator.class, ctx);
             generatorMap.put(bean.getBeanClass().getName(), generator);
         }
     }
@@ -69,8 +69,8 @@ public class RuntimeBeanDataSetProvider extends BeanDataSetProvider {
     }
 
     private DataSetGenerator loadDataSetGenerator(BeanDataSetDef beanDef) {
-        String beanName = beanDef.getGeneratorClass();
-        DataSetGenerator generator = generatorMap.get(beanName);
+        var beanName = beanDef.getGeneratorClass();
+        var generator = generatorMap.get(beanName);
         if (generator != null) {
             return generator;
         } else {

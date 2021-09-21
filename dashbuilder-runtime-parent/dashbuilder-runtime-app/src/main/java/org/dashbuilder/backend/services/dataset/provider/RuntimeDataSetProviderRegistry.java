@@ -15,8 +15,6 @@
  */
 package org.dashbuilder.backend.services.dataset.provider;
 
-import java.util.Iterator;
-
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Instance;
@@ -55,9 +53,9 @@ public class RuntimeDataSetProviderRegistry extends DataSetProviderRegistryImpl 
         DataSetCore.get().setDataSetDefJSONMarshaller(dataSetDefJSONMarshaller);
 
         // Register all the providers available in classpath
-        Iterator<DataSetProvider> it = providerSet.iterator();
+        var it = providerSet.iterator();
         while (it.hasNext()) {
-            DataSetProvider provider = it.next();
+            var provider = it.next();
             super.registerDataProvider(provider);
         }
 
