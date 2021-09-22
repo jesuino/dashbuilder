@@ -33,11 +33,9 @@ import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.jboss.errai.ioc.client.api.EnabledByProperty;
 import org.jboss.errai.ioc.client.container.SyncBeanDef;
 import org.jboss.errai.ioc.client.container.SyncBeanManager;
 import org.uberfire.backend.vfs.Path;
-import org.uberfire.client.util.GWTEditorNativeRegister;
 import org.uberfire.client.workbench.events.NewPerspectiveEvent;
 import org.uberfire.client.workbench.events.NewWorkbenchScreenEvent;
 import org.uberfire.commons.data.Pair;
@@ -46,7 +44,6 @@ import org.uberfire.commons.data.Pair;
  *
  */
 @ApplicationScoped
-@EnabledByProperty(value = "uberfire.plugin.mode.active", negated = true)
 public class ActivityBeansCache {
 
     /**
@@ -65,7 +62,6 @@ public class ActivityBeansCache {
     private Event<NewPerspectiveEvent> newPerspectiveEventEvent;
     private Event<NewWorkbenchScreenEvent> newWorkbenchScreenEventEvent;
     protected ResourceTypeManagerCache resourceTypeManagerCache;
-    private GWTEditorNativeRegister gwtEditorNativeRegister;
 
     public ActivityBeansCache() {
     }
@@ -74,35 +70,25 @@ public class ActivityBeansCache {
     public ActivityBeansCache(SyncBeanManager iocManager,
                               Event<NewPerspectiveEvent> newPerspectiveEventEvent,
                               Event<NewWorkbenchScreenEvent> newWorkbenchScreenEventEvent,
-                              ResourceTypeManagerCache resourceTypeManagerCache,
-                              GWTEditorNativeRegister gwtEditorNativeRegister) {
+                              ResourceTypeManagerCache resourceTypeManagerCache) {
         this.iocManager = iocManager;
         this.newPerspectiveEventEvent = newPerspectiveEventEvent;
         this.newWorkbenchScreenEventEvent = newWorkbenchScreenEventEvent;
         this.resourceTypeManagerCache = resourceTypeManagerCache;
-        this.gwtEditorNativeRegister = gwtEditorNativeRegister;
     }
 
     @PostConstruct
     void init() {
-        registerGwtEditorProvider();
+        final var availableActivities = getAvailableActivities();
 
-        final Collection<SyncBeanDef<Activity>> availableActivities = getAvailableActivities();
+        for (final var activityBean : availableActivities) {
 
-        for (final SyncBeanDef<Activity> activityBean : availableActivities) {
-
-            final String id = activityBean.getName();
-
+            final var id = activityBean.getName();
             validateUniqueness(id);
-
             activitiesById.put(id, activityBean);
-
             if (isSplashScreen(activityBean.getQualifiers())) {
                 splashActivities.add((SplashScreenActivity) activityBean.getInstance());
             } else {
-                if (isClientEditor(activityBean.getQualifiers())) {
-                    registerGwtClientBean(id, activityBean);
-                }
                 final Pair<Integer, List<String>> metaInfo = generateActivityMetaInfo(activityBean);
                 if (metaInfo != null) {
                     addResourceActivity(activityBean,
@@ -120,27 +106,18 @@ public class ActivityBeansCache {
         activitiesById.put(id,
                            activityBean);
     }
-
-    void registerGwtEditorProvider() {
-        gwtEditorNativeRegister.nativeRegisterGwtEditorProvider();
-    }
-
-    void registerGwtClientBean(final String id, final SyncBeanDef<Activity> activityBean) {
-        gwtEditorNativeRegister.nativeRegisterGwtClientBean(id, activityBean);
-    }
-
     private void addResourceActivity(SyncBeanDef<Activity> activityBean,
                                      Pair<Integer, List<String>> metaInfo) {
-        ActivityAndMetaInfo activityAndMetaInfo = new ActivityAndMetaInfo(iocManager,
-                                                                          activityBean,
-                                                                          metaInfo.getK1(),
-                                                                          metaInfo.getK2());
+        var activityAndMetaInfo = new ActivityAndMetaInfo(iocManager,
+                                                          activityBean,
+                                                          metaInfo.getK1(),
+                                                          metaInfo.getK2());
         this.resourceTypeManagerCache.addResourceActivity(activityAndMetaInfo);
     }
 
     Collection<SyncBeanDef<Activity>> getAvailableActivities() {
-        Collection<SyncBeanDef<Activity>> activeBeans = new ArrayList<SyncBeanDef<Activity>>();
-        for (SyncBeanDef<Activity> bean : iocManager.lookupBeans(Activity.class)) {
+        var activeBeans = new ArrayList<SyncBeanDef<Activity>>();
+        for (var bean : iocManager.lookupBeans(Activity.class)) {
             if (bean.isActivated()) {
                 activeBeans.add(bean);
             }
@@ -149,17 +126,8 @@ public class ActivityBeansCache {
     }
 
     private boolean isSplashScreen(final Set<Annotation> qualifiers) {
-        for (final Annotation qualifier : qualifiers) {
+        for (final var qualifier : qualifiers) {
             if (qualifier instanceof IsSplashScreen) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean isClientEditor(final Set<Annotation> qualifiers) {
-        for (final Annotation qualifier : qualifiers) {
-            if (qualifier instanceof IsClientEditor) {
                 return true;
             }
         }
@@ -174,10 +142,8 @@ public class ActivityBeansCache {
      * Used for runtime plugins.
      */
     public void addNewScreenActivity(final SyncBeanDef<Activity> activityBean) {
-        final String id = activityBean.getName();
-
+        final var id = activityBean.getName();
         validateUniqueness(id);
-
         activitiesById.put(id,
                            activityBean);
         newWorkbenchScreenEventEvent.fire(new NewWorkbenchScreenEvent(id));

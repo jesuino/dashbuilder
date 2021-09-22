@@ -16,6 +16,9 @@
 
 package org.uberfire.client.mvp;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,11 +30,8 @@ import java.util.Set;
 import javax.enterprise.context.ApplicationScoped;
 
 import org.jboss.errai.ioc.client.container.SyncBeanDef;
-import org.uberfire.client.annotations.WorkbenchClientEditor;
 import org.uberfire.commons.data.Pair;
 import org.uberfire.workbench.category.Undefined;
-
-import static org.mockito.Mockito.*;
 
 
 public class ActivityBeansCacheUnitTestWrapper extends ActivityBeansCache {
@@ -40,11 +40,6 @@ public class ActivityBeansCacheUnitTestWrapper extends ActivityBeansCache {
     @IsSplashScreen
     @ApplicationScoped
     private static class SplashScreenForTesting {
-
-    }
-
-    @IsClientEditor
-    private static class ClientEditor {
 
     }
 
@@ -62,30 +57,12 @@ public class ActivityBeansCacheUnitTestWrapper extends ActivityBeansCache {
         availableActivities.add(mockDef);
     }
 
-    @Override
-    void registerGwtEditorProvider() {
-        //do nothing
-    }
-
-    @Override
-    void registerGwtClientBean(String id, SyncBeanDef<Activity> activityBean) {
-        //do nothing
-    }
-
     public void mockSplashScreenBehaviour() {
         Set<Annotation> annotations = new HashSet<Annotation>(Arrays.asList(SplashScreenForTesting.class.getAnnotations()));
         when(mockDef.getQualifiers()).thenReturn(annotations);
 
         activity = mock(AbstractSplashScreenActivity.class);
         when(mockDef.getInstance()).thenReturn(activity);
-    }
-
-    public void mockClientEditorBehaviour() {
-        Set<Annotation> annotations = new HashSet<Annotation>(Arrays.asList(ClientEditor.class.getAnnotations()));
-        when(mockDef.getQualifiers()).thenReturn(annotations);
-
-        activity = mock(WorkbenchClientEditorActivity.class);
-        when(activity.getIdentifier()).thenReturn(idMock);
     }
 
     public void createActivitiesAndMetaInfo(int priority1,

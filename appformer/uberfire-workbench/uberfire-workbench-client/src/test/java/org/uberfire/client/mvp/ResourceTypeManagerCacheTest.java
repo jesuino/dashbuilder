@@ -17,10 +17,13 @@
 
 package org.uberfire.client.mvp;
 
-import java.util.ArrayList;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 
 import javax.enterprise.event.Event;
 
@@ -31,20 +34,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.uberfire.backend.vfs.Path;
-import org.uberfire.client.util.GWTEditorNativeRegister;
 import org.uberfire.client.workbench.events.NewPerspectiveEvent;
 import org.uberfire.client.workbench.events.NewWorkbenchScreenEvent;
 import org.uberfire.client.workbench.type.ClientResourceType;
 import org.uberfire.workbench.category.Category;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ResourceTypeManagerCacheTest {
@@ -71,9 +67,6 @@ public class ResourceTypeManagerCacheTest {
 
     private ResourceTypeManagerCache resourceTypeManagerCache;
 
-    @Mock
-    private GWTEditorNativeRegister gwtEditorNativeRegister;
-
     private ActivityBeansCache activityBeansCache;
 
     private EditorDef defaultEditorDef;
@@ -91,8 +84,7 @@ public class ResourceTypeManagerCacheTest {
         activityBeansCache = new ActivityBeansCache(iocManager,
                                                     newPerspectiveEventEvent,
                                                     newWorkbenchScreenEvent,
-                                                    resourceTypeManagerCache,
-                                                    gwtEditorNativeRegister);
+                                                    resourceTypeManagerCache);
 
         modelEditorDef = registerResourceType(MODEL_CATEGORY, ModelEditorActivity.class, MODEL_TYPE, "1");
         formEditorDef = registerResourceType(FORM_CATEGORY, FormEditorActivity.class, FORM_TYPE, "2");

@@ -16,6 +16,15 @@
 
 package org.uberfire.client.mvp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -31,14 +40,10 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.uberfire.client.util.GWTEditorNativeRegister;
 import org.uberfire.client.workbench.events.NewPerspectiveEvent;
 import org.uberfire.client.workbench.events.NewWorkbenchScreenEvent;
 import org.uberfire.client.workbench.type.ClientResourceType;
 import org.uberfire.workbench.category.Category;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ActivityBeansCacheTest {
@@ -57,9 +62,6 @@ public class ActivityBeansCacheTest {
 
     private ResourceTypeManagerCache resourceTypeManagerCache;
 
-    @Mock
-    private GWTEditorNativeRegister gwtEditorNativeRegister;
-
     @InjectMocks
     ActivityBeansCache cache;
 
@@ -70,8 +72,7 @@ public class ActivityBeansCacheTest {
         cache = spy(new ActivityBeansCache(iocManager,
                                        newPerspectiveEventEvent,
                                        newWorkbenchScreenEvent,
-                                       resourceTypeManagerCache,
-                                       gwtEditorNativeRegister));
+                                       resourceTypeManagerCache));
     }
 
     @Test
@@ -84,20 +85,6 @@ public class ActivityBeansCacheTest {
         assertEquals(cache.getMockDef(),
                      cache.getActivity(cache.getIdMock()));
         assertTrue(cache.getSplashScreens().contains(cache.getActivity()));
-    }
-
-    @Test
-    public void initShouldCacheClientEditors() throws Exception {
-        ActivityBeansCacheUnitTestWrapper cache = spy(new ActivityBeansCacheUnitTestWrapper());
-        cache.mockClientEditorBehaviour();
-
-        cache.init();
-
-        verify(cache).registerGwtClientBean(eq("mockDef1"), any());
-
-        assertEquals(cache.getMockDef(),
-                     cache.getActivity(cache.getIdMock()));
-        assertTrue(cache.getActivitiesById().contains(cache.getActivity().getIdentifier()));
     }
 
     @Test
@@ -131,9 +118,7 @@ public class ActivityBeansCacheTest {
 
     @Test
     public void initShouldOrderActivityByPriority() throws Exception {
-
-        ActivityBeansCacheUnitTestWrapper cache = new ActivityBeansCacheUnitTestWrapper();
-
+        var cache = new ActivityBeansCacheUnitTestWrapper();
         int priorityActivityOne = Integer.MIN_VALUE;
         int priorityActivityTwo = Integer.MAX_VALUE;
 

@@ -16,21 +16,26 @@
 
 package org.uberfire.client.mvp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+
 import javax.enterprise.event.Event;
 
-import com.google.gwtmockito.GwtMockitoTestRunner;
 import org.jboss.errai.ioc.client.container.SyncBeanDef;
 import org.jboss.errai.ioc.client.container.SyncBeanManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.uberfire.client.util.GWTEditorNativeRegister;
 import org.uberfire.client.workbench.annotations.AssociatedResources;
 import org.uberfire.client.workbench.events.NewPerspectiveEvent;
 import org.uberfire.client.workbench.events.NewWorkbenchScreenEvent;
@@ -39,8 +44,7 @@ import org.uberfire.client.workbench.type.DotResourceType;
 import org.uberfire.mocks.EventSourceMock;
 import org.uberfire.workbench.category.Others;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import com.google.gwtmockito.GwtMockitoTestRunner;
 
 /**
  * Tests that {@link ActivityBeansCache} respects the active flag controlled by the {@code @ActivatedBy} annotation.
@@ -81,9 +85,6 @@ public class ActivityBeansCacheActivatedByTest {
 
     private ResourceTypeManagerCache resourceTypeManagerCache;
 
-    @Mock
-    private GWTEditorNativeRegister gwtEditorNativeRegister;
-
     private ActiveSplashScreenActivity activeSplashScreenActivity;
     private SyncBeanDef activeSplashScreenActivityBean;
     private SyncBeanDef nonActiveSplashScreenActivityBean;
@@ -105,8 +106,7 @@ public class ActivityBeansCacheActivatedByTest {
         activityBeansCache = new ActivityBeansCache(iocManager,
                                                     newPerspectiveEventEvent,
                                                     newWorkbenchScreenEventEvent,
-                                                    resourceTypeManagerCache,
-                                                    gwtEditorNativeRegister);
+                                                    resourceTypeManagerCache);
 
         activeSplashScreenActivity = mock(ActiveSplashScreenActivity.class);
         activeSplashScreenActivityBean = mockSplashScreenActivityBean(ActiveSplashScreenActivity.class,
