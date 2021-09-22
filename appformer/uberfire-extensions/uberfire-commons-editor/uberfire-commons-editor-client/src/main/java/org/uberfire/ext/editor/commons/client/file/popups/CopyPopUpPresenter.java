@@ -43,10 +43,8 @@ public class CopyPopUpPresenter {
     private View view;
 
     @Inject
-    public CopyPopUpPresenter(@Customizable View view,
-                              ToggleCommentPresenter toggleCommentPresenter) {
+    public CopyPopUpPresenter(@Customizable View view) {
         this.view = view;
-        this.toggleCommentPresenter = toggleCommentPresenter;
     }
 
     @PostConstruct

@@ -129,7 +129,11 @@ public class PerspectiveServicesImpl implements PerspectiveServices {
     public Path copy(Path path, String newName, String comment) {
         var perspectiveOp = projectStorageServices.getPerspective(path.getFileName());
         var newPath = PathFactory.newPath(newName, newName);
-        perspectiveOp.ifPresent(p -> projectStorageServices.savePerspective(newName, p));
+        perspectiveOp.ifPresent(p -> {
+            var template = getLayoutTemplate(path);
+            template.setName(newName);
+            projectStorageServices.savePerspective(newName, layoutServices.toJson(template));
+        });
         pluginAddedEvent.fire(new PluginAdded(new Plugin(newName, PluginType.PERSPECTIVE_LAYOUT, newPath), null));
         return newPath;
     }
