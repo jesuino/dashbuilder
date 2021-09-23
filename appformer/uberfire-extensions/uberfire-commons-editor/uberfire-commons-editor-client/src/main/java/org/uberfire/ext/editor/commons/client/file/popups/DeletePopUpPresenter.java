@@ -16,18 +16,17 @@
 
 package org.uberfire.ext.editor.commons.client.file.popups;
 
-import org.uberfire.client.mvp.UberElement;
-import org.uberfire.ext.editor.commons.client.file.popups.commons.ToggleCommentPresenter;
-import org.uberfire.ext.editor.commons.client.validation.ValidationErrorReason;
-import org.uberfire.ext.editor.commons.client.validation.Validator;
-import org.uberfire.ext.editor.commons.client.validation.ValidatorWithReasonCallback;
-import org.uberfire.mvp.ParameterizedCommand;
+import static org.kie.soup.commons.validation.PortablePreconditions.checkNotNull;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import static org.kie.soup.commons.validation.PortablePreconditions.checkNotNull;
+import org.uberfire.client.mvp.UberElement;
+import org.uberfire.ext.editor.commons.client.validation.ValidationErrorReason;
+import org.uberfire.ext.editor.commons.client.validation.Validator;
+import org.uberfire.ext.editor.commons.client.validation.ValidatorWithReasonCallback;
+import org.uberfire.mvp.ParameterizedCommand;
 
 @ApplicationScoped
 public class DeletePopUpPresenter {
@@ -35,14 +34,11 @@ public class DeletePopUpPresenter {
     private Validator validator;
     private ParameterizedCommand<String> command;
     private View view;
-    private ToggleCommentPresenter toggleCommentPresenter;
     private boolean opened = false;
 
     @Inject
-    public DeletePopUpPresenter(View view,
-                                ToggleCommentPresenter toggleCommentPresenter) {
+    public DeletePopUpPresenter(View view) {
         this.view = view;
-        this.toggleCommentPresenter = toggleCommentPresenter;
     }
 
     @PostConstruct
@@ -84,8 +80,7 @@ public class DeletePopUpPresenter {
         checkNotNull("command",
                      command);
 
-        validator.validate(null,
-                           validatorCallback(toggleCommentPresenter.getComment()));
+        validator.validate(null, validatorCallback(""));
     }
 
     private ValidatorWithReasonCallback validatorCallback(final String comment) {
@@ -119,14 +114,6 @@ public class DeletePopUpPresenter {
 
     public void setPrompt(final String prompt) {
         view.setPrompt(prompt);
-    }
-
-    public void setCommentIsHidden(final boolean hidden) {
-        toggleCommentPresenter.setHidden(hidden);
-    }
-
-    public ToggleCommentPresenter getToggleCommentPresenter() {
-        return toggleCommentPresenter;
     }
 
     public interface View extends UberElement<DeletePopUpPresenter> {

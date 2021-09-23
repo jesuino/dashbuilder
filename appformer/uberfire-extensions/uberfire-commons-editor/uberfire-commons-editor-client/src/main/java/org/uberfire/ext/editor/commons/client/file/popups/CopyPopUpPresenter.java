@@ -16,6 +16,8 @@
 
 package org.uberfire.ext.editor.commons.client.file.popups;
 
+import static org.kie.soup.commons.validation.PortablePreconditions.checkNotNull;
+
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
@@ -25,13 +27,10 @@ import org.uberfire.client.mvp.UberElement;
 import org.uberfire.ext.editor.commons.client.file.CommandWithFileNameAndCommitMessage;
 import org.uberfire.ext.editor.commons.client.file.Customizable;
 import org.uberfire.ext.editor.commons.client.file.FileNameAndCommitMessage;
-import org.uberfire.ext.editor.commons.client.file.popups.commons.ToggleCommentPresenter;
 import org.uberfire.ext.editor.commons.client.validation.ValidationErrorReason;
 import org.uberfire.ext.editor.commons.client.validation.Validator;
 import org.uberfire.ext.editor.commons.client.validation.ValidatorCallback;
 import org.uberfire.ext.editor.commons.client.validation.ValidatorWithReasonCallback;
-
-import static org.kie.soup.commons.validation.PortablePreconditions.checkNotNull;
 
 @Dependent
 public class CopyPopUpPresenter {
@@ -39,7 +38,6 @@ public class CopyPopUpPresenter {
     private Path path;
     private Validator validator;
     private CommandWithFileNameAndCommitMessage command;
-    private ToggleCommentPresenter toggleCommentPresenter;
     private View view;
 
     @Inject
@@ -84,12 +82,8 @@ public class CopyPopUpPresenter {
         final String newFileName = newName + extension(path.getFileName());
 
         validator.validate(newFileName,
-                           validatorCallback(toggleCommentPresenter.getComment(),
+                           validatorCallback("",
                                              newName));
-    }
-
-    public ToggleCommentPresenter getToggleCommentPresenter() {
-        return toggleCommentPresenter;
     }
 
     private String extension(final String fileName) {

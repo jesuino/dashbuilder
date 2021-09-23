@@ -16,6 +16,12 @@
 
 package org.uberfire.ext.editor.commons.client.file.popups;
 
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,12 +29,8 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.uberfire.backend.vfs.Path;
 import org.uberfire.ext.editor.commons.client.file.CommandWithFileNameAndCommitMessage;
-import org.uberfire.ext.editor.commons.client.file.popups.commons.ToggleCommentPresenter;
 import org.uberfire.ext.editor.commons.client.validation.Validator;
 import org.uberfire.ext.editor.commons.client.validation.ValidatorWithReasonCallback;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CopyPopUpPresenterTest {
@@ -42,8 +44,6 @@ public class CopyPopUpPresenterTest {
     @Mock
     CommandWithFileNameAndCommitMessage command;
 
-    @Mock
-    ToggleCommentPresenter toggleCommentPresenter;
 
     @Mock
     CopyPopUpPresenter.View view;
@@ -52,8 +52,7 @@ public class CopyPopUpPresenterTest {
 
     @Before
     public void init() throws Exception {
-        presenter = new CopyPopUpPresenter(view,
-                                           toggleCommentPresenter);
+        presenter = new CopyPopUpPresenter(view);
     }
 
     @Test
@@ -117,8 +116,6 @@ public class CopyPopUpPresenterTest {
     @Test
     public void testCopy() throws Exception {
         when(path.getFileName()).thenReturn("file.plugin");
-        when(toggleCommentPresenter.getComment()).thenReturn("comment");
-
         presenter.show(path,
                        validator,
                        command);

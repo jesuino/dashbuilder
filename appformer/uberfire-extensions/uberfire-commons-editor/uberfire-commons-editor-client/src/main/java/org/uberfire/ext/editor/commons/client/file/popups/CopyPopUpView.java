@@ -30,7 +30,6 @@ import org.jboss.errai.ui.shared.api.annotations.DataField;
 import org.jboss.errai.ui.shared.api.annotations.Templated;
 import org.uberfire.annotations.FallbackImplementation;
 import org.uberfire.backend.vfs.Path;
-import org.uberfire.ext.editor.commons.client.file.popups.commons.ToggleCommentPresenter;
 import org.uberfire.ext.editor.commons.client.resources.i18n.Constants;
 import org.uberfire.ext.widgets.common.client.common.popups.BaseModal;
 import org.uberfire.ext.widgets.common.client.common.popups.footers.GenericModalFooter;
@@ -69,7 +68,6 @@ public class CopyPopUpView implements CopyPopUpPresenter.View,
     public void init(CopyPopUpPresenter presenter) {
         this.presenter = presenter;
         modalSetup();
-        setupComment();
     }
 
     @Override
@@ -157,11 +155,4 @@ public class CopyPopUpView implements CopyPopUpPresenter.View,
         return () -> presenter.cancel();
     }
 
-    private void setupComment() {
-        body.appendChild(toggleCommentPresenter().getViewElement());
-    }
-
-    private ToggleCommentPresenter toggleCommentPresenter() {
-        return presenter.getToggleCommentPresenter();
-    }
 }

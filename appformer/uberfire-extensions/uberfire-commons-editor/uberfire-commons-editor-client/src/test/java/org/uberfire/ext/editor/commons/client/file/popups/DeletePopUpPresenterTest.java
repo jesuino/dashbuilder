@@ -16,19 +16,19 @@
 
 package org.uberfire.ext.editor.commons.client.file.popups;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.uberfire.ext.editor.commons.client.file.popups.commons.ToggleCommentPresenter;
 import org.uberfire.ext.editor.commons.client.validation.ValidationErrorReason;
 import org.uberfire.ext.editor.commons.client.validation.Validator;
 import org.uberfire.ext.editor.commons.client.validation.ValidatorWithReasonCallback;
 import org.uberfire.mvp.ParameterizedCommand;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DeletePopUpPresenterTest {
@@ -42,15 +42,11 @@ public class DeletePopUpPresenterTest {
     @Mock
     ParameterizedCommand<String> command;
 
-    @Mock
-    ToggleCommentPresenter toggleCommentPresenter;
-
     DeletePopUpPresenter presenter;
 
     @Before
     public void init() throws Exception {
-        presenter = new DeletePopUpPresenter(view,
-                                             toggleCommentPresenter);
+        presenter = new DeletePopUpPresenter(view);
     }
 
     @Test
@@ -73,19 +69,17 @@ public class DeletePopUpPresenterTest {
 
     @Test
     public void testDeleteWithCommand() throws Exception {
-        when(toggleCommentPresenter.getComment()).thenReturn("test");
 
         presenter.show((value, callback) -> callback.onSuccess(),
                        command);
         presenter.delete();
 
-        verify(command).execute("test");
+        verify(command).execute("");
         verify(view).hide();
     }
 
     @Test
     public void testDeleteWithValidationFailed() throws Exception {
-        when(toggleCommentPresenter.getComment()).thenReturn("test");
 
         presenter.show((value, callback) -> callback.onFailure(),
                        command);
@@ -98,8 +92,6 @@ public class DeletePopUpPresenterTest {
 
     @Test
     public void testNotAllowedDelete() throws Exception {
-        when(toggleCommentPresenter.getComment()).thenReturn("test");
-
         presenter.show((value, callback) -> ((ValidatorWithReasonCallback) callback).onFailure(ValidationErrorReason.NOT_ALLOWED.name()),
                        command);
         presenter.delete();
@@ -131,15 +123,4 @@ public class DeletePopUpPresenterTest {
         verify(view).setPrompt(prompt);
     }
 
-    @Test
-    public void testHiddenComment() throws Exception {
-        presenter.setCommentIsHidden(true);
-        verify(toggleCommentPresenter).setHidden(true);
-    }
-
-    @Test
-    public void testVisibleComment() throws Exception {
-        presenter.setCommentIsHidden(false);
-        verify(toggleCommentPresenter).setHidden(false);
-    }
 }

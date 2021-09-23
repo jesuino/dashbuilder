@@ -29,7 +29,6 @@ import org.jboss.errai.ui.client.local.api.IsElement;
 import org.jboss.errai.ui.client.local.spi.TranslationService;
 import org.jboss.errai.ui.shared.api.annotations.DataField;
 import org.jboss.errai.ui.shared.api.annotations.Templated;
-import org.uberfire.ext.editor.commons.client.file.popups.commons.ToggleCommentPresenter;
 import org.uberfire.ext.editor.commons.client.resources.i18n.Constants;
 import org.uberfire.ext.widgets.common.client.common.popups.BaseModal;
 import org.uberfire.ext.widgets.common.client.common.popups.footers.GenericModalFooter;
@@ -67,7 +66,6 @@ public class DeletePopUpView implements DeletePopUpPresenter.View,
     public void init(DeletePopUpPresenter presenter) {
         this.presenter = presenter;
         modalSetup();
-        setupComment();
     }
 
     @Override
@@ -126,14 +124,6 @@ public class DeletePopUpView implements DeletePopUpPresenter.View,
 
     private Command cancelCommand() {
         return () -> presenter.cancel();
-    }
-
-    private void setupComment() {
-        body.appendChild(toggleCommentPresenter().getViewElement());
-    }
-
-    private ToggleCommentPresenter toggleCommentPresenter() {
-        return presenter.getToggleCommentPresenter();
     }
 
     private void showError(final String errorMessage) {

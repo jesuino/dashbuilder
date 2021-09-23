@@ -16,6 +16,8 @@
 
 package org.uberfire.ext.editor.commons.client.file.popups;
 
+import static org.kie.soup.commons.validation.PortablePreconditions.checkNotNull;
+
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
@@ -24,12 +26,9 @@ import org.uberfire.backend.vfs.Path;
 import org.uberfire.client.mvp.UberElemental;
 import org.uberfire.ext.editor.commons.client.file.CommandWithFileNameAndCommitMessage;
 import org.uberfire.ext.editor.commons.client.file.FileNameAndCommitMessage;
-import org.uberfire.ext.editor.commons.client.file.popups.commons.ToggleCommentPresenter;
 import org.uberfire.ext.editor.commons.client.validation.ValidationErrorReason;
 import org.uberfire.ext.editor.commons.client.validation.Validator;
 import org.uberfire.ext.editor.commons.client.validation.ValidatorWithReasonCallback;
-
-import static org.kie.soup.commons.validation.PortablePreconditions.checkNotNull;
 
 @Dependent
 public class RenamePopUpPresenter {
@@ -42,8 +41,6 @@ public class RenamePopUpPresenter {
     };
 
     private final View view;
-
-    private final ToggleCommentPresenter toggleCommentPresenter;
 
     private Path path;
 
@@ -58,10 +55,8 @@ public class RenamePopUpPresenter {
     private boolean isDirty;
 
     @Inject
-    public RenamePopUpPresenter(final View view,
-                                final ToggleCommentPresenter toggleCommentPresenter) {
+    public RenamePopUpPresenter(final View view) {
         this.view = view;
-        this.toggleCommentPresenter = toggleCommentPresenter;
     }
 
     public void show(final Path path,
@@ -133,8 +128,7 @@ public class RenamePopUpPresenter {
     public void rename(final String newName) {
 
         final String fileName = newFileName(newName);
-        final String comment = toggleCommentPresenter.getComment();
-        final ValidatorWithReasonCallback callback = validatorCallback(comment, newName, renameCommand);
+        final ValidatorWithReasonCallback callback = validatorCallback("", newName, renameCommand);
 
         validator.validate(fileName, callback);
     }
@@ -142,8 +136,7 @@ public class RenamePopUpPresenter {
     public void saveAndRename(final String newName) {
 
         final String fileName = newFileName(newName);
-        final String comment = toggleCommentPresenter.getComment();
-        final ValidatorWithReasonCallback callback = validatorCallback(comment, newName, saveAndRenameCommand);
+        final ValidatorWithReasonCallback callback = validatorCallback("", newName, saveAndRenameCommand);
 
         validator.validate(fileName, callback);
     }
@@ -196,10 +189,6 @@ public class RenamePopUpPresenter {
 
     public View getView() {
         return view;
-    }
-
-    public ToggleCommentPresenter getToggleCommentPresenter() {
-        return toggleCommentPresenter;
     }
 
     private Validator defaultValidator() {
