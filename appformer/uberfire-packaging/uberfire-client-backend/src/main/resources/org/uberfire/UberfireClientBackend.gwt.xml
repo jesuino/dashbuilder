@@ -21,7 +21,6 @@
 
   <inherits name='com.google.gwt.user.User'/>
 
-  <inherits name="org.uberfire.UberfireBackend"/>
   <inherits name="org.uberfire.UberfireWorkbenchBackend"/>
 
 </module>

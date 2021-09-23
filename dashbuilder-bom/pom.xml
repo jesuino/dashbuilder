@@ -193,19 +193,6 @@
         <classifier>sources</classifier>
       </dependency>
 
-      <!-- Backend -->
-      <dependency>
-        <groupId>org.uberfire</groupId>
-        <artifactId>uberfire-backend-api</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.uberfire</groupId>
-        <artifactId>uberfire-backend-api</artifactId>
-        <version>${project.version}</version>
-        <classifier>sources</classifier>
-      </dependency>
-
       <!-- Workbench -->
       <dependency>
         <groupId>org.uberfire</groupId>
