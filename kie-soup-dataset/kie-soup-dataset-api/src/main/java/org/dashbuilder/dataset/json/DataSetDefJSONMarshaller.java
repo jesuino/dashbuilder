@@ -107,12 +107,12 @@ public class DataSetDefJSONMarshaller {
         return dataSetDef;
     }
 
-    public DataSetProviderType readProviderType(JsonObject json) throws Exception {
+    public DataSetProviderType<?> readProviderType(JsonObject json) throws Exception {
         String provider = json.getString(PROVIDER);
         if (isBlank(provider)) {
             throw new IllegalArgumentException("Missing 'provider' property");
         }
-        DataSetProviderType type = dataSetProviderRegistry.getProviderTypeByName(provider);
+        var type = dataSetProviderRegistry.getProviderTypeByName(provider);
         if (type == null) {
             throw new IllegalArgumentException("Provider not supported: " + provider);
         }

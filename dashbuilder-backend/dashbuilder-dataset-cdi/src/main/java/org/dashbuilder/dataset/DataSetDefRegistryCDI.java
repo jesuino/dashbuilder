@@ -81,8 +81,7 @@ public class DataSetDefRegistryCDI extends DataSetDefRegistryImpl implements CSV
                                  Event<DataSetDefRemovedEvent> dataSetDefRemovedEvent,
                                  Event<DataSetStaleEvent> dataSetStaleEvent) {
 
-        super(dataSetProviderRegistry,
-              scheduler);
+        super(dataSetProviderRegistry, scheduler);
         this.uuidGenerator = DataSetCore.get().getUuidGenerator();
         this.maxCsvLength = maxCsvLength;
         this.projectStorageServices = projectStorageServices;
@@ -95,6 +94,8 @@ public class DataSetDefRegistryCDI extends DataSetDefRegistryImpl implements CSV
 
     @PostConstruct
     public void init() {
+        var dataSetDefJSONMarshaller = new DataSetDefJSONMarshaller(dataSetProviderRegistry);
+        DataSetCore.get().setDataSetDefJSONMarshaller(dataSetDefJSONMarshaller);
         registerDataSetDefs();
     }
 

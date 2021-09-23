@@ -15,14 +15,10 @@
  */
 package org.dashbuilder.dataprovider;
 
-import java.util.Iterator;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
-
-import org.dashbuilder.DataSetCore;
-import org.dashbuilder.dataset.json.DataSetDefJSONMarshaller;
 
 @ApplicationScoped
 public class DataSetProviderRegistryCDI extends DataSetProviderRegistryImpl {
@@ -48,16 +44,13 @@ public class DataSetProviderRegistryCDI extends DataSetProviderRegistryImpl {
     @Inject
     private Instance<DataSetProvider> providerSet;
 
-    protected DataSetDefJSONMarshaller dataSetDefJSONMarshaller = new DataSetDefJSONMarshaller(this);
 
     @PostConstruct
     public void init() {
-        DataSetCore.get().setDataSetDefJSONMarshaller(dataSetDefJSONMarshaller);
-
         // Register all the providers available in classpath
-        Iterator<DataSetProvider> it = providerSet.iterator();
+        var it = providerSet.iterator();
         while (it.hasNext()) {
-            DataSetProvider provider = it.next();
+            var provider = it.next();
             super.registerDataProvider(provider);
         }
 
@@ -94,7 +87,4 @@ public class DataSetProviderRegistryCDI extends DataSetProviderRegistryImpl {
         return kafkaDataSetProviderCDI;
     }
 
-    public DataSetDefJSONMarshaller getDataSetDefJSONMarshaller() {
-        return dataSetDefJSONMarshaller;
-    }
 }

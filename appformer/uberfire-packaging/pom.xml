@@ -33,7 +33,6 @@
     <module>uberfire-client</module>
     <module>uberfire-client-backend</module>
     <module>uberfire-client-all</module>
-    <module>uberfire-server-all</module>
     <module>uberfire-all</module>
   </modules>
 </project>

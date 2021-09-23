@@ -90,7 +90,6 @@ public class BootstrapTest extends BaseCDITest {
 
         assertNotNull(providerRegistry);
         assertNotNull(jsonMarshaller);
-        assertEquals(jsonMarshaller, providerRegistryCDI.getDataSetDefJSONMarshaller());
     }
 
     @Test
