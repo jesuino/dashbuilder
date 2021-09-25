@@ -74,7 +74,7 @@ public class EmptyScreen {
     }
 
     private void reload() {
-        String currentPlace = perspectiveManager.getCurrentPerspective().getIdentifier();
+        var currentPlace = perspectiveManager.getCurrentPerspective().getIdentifier();
         if (EmptyPerspective.ID.equals(currentPlace)) {
             router.listDashboards();
         }

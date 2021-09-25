@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Red Hat, Inc. and/or its affiliates.
+ * Copyright 2021 Red Hat, Inc. and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ import java.util.zip.ZipOutputStream;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
+import javax.enterprise.event.ObservesAsync;
 import javax.inject.Inject;
 
 import org.apache.commons.io.FileUtils;
@@ -50,6 +51,7 @@ import org.dashbuilder.navigation.event.NavTreeChangedEvent;
 import org.dashbuilder.navigation.json.NavTreeJSONMarshaller;
 import org.dashbuilder.navigation.storage.NavTreeStorage;
 import org.dashbuilder.project.storage.ProjectStorageServices;
+import org.dashbuilder.project.storage.event.ProjectUpdated;
 import org.jboss.errai.bus.server.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +67,9 @@ public class DataTransferServicesImpl implements DataTransferServices {
 
     static final String VERSION_FILE = "VERSION";
     static final String EXPORT_ZIP = "export.zip";
+
+    static final String AUTO_EXPORT_FILE_PROP = "dashbuilder.export.location";
+
     public static final String VERSION = "1.0.0";
     private static final String DASHBOARD_LATEST = "dashboard-latest";
     private static final Logger LOGGER = LoggerFactory.getLogger(DataTransferServicesImpl.class);
@@ -79,6 +84,7 @@ public class DataTransferServicesImpl implements DataTransferServices {
     private String dashbuilderLocation;
     private String exportDir;
     private ProjectStorageServices projectStorageServices;
+    private Optional<Path> autoExportPath = Optional.empty();
 
     public DataTransferServicesImpl() {
         // empty constructor
@@ -107,6 +113,8 @@ public class DataTransferServicesImpl implements DataTransferServices {
     public void init() {
         dashbuilderLocation = System.getProperty(DB_STANDALONE_LOCATION_PROP);
         exportDir = System.getProperty(EXPORT_LOCATION_PROP);
+        autoExportPath = Optional.ofNullable(System.getProperty(AUTO_EXPORT_FILE_PROP)).filter(p -> !p.isBlank()).map(Paths::get);
+        autoExportPath.ifPresent(this::doAutoExport);
     }
 
     @Override
@@ -127,8 +135,8 @@ public class DataTransferServicesImpl implements DataTransferServices {
         }
 
         zipFiles(projectStorageServices.listAllDataSetsContent(),
-                readmeFilter.or(datasetsFilter),
-                p -> ProjectStorageServices.getDatasetsExportPath()
+                 readmeFilter.or(datasetsFilter),
+                 p -> ProjectStorageServices.getDatasetsExportPath()
                         .resolve(p.getFileName())
                         .toString(),
                 zos);
@@ -300,6 +308,21 @@ public class DataTransferServicesImpl implements DataTransferServices {
         }
         FileUtils.deleteDirectory(destDir);
         return imported;
+    }
+    
+    void autoExport(@ObservesAsync ProjectUpdated projectUpdated) {
+        autoExportPath.ifPresent(this::doAutoExport);
+    }
+
+    private void doAutoExport(Path autoExportPath) {
+        try {
+            LOGGER.info("Auto exporting project.");
+            var path = doExport(DataTransferExportModel.exportAll());
+            Files.move(Paths.get(path), autoExportPath, StandardCopyOption.REPLACE_EXISTING);
+        } catch (Exception e) {
+            LOGGER.error("Error during auto export: " + e.getMessage());
+            LOGGER.debug("Error exporting project", e);
+        }
     }
 
     private boolean isComponent(ZipEntry zipEntry) {

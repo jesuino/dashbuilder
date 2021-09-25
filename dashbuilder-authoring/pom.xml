@@ -555,7 +555,6 @@
             <compileSourcesArtifact>org.dashbuilder:dashbuilder-navigation-client</compileSourcesArtifact>
             <compileSourcesArtifact>org.dashbuilder:dashbuilder-cms-client</compileSourcesArtifact>
             <compileSourcesArtifact>org.dashbuilder:dashbuilder-kie-server-api</compileSourcesArtifact>
-            <compileSourcesArtifact>org.dashbuilder:dashbuilder-kie-server-client</compileSourcesArtifact>
 
             <!-- Uberfire ext -->
             <compileSourcesArtifact>org.uberfire:uberfire-runtime-plugins-api</compileSourcesArtifact>
@@ -583,8 +582,9 @@
             <compileSourcesArtifact>org.uberfire:uberfire-workbench-client-views-patternfly</compileSourcesArtifact>
 
           </compileSourcesArtifacts>
-          <runTarget>dashbuilder.html</runTarget>
-          <extraJvmArgs>-Xmx4024m -XX:CompileThreshold=7000
+          <runTarget>index.html</runTarget>
+	  <extraJvmArgs>-Xmx4024m -XX:CompileThreshold=7000
+            -Ddashbuilder.export.location=dashboard.zip
             -Derrai.jboss.home=${errai.jboss.home}
             -Derrai.jboss.debug.port=8787
             -Ddashbuilder.components.enable=true

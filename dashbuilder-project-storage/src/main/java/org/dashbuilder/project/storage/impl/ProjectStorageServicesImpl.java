@@ -17,6 +17,7 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 
 import org.dashbuilder.project.storage.ProjectStorageServices;
+import org.dashbuilder.project.storage.annotations.ProjectUpdate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,8 +26,8 @@ public class ProjectStorageServicesImpl implements ProjectStorageServices {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProjectStorageServicesImpl.class);
 
-    static final String DEFAULT_DB_BASE_PATH = "/tmp/dashbuilder/project";
-    static final String DB_BASE_PATH = "org.dashbuilder.project";
+    static final String DEFAULT_DB_BASE_PATH = "./.dashbuilder";
+    static final String DB_BASE_PATH = "org.dashbuilder.project.location";
 
     private Path parent;
     private Path perspectivesPath;
@@ -55,6 +56,7 @@ public class ProjectStorageServicesImpl implements ProjectStorageServices {
     }
 
     @Override
+    @ProjectUpdate
     public void saveDataSet(String name, String content) {
         if (!name.endsWith(DATASET_EXT)) {
             name = name + DATASET_EXT;
@@ -69,6 +71,7 @@ public class ProjectStorageServicesImpl implements ProjectStorageServices {
     }
 
     @Override
+    @ProjectUpdate    
     public void removeDataSet(String name) {
         var path = dataSetsPath.resolve(name + DATASET_EXT);
         try {
@@ -109,6 +112,7 @@ public class ProjectStorageServicesImpl implements ProjectStorageServices {
     }
 
     @Override
+    @ProjectUpdate    
     public void savePerspective(String name, String content) {
         if (content != null) { 
             var dir = perspectivesPath.resolve(name);
@@ -154,6 +158,7 @@ public class ProjectStorageServicesImpl implements ProjectStorageServices {
     }
 
     @Override
+    @ProjectUpdate    
     public void removePerspective(String name) {
         if (name != null && !name.isBlank()) {
             var dir = perspectivesPath.resolve(name);
@@ -204,6 +209,7 @@ public class ProjectStorageServicesImpl implements ProjectStorageServices {
     }
 
     @Override
+    @ProjectUpdate    
     public void saveNavigation(String content) {
         var navigationFilePath = navigationPath.resolve(NAV_TREE_FILE_NAME);
         try {

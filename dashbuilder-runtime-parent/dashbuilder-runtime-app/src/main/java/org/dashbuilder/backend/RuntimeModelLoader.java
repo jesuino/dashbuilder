@@ -16,24 +16,23 @@
 
 package org.dashbuilder.backend;
 
+import static org.dashbuilder.backend.RuntimeOptions.DASHBOARD_EXTENSION;
+
 import java.io.File;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.stream.Stream;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
-import io.quarkus.runtime.StartupEvent;
 import org.dashbuilder.shared.model.DashbuilderRuntimeMode;
 import org.dashbuilder.shared.service.ExternalImportService;
 import org.dashbuilder.shared.service.RuntimeModelRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.dashbuilder.backend.RuntimeOptions.DASHBOARD_EXTENSION;
+import io.quarkus.runtime.StartupEvent;
 
 /**
  * Responsible for runtime model files loading.
@@ -63,8 +62,11 @@ public class RuntimeModelLoader {
     }
 
     protected void registerStaticModel(String importFile) {
+        var relativeLocation = Paths.get(System.getProperty("user.dir"), importFile); 
         if (new File(importFile).exists()) {
             runtimeModelRegistry.registerFile(importFile);
+        } else if (Files.exists(relativeLocation)) { 
+            runtimeModelRegistry.registerFile(relativeLocation.toString());
         } else if (runtimeOptions.isAllowExternal()) {
             externalImportService.registerExternalImport(importFile);
         } else {
@@ -82,7 +84,7 @@ public class RuntimeModelLoader {
 
     protected void loadAvailableModels() {
         logger.info("Registering existing models");
-        try (Stream<Path> walk = Files.walk(Paths.get(runtimeOptions.getImportsBaseDir()), 1)) {
+        try (var walk = Files.walk(Paths.get(runtimeOptions.getImportsBaseDir()), 1)) {
             walk.filter(p -> p.toFile().isFile() && p.toString().toLowerCase().endsWith(DASHBOARD_EXTENSION))
                 .map(Object::toString)
                 .forEach(p -> {

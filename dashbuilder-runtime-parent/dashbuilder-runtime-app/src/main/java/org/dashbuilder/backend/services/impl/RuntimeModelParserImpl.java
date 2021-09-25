@@ -45,7 +45,6 @@ import org.dashbuilder.backend.navigation.RuntimeNavigationBuilder;
 import org.dashbuilder.displayer.DisplayerType;
 import org.dashbuilder.displayer.json.DisplayerSettingsJSONMarshaller;
 import org.dashbuilder.external.service.ComponentLoader;
-import org.dashbuilder.navigation.NavTree;
 import org.dashbuilder.shared.event.NewDataSetContentEvent;
 import org.dashbuilder.shared.marshalling.LayoutTemplateJSONMarshaller;
 import org.dashbuilder.shared.model.DataSetContent;

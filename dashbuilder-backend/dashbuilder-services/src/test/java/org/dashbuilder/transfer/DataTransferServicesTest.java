@@ -71,7 +71,7 @@ import org.uberfire.rpc.SessionInfo;
 @RunWith(MockitoJUnitRunner.Silent.class)
 public class DataTransferServicesTest {
 
-    private DataTransferServices dataTransferServices;
+    private DataTransferServicesImpl dataTransferServices;
 
     @Mock
     private DataSetDefRegistryCDI dataSetDefRegistryCDI;
@@ -122,7 +122,7 @@ public class DataTransferServicesTest {
         projectStorageServices.clear();
         FileUtils.deleteQuietly(componentsDir.toFile());
     }
-
+    
     @Test
     public void testDoExportEmptyFileSystems() throws Exception {
         dataTransferServices.doExport(DataTransferExportModel.exportAll());
@@ -151,7 +151,7 @@ public class DataTransferServicesTest {
         var exportPath = dataTransferServices.doExport(DataTransferExportModel.exportAll());
         var zis = new ZipInputStream(new FileInputStream(exportPath));
 
-        var expected = List.of(
+        String[] expected = {
                 getDatasetsExportPath().resolve("dataset1.csv").toString(),
                 getDatasetsExportPath().resolve("dataset1.dset").toString(),
                 getDatasetsExportPath().getParent().resolve(README).toString(),
@@ -162,9 +162,9 @@ public class DataTransferServicesTest {
 
                 getNavigationExportPath().resolve(NAV_TREE_FILE_NAME).toString(),
                 getNavigationExportPath().getParent().resolve(README).toString(),
-                DataTransferServicesImpl.VERSION_FILE);
-
-        assertArrayEquals(expected.toArray(), getFiles(zis).toArray());
+                DataTransferServicesImpl.VERSION_FILE
+        };
+        assertArraysEquals(expected, getFiles(zis).toArray());
     }
 
     @Test
@@ -183,7 +183,7 @@ public class DataTransferServicesTest {
 
         var exportPath = dataTransferServices.doExport(model);
         var zis = new ZipInputStream(new FileInputStream(exportPath));
-        var expected = List.of(
+        String[] expected = {
                 getDatasetsExportPath().resolve("dataset2.dset").toString(),
                 getDatasetsExportPath().getParent().resolve(README).toString(),
 
@@ -193,9 +193,9 @@ public class DataTransferServicesTest {
 
                 getNavigationExportPath().resolve(NAV_TREE_FILE_NAME).toString(),
                 getNavigationExportPath().getParent().resolve(README).toString(),
-                DataTransferServicesImpl.VERSION_FILE);
-
-        assertArrayEquals(expected.toArray(), getFiles(zis).toArray());
+                DataTransferServicesImpl.VERSION_FILE
+                };
+        assertArraysEquals(expected, getFiles(zis).toArray());
     }
 
     @Test
@@ -216,7 +216,7 @@ public class DataTransferServicesTest {
         var exportPath = dataTransferServices.doExport(model);
 
         var zis = new ZipInputStream(new FileInputStream(exportPath));
-        var expected = List.of(
+        String[] expected = {
                 getDatasetsExportPath().resolve("dataset.csv").toString(),
                 getDatasetsExportPath().resolve("dataset.dset").toString(),
                 getDatasetsExportPath().getParent().resolve(README).toString(),
@@ -227,9 +227,9 @@ public class DataTransferServicesTest {
 
                 getNavigationExportPath().resolve(NAV_TREE_FILE_NAME).toString(),
                 getNavigationExportPath().getParent().resolve(README).toString(),
-                DataTransferServicesImpl.VERSION_FILE);
-
-        assertArrayEquals(expected.toArray(), getFiles(zis).toArray());
+                DataTransferServicesImpl.VERSION_FILE};
+        var files = getFiles(zis).toArray();
+        assertArraysEquals(expected, files);
     }
 
     @Test
@@ -249,7 +249,7 @@ public class DataTransferServicesTest {
         var exportPath = dataTransferServices.doExport(model);
 
         var zis = new ZipInputStream(new FileInputStream(exportPath));
-        var expected = List.of(
+        String[] expected = {
                 getDatasetsExportPath().resolve("dataset.csv").toString(),
                 getDatasetsExportPath().resolve("dataset.dset").toString(),
                 getDatasetsExportPath().getParent().resolve(README).toString(),
@@ -259,9 +259,9 @@ public class DataTransferServicesTest {
                 getPerspectivesExportPath().resolve(README).toString(),
 
                 getNavigationExportPath().getParent().resolve(README).toString(),
-                DataTransferServicesImpl.VERSION_FILE);
-
-        assertArrayEquals(expected.toArray(), getFiles(zis).toArray());
+                DataTransferServicesImpl.VERSION_FILE
+        };
+        assertArraysEquals(expected, getFiles(zis).toArray());
     }
 
     @Test
@@ -301,11 +301,7 @@ public class DataTransferServicesTest {
                                   COMPONENTS_EXPORT_PATH + "c1/manifest.json",
                                   DataTransferServicesImpl.VERSION_FILE
         };
-        var actualList = getFiles(zis).toArray();
-        Arrays.sort(expectedFiles);
-        Arrays.sort(actualList);
-        assertArrayEquals(expectedFiles, actualList);
-
+        assertArraysEquals(expectedFiles, getFiles(zis).toArray());
     }
 
     @Test
@@ -334,7 +330,7 @@ public class DataTransferServicesTest {
 
         };
         var actual = getFiles(zis).toArray();
-        assertArrayEquals(expected, actual);
+        assertArraysEquals(expected, actual);
     }
 
     @Test
@@ -356,8 +352,7 @@ public class DataTransferServicesTest {
                              DataTransferServicesImpl.VERSION_FILE
         };
 
-        var actual = getFiles(zis).toArray();
-        assertArrayEquals(expected, actual);
+        assertArraysEquals(expected, getFiles(zis).toArray());
     }
 
     @Test
@@ -437,10 +432,7 @@ public class DataTransferServicesTest {
                                             "c2/manifest.json"};
         var allComponentsFiles = getComponentsFiles(componentsDir).toArray();
 
-        Arrays.sort(expectedComponentsFiles);
-        Arrays.sort(allComponentsFiles);
-
-        assertArrayEquals(expectedComponentsFiles, allComponentsFiles);
+        assertArraysEquals(expectedComponentsFiles, allComponentsFiles);
 
         verify(dataSetDefRegisteredEvent, times(4)).fire(any());
         verify(pluginAddedEvent, times(4)).fire(any());
@@ -527,8 +519,15 @@ public class DataTransferServicesTest {
         return files;
     }
 
-    public ExternalComponent component(String id) {
+    private ExternalComponent component(String id) {
         return new ExternalComponent(id, id, "", false, Collections.emptyList());
     }
+    
+    private void assertArraysEquals(String[] expected, Object[] actual) {
+        Arrays.sort(expected);
+        Arrays.sort(actual);
+        assertArrayEquals(expected, actual);
+    }
+
 
 }

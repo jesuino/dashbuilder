@@ -131,7 +131,7 @@ public class RuntimeModelWatcherServiceManager {
         var modelPathOp = runtimeOptions.modelPath(modelId);
         if (modelPathOp.isPresent()) {
             try {
-                String modelPath = modelPathOp.get();
+                var modelPath = modelPathOp.get();
                 registry.registerFile(modelPath);
             } catch (Exception e) {
                 logger.error("Error registering model {}", e.getMessage());

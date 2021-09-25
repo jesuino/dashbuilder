@@ -25,6 +25,7 @@
       <module name="javax.validation.api" />
       <module name="org.jboss.logging" />
       <module name="org.jboss.logmanager" />
+      <module name="org.apache.xalan" />
       <module name="org.slf4j" />
     </dependencies>
   </deployment>
