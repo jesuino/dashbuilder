@@ -40,7 +40,7 @@ public class LayoutTemplateJSONMarshallerTest {
     String LT_JSON = "{\n" +
                      "  \"style\": \"PAGE\",\n" +
                      "  \"name\": \"test Layout Template\",\n" +
-                     "  \"properties\": {\n" +
+                     "  \"layoutProperties\": {\n" +
                      "    \"LTPROPERTY\": \"LTVALUE\"\n" +
                      "  },\n" +
                      "  \"rows\": [\n" +

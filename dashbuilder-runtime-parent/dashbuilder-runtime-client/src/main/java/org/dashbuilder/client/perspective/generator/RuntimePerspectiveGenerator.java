@@ -52,13 +52,11 @@ public class RuntimePerspectiveGenerator {
 
     public PerspectiveEditorActivity generatePerspective(LayoutTemplate layoutTemplate) {
         if (isANewPerspective(layoutTemplate)) {
-            PerspectiveEditorScreenActivity screen = createNewScreen(layoutTemplate);
-            return createNewPerspective(layoutTemplate,
-                    screen);
+            var screen = createNewScreen(layoutTemplate);
+            return createNewPerspective(layoutTemplate, screen);
         } else {
-            PerspectiveEditorScreenActivity screen = updateScreen(layoutTemplate);
-            return updatePerspective(layoutTemplate,
-                    screen);
+            var screen = updateScreen(layoutTemplate);
+            return updatePerspective(layoutTemplate, screen);
         }
     }
 
@@ -67,19 +65,17 @@ public class RuntimePerspectiveGenerator {
                 layoutGenerator);
 
         final Set<Annotation> qualifiers = new HashSet<>(Arrays.asList(DEFAULT_QUALIFIERS));
-        final SingletonBeanDefinition<PerspectiveEditorScreenActivity, PerspectiveEditorScreenActivity> beanDef =
-                new SingletonBeanDefinition<>(
-                        activity,
-                        PerspectiveEditorScreenActivity.class,
-                        qualifiers,
-                        activity.getIdentifier(),
-                        true,
-                        WorkbenchScreenActivity.class,
-                        Activity.class);
+        final var beanDef = new SingletonBeanDefinition<>(
+                activity,
+                PerspectiveEditorScreenActivity.class,
+                qualifiers,
+                activity.getIdentifier(),
+                true,
+                WorkbenchScreenActivity.class,
+                Activity.class);
 
         beanManager.registerBean(beanDef);
-        beanManager.registerBeanTypeAlias(beanDef,
-                Activity.class);
+        beanManager.registerBeanTypeAlias(beanDef, Activity.class);
         beanManager.registerBeanTypeAlias(beanDef,
                 WorkbenchScreenActivity.class);
         String activityID = activity.getIdentifier();
@@ -90,10 +86,9 @@ public class RuntimePerspectiveGenerator {
 
     private PerspectiveEditorActivity createNewPerspective(LayoutTemplate perspective,
                                                            PerspectiveEditorScreenActivity screen) {
-        final PerspectiveEditorActivity activity = new RuntimePerspectiveEditorActivity(perspective,
-                screen);
+        final var activity = new RuntimePerspectiveEditorActivity(perspective, screen);
 
-        String perspectiveName = perspective.getName();
+        var perspectiveName = perspective.getName();
         beanManager.registerBean(new SingletonBeanDefinition<>(activity,
                 PerspectiveActivity.class,
                 new HashSet<>(Arrays.asList(DEFAULT_QUALIFIERS)),
@@ -105,17 +100,17 @@ public class RuntimePerspectiveGenerator {
     }
 
     private PerspectiveEditorScreenActivity updateScreen(LayoutTemplate layoutTemplate) {
-        final String perspectiveScreenId = PerspectiveEditorScreenActivity.buildScreenId(layoutTemplate.getName());
-        final SyncBeanDef<Activity> activity = activityBeansCache.getActivity(perspectiveScreenId);
-        final PerspectiveEditorScreenActivity screenActivity = (PerspectiveEditorScreenActivity) activity.getInstance();
+        final var perspectiveScreenId = PerspectiveEditorScreenActivity.buildScreenId(layoutTemplate.getName());
+        final var activity = activityBeansCache.getActivity(perspectiveScreenId);
+        final var screenActivity = (PerspectiveEditorScreenActivity) activity.getInstance();
         screenActivity.setLayoutTemplate(layoutTemplate);
         return screenActivity;
     }
 
     private PerspectiveEditorActivity updatePerspective(LayoutTemplate layoutTemplate,
                                                         PerspectiveEditorScreenActivity screen) {
-        final SyncBeanDef<Activity> activity = activityBeansCache.getActivity(layoutTemplate.getName());
-        final PerspectiveEditorActivity perspectiveEditorActivity = (PerspectiveEditorActivity) activity.getInstance();
+        final var activity = activityBeansCache.getActivity(layoutTemplate.getName());
+        final var perspectiveEditorActivity = (PerspectiveEditorActivity) activity.getInstance();
         perspectiveEditorActivity.update(layoutTemplate,
                 screen);
         return perspectiveEditorActivity;

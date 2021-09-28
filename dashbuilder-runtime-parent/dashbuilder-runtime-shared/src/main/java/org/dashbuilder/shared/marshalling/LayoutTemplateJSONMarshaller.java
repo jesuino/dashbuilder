@@ -44,6 +44,7 @@ public class LayoutTemplateJSONMarshaller {
     private static final String ROWS = "rows";
     private static final String SPAN = "span";
     private static final String LAYOUT_COLUMNS = "layoutColumns";
+    private static final String LAYOUT_PROPERTIES = "layoutProperties";
     private static final String PROPERTIES = "properties";
     private static final String NAME = "name";
     private static final String STYLE = "style";
@@ -63,7 +64,7 @@ public class LayoutTemplateJSONMarshaller {
         JsonObject jsonObject = Json.createObject();
         jsonObject.set(STYLE, Json.create(lt.getStyle().name()));
         jsonObject.set(NAME, Json.create(lt.getName()));
-        jsonObject.set(PROPERTIES, propertiesToJson(lt.getLayoutProperties()));
+        jsonObject.set(LAYOUT_PROPERTIES, propertiesToJson(lt.getLayoutProperties()));
         jsonObject.set(ROWS, rowsToJson(lt.getRows()));
         return jsonObject;
     }
@@ -77,7 +78,7 @@ public class LayoutTemplateJSONMarshaller {
 
         template.setName(object.getString(NAME));
         template.setStyle(Style.valueOf(object.getString(STYLE)));
-        extractProperties(object.getObject(PROPERTIES), template::addLayoutProperty);
+        extractProperties(object.getObject(LAYOUT_PROPERTIES), template::addLayoutProperty);
         extractRows(object.getArray(ROWS), template::addRow);
 
         return template;
