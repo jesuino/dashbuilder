@@ -20,17 +20,17 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 
+import org.dashbuilder.client.resources.i18n.AppConstants;
+import org.dashbuilder.client.screens.RouterScreen;
+import org.jboss.errai.ui.client.local.api.elemental2.IsElement;
+import org.uberfire.client.mvp.UberElemental;
+
 import elemental2.dom.DomGlobal;
 import elemental2.dom.FormData;
 import elemental2.dom.HTMLElement;
 import elemental2.dom.HTMLFormElement;
 import elemental2.dom.RequestInit;
 import elemental2.dom.Response;
-import org.dashbuilder.client.resources.i18n.AppConstants;
-import org.dashbuilder.client.screens.RouterScreen;
-import org.jboss.errai.ui.client.local.api.elemental2.IsElement;
-import org.uberfire.client.mvp.PlaceManager;
-import org.uberfire.client.mvp.UberElemental;
 
 /**
  * Allow users to upload new dashboards

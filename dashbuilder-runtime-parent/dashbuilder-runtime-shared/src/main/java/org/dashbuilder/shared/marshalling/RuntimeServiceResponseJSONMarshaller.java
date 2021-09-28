@@ -33,6 +33,7 @@ public class RuntimeServiceResponseJSONMarshaller {
     private static final String RUNTIME_MODEL = "runtimeModel";
     private static final String AVAILABLE_MODELS = "availableModels";
     private static final String MODE = "mode";
+    private static final String ALLOW_UPLOAD = "allowUpload";
 
     private static RuntimeServiceResponseJSONMarshaller instance;
 
@@ -50,8 +51,9 @@ public class RuntimeServiceResponseJSONMarshaller {
 
     public RuntimeServiceResponse fromJson(JsonObject object) {
         return new RuntimeServiceResponse(DashbuilderRuntimeMode.valueOf(object.getString(MODE)),
-                                          parseRuntimeModel(object.getObject(RUNTIME_MODEL)),
-                                          parseStringArray(object.getArray(AVAILABLE_MODELS)));
+                parseRuntimeModel(object.getObject(RUNTIME_MODEL)),
+                parseStringArray(object.getArray(AVAILABLE_MODELS)),
+                object.getBoolean(ALLOW_UPLOAD));
 
     }
 
@@ -59,6 +61,7 @@ public class RuntimeServiceResponseJSONMarshaller {
         JsonObject object = Json.createObject();
         object.set(MODE, Json.create(service.getMode().name()));
         object.set(AVAILABLE_MODELS, listToArray(service.getAvailableModels()));
+        object.set(ALLOW_UPLOAD, Json.create(service.isAllowUpload()));
 
         if (service.getRuntimeModelOp().isPresent()) {
             RuntimeModel model = service.getRuntimeModelOp().get();
@@ -79,8 +82,8 @@ public class RuntimeServiceResponseJSONMarshaller {
 
         if (array != null) {
             IntStream.range(0, array.length())
-                     .mapToObj(array::getString)
-                     .forEach(availableModels::add);
+                    .mapToObj(array::getString)
+                    .forEach(availableModels::add);
         }
 
         return availableModels;

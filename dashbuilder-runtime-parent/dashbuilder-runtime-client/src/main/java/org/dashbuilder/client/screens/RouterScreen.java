@@ -127,6 +127,10 @@ public class RouterScreen {
             return;
         }
 
+        if (!response.isAllowUpload()) {
+            dashboardsListScreen.disableUpload();
+        }
+        
         runtimeScreen.clearCurrentSelection();
         dashboardsListScreen.loadList(response.getAvailableModels());
         placeManager.goTo(DashboardsListPerspective.ID);

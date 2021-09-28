@@ -40,7 +40,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.junit.Assert.assertEquals;
@@ -155,17 +154,15 @@ public class RuntimeModelRegistryImplTest {
 
     @Test
     public void testRegisterFileSuccessMultiMode() throws IOException {
+        var file1 = tempFile.toString();
+        var file2 = tempFile2.toString();
 
-        String file1 = tempFile.toString();
-        String file2 = tempFile2.toString();
+        var importId1 = FilenameUtils.getBaseName(tempFile.toFile().getPath());
+        var importId2 = FilenameUtils.getBaseName(tempFile2.toFile().getPath());
 
-        String importId1 = FilenameUtils.getBaseName(tempFile.toFile().getPath());
-        String importId2 = FilenameUtils.getBaseName(tempFile2.toFile().getPath());
-
-        RuntimeModel runtimeModel1 = mock(RuntimeModel.class);
-        RuntimeModel runtimeModel2 = mock(RuntimeModel.class);
-
-
+        var runtimeModel1 = mock(RuntimeModel.class);
+        var runtimeModel2 = mock(RuntimeModel.class);
+        
         when(importValidationService.validate(or(eq(file1), eq(file2)))).thenReturn(true);
         when(parser.parse(eq(importId1), any())).thenReturn(runtimeModel1);
         when(parser.parse(eq(importId2), any())).thenReturn(runtimeModel2);
@@ -178,6 +175,8 @@ public class RuntimeModelRegistryImplTest {
         registry.registerFile(file2);
         verify(runtimeModels).put(eq(importId2), eq(runtimeModel2));
     }
+    
+    
 
     @Test
     public void testSingle() {
@@ -189,7 +188,7 @@ public class RuntimeModelRegistryImplTest {
     @Test
     public void testGetInMultipleMode() {
         registry.setMode(DashbuilderRuntimeMode.MULTIPLE_IMPORT);
-        String id = "ID";
+        var id = "ID";
         registry.get(id);
         verify(runtimeModels).get(eq(id));
     }
@@ -204,7 +203,7 @@ public class RuntimeModelRegistryImplTest {
 
         assertEquals(model1, registry.single().get());
 
-        verify(runtimeModels, Mockito.times(0)).get(eq(id));
+        verify(runtimeModels, times(0)).get(eq(id));
         verify(runtimeModels).values();
     }
 

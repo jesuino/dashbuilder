@@ -59,6 +59,8 @@ public class DashboardsListScreen {
         void addCard(DashboardCard card);
 
         void clear();
+        
+        void disableUpload();
     }
 
     @Inject
@@ -114,6 +116,10 @@ public class DashboardsListScreen {
         if (DashboardsListPerspective.ID.equals(currentPlace)) {
             router.listDashboards();
         }
+    }
+
+    public void disableUpload() {
+        view.disableUpload();
     }
 
 }

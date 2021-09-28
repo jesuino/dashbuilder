@@ -171,6 +171,7 @@ public class ProjectStorageServicesImpl implements ProjectStorageServices {
     public Path createTempPath(String name) {
         var path = tempPath.resolve(name);
         try {
+            Files.deleteIfExists(path);
             return Files.createFile(path);
         } catch (IOException e) {
             throw new RuntimeException("Error creating temp path", e);

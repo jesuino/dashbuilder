@@ -68,4 +68,9 @@ public class DashboardsListScreenView implements DashboardsListScreen.View {
         dashboardsList.innerHTML = "";
     }
 
+    @Override
+    public void disableUpload() {
+        uploadWidgetContainer.remove();
+    }
+
 }

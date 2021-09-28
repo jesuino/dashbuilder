@@ -96,6 +96,11 @@ public class RuntimeOptions {
      * Boolean property when true will make dashbuilder watch the models dir to dynamically import models
      */
     private static final String WATCH_MODELS_PROP = "dashbuilder.models.watch";
+    
+    /**
+     * Boolean property to determine if new uploads are allowed in multi mode
+     */
+    private static final String ALLOW_UPLOAD_PROP = "dashbuilder.runtime.allowUpload";
 
     private boolean multipleImport;
     private boolean datasetPartition;
@@ -104,6 +109,7 @@ public class RuntimeOptions {
     private boolean modelUpdate;
     private boolean removeModelFile;
     private boolean devMode;
+    private boolean allowUpload;
     boolean watchModels;
     private String importFileLocation;
     private String importsBaseDir;
@@ -111,7 +117,7 @@ public class RuntimeOptions {
 
     @PostConstruct
     public void init() {
-        
+
         importFileLocation = System.getProperty(IMPORT_FILE_LOCATION_PROP);
         importsBaseDir = System.getProperty(IMPORTS_BASE_DIR_PROP, DEFAULT_MODEL_DIR);
 
@@ -123,9 +129,10 @@ public class RuntimeOptions {
         removeModelFile = booleanProp(MODEL_FILE_REMOVAL_PROP, Boolean.FALSE);
         devMode = booleanProp(DEV_MODE_PROP, Boolean.FALSE);
         watchModels = booleanProp(WATCH_MODELS_PROP, Boolean.FALSE);
+        allowUpload = booleanProp(ALLOW_UPLOAD_PROP, Boolean.FALSE);
         uploadSize = DEFAULT_UPLOAD_SIZE_KB;
 
-        String uploadSizeStr = System.getProperty(UPLOAD_SIZE_PROP);
+        var uploadSizeStr = System.getProperty(UPLOAD_SIZE_PROP);
         if (uploadSizeStr != null) {
             try {
                 uploadSize = 1024 * Integer.parseInt(uploadSizeStr);
@@ -146,7 +153,7 @@ public class RuntimeOptions {
      * An optional containing the file path or an empty optional otherwise.
      */
     public Optional<String> modelPath(String id) {
-        String filePath = buildFilePath(id);
+        var filePath = buildFilePath(id);
         return Paths.get(filePath).toFile().exists() ? Optional.of(filePath) : Optional.empty();
     }
 
@@ -157,7 +164,7 @@ public class RuntimeOptions {
      * @return
      */
     public RuntimeModelFileInfo newFilePath(final String fileName) {
-        String newFileName = fileName;
+        var newFileName = fileName;
         if (fileName == null || fileName.trim().isEmpty()) {
             newFileName = System.currentTimeMillis() + "";
         } else if (fileName.endsWith(DASHBOARD_EXTENSION)) {
@@ -165,7 +172,7 @@ public class RuntimeOptions {
             newFileName = fileName.substring(0, lastIndex);
         }
 
-        String filePath = buildFilePath(newFileName);
+        var filePath = buildFilePath(newFileName);
         return RuntimeModelFileInfo.newRuntimeModelFileInfo(newFileName, filePath);
     }
 
@@ -214,7 +221,11 @@ public class RuntimeOptions {
         // dev mode requires to watch models
         return watchModels || devMode;
     }
-
+    
+    public boolean isAllowUpload() {
+        return allowUpload;
+    }
+    
     public String buildFilePath(String fileId) {
         Path modelFile = Paths.get(fileId + DASHBOARD_EXTENSION);
         return Paths.get(getImportsBaseDir()).resolve(modelFile).toString();

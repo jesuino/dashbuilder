@@ -16,13 +16,14 @@
 
 package org.dashbuilder.backend.resources;
 
+import static org.dashbuilder.backend.RuntimeOptions.DASHBOARD_EXTENSION;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -36,13 +37,10 @@ import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.io.IOUtils;
 import org.dashbuilder.backend.RuntimeOptions;
-import org.dashbuilder.backend.model.RuntimeModelFileInfo;
 import org.dashbuilder.shared.service.RuntimeModelRegistry;
 import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.dashbuilder.backend.RuntimeOptions.DASHBOARD_EXTENSION;
 
 /**
  * Resource to receive new imports.
@@ -63,13 +61,16 @@ public class UploadResourceImpl {
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response uploadFile(@MultipartForm FileUploadModel form) throws IOException {
-        byte[] inputBytes = form.getFileData();
+        if (!runtimeOptions.isAllowUpload() && !runtimeModelRegistry.isEmpty()) {
+            return Response.status(Status.BAD_REQUEST).entity("New uploads are disabled.").build();
+        }
+        var inputBytes = form.fileData;
 
         checkInputSize(inputBytes);
 
-        Optional<String> dashboardOp = checkForExistingFile(inputBytes);
+        var dashboardOp = checkForExistingFile(inputBytes);
         if (dashboardOp.isPresent()) {
-            String dashboardName = dashboardOp.get();
+            var dashboardName = dashboardOp.get();
             logger.info("Found existing file with same contents: {}", dashboardName);
             if (runtimeModelRegistry.get(dashboardName).isPresent()) {
                 return Response.status(Status.CONFLICT).entity(dashboardName).build();
@@ -77,8 +78,7 @@ public class UploadResourceImpl {
                 return registerExistingFile(dashboardName);
             }
         }
-
-        return registerNewFile(form.getFileName(), inputBytes);
+        return registerNewFile(form.fileName, inputBytes);
     }
 
     /**
@@ -105,7 +105,7 @@ public class UploadResourceImpl {
      * @throws IOException 
      */
     private Optional<String> checkForExistingFile(byte[] uploadedFile) throws IOException {
-        try (Stream<java.nio.file.Path> walk = Files.walk(Paths.get(runtimeOptions.getImportsBaseDir()), 1)) {
+        try (var walk = Files.walk(Paths.get(runtimeOptions.getImportsBaseDir()), 1)) {
             return walk
                        .filter(p -> p.toFile().isFile() &&
                                     p.toString().toLowerCase().endsWith(DASHBOARD_EXTENSION) &&
@@ -122,7 +122,7 @@ public class UploadResourceImpl {
     }
 
     private boolean isContentEquals(byte[] uploadedFile, java.nio.file.Path p) {
-        try (InputStream fis = Files.newInputStream(p)) {
+        try (var fis = Files.newInputStream(p)) {
             return IOUtils.contentEquals(fis, new ByteArrayInputStream(uploadedFile));
         } catch (IOException e) {
             logger.debug("Error checking file {}. Skipping from verification.", p, e);
@@ -131,8 +131,8 @@ public class UploadResourceImpl {
     }
 
     private Response registerNewFile(String fileName, byte[] inputBytes) throws IOException {
-        RuntimeModelFileInfo newImportInfo = runtimeOptions.newFilePath(fileName);
-        java.nio.file.Path path = Paths.get(newImportInfo.getPath());
+        var newImportInfo = runtimeOptions.newFilePath(fileName);
+        var path = Paths.get(newImportInfo.getPath());
         Files.write(path, inputBytes);
 
         try {
@@ -149,7 +149,7 @@ public class UploadResourceImpl {
     }
 
     private Response registerExistingFile(String dashboardName) {
-        String filePath = runtimeOptions.buildFilePath(dashboardName);
+        var filePath = runtimeOptions.buildFilePath(dashboardName);
         runtimeModelRegistry.registerFile(filePath);
         return Response.ok(dashboardName).build();
     }

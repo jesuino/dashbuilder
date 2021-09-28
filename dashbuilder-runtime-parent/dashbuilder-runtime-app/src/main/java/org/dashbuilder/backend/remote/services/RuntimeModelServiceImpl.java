@@ -56,10 +56,11 @@ public class RuntimeModelServiceImpl implements RuntimeModelService {
 
     @Override
     public RuntimeServiceResponse info(String runtimeModelId) {
-        List<String> availableModels = new ArrayList<>(registry.availableModels());
+        var availableModels = new ArrayList<>(registry.availableModels());
         return new RuntimeServiceResponse(registry.getMode(),
                                           getRuntimeModel(runtimeModelId),
-                                          availableModels);
+                                          availableModels,
+                                          runtimeOptions.isAllowUpload());
     }
 
     @Override

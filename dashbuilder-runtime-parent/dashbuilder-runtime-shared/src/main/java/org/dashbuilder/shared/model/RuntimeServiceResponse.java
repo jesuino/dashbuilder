@@ -34,16 +34,20 @@ public class RuntimeServiceResponse {
 
     private List<String> availableModels;
 
+    private boolean allowUpload;
+
     public RuntimeServiceResponse() {
         // not used
     }
 
     public RuntimeServiceResponse(@MapsTo("mode") DashbuilderRuntimeMode mode,
                                   @MapsTo("runtimeModelOp") Optional<RuntimeModel> runtimeModelOp,
-                                  @MapsTo("availableModels") List<String> availableModels) {
+                                  @MapsTo("availableModels") List<String> availableModels,
+                                  @MapsTo("allowUpload") boolean allowUpload) {
         this.mode = mode;
         this.runtimeModelOp = runtimeModelOp;
         this.availableModels = availableModels;
+        this.allowUpload = allowUpload;
     }
 
     public Optional<RuntimeModel> getRuntimeModelOp() {
@@ -56,6 +60,10 @@ public class RuntimeServiceResponse {
 
     public DashbuilderRuntimeMode getMode() {
         return mode;
+    }
+
+    public boolean isAllowUpload() {
+        return allowUpload;
     }
 
 }

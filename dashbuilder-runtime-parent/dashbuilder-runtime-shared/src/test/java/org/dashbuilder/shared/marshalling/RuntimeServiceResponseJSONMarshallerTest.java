@@ -39,6 +39,7 @@ public class RuntimeServiceResponseJSONMarshallerTest {
                   "    \"rm1\",\n" +
                   "    \"rm2\"\n" +
                   "  ],\n" +
+                  "  \"allowUpload\": true,\n" +
                   "  \"runtimeModel\": {\n" +
                   "    \"lastModified\": 123,\n" +
                   "    \"navTree\": {\n" +
@@ -64,6 +65,7 @@ public class RuntimeServiceResponseJSONMarshallerTest {
     
     String JSON_NO_MODEL = "{\n" +
             "  \"mode\": \"STATIC\",\n" +
+            "  \"allowUpload\": true,\n" +            
             "  \"availableModels\": [\n" +
             "    \"rm1\",\n" +
             "    \"rm2\"\n" +
@@ -79,8 +81,8 @@ public class RuntimeServiceResponseJSONMarshallerTest {
                                               123l);
         RuntimeServiceResponse response = new RuntimeServiceResponse(DashbuilderRuntimeMode.STATIC,
                                                                      Optional.of(model),
-                                                                     Arrays.asList("rm1", "rm2"));
-
+                                                                     Arrays.asList("rm1", "rm2"),
+                                                                     true);
         assertEquals(JSON, RuntimeServiceResponseJSONMarshaller.get().toJson(response).toJson());
     }
 
@@ -90,6 +92,7 @@ public class RuntimeServiceResponseJSONMarshallerTest {
         assertEquals(DashbuilderRuntimeMode.STATIC, response.getMode());
         assertEquals(Arrays.asList("rm1", "rm2"), response.getAvailableModels());
         assertTrue(response.getRuntimeModelOp().isPresent());
+        assertTrue(response.isAllowUpload());
         assertEquals(123l, response.getRuntimeModelOp().get().getLastModified().longValue());
     }
 

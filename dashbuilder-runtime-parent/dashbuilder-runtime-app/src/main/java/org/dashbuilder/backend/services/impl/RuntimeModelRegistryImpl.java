@@ -99,7 +99,7 @@ public class RuntimeModelRegistryImpl implements RuntimeModelRegistry {
             throw new IllegalArgumentException("Invalid file name.");
         }
 
-        File file = new File(fileName);
+        var file = new File(fileName);
         if (!file.exists()) {
             logger.error("File does not exist: {}", fileName);
             throw new IllegalArgumentException("File does not exist");
@@ -110,8 +110,8 @@ public class RuntimeModelRegistryImpl implements RuntimeModelRegistry {
             throw new IllegalArgumentException("Not a valid file structure.");
         }
 
-        try (FileInputStream fis = new FileInputStream(fileName)) {
-            String importId = FilenameUtils.getBaseName(file.getPath());
+        try (var fis = new FileInputStream(fileName)) {
+            var importId = FilenameUtils.getBaseName(file.getPath());
             return register(importId, fis);
         } catch (IOException e) {
             logger.error("Not able to load file {}", fileName, e);
@@ -147,7 +147,7 @@ public class RuntimeModelRegistryImpl implements RuntimeModelRegistry {
             if (id == null) {
                 id = UUID.randomUUID().toString();
             }
-            RuntimeModel runtimeModel = parser.parse(id, fileStream);
+            var runtimeModel = parser.parse(id, fileStream);
             runtimeModels.put(id, runtimeModel);
 
             if (options.isDevMode()) {
