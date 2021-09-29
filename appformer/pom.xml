@@ -708,7 +708,7 @@
     <module>uberfire-server</module>
     <module>uberfire-testing-utils</module>
     <module>uberfire-workbench</module>
-    <module>uberfire-packaging</module>
+    <module>uberfire-client-all</module>
     <module>uberfire-extensions</module>
   </modules>
 

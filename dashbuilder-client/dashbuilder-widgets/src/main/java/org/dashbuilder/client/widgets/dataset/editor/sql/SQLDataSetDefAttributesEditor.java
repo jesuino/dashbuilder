@@ -115,7 +115,7 @@ public class SQLDataSetDefAttributesEditor implements IsWidget, org.dashbuilder.
     }
 
     private void onSqlDataSourcesLoad(List<SQLDataSourceDef> list) {
-        List<DropDownEditor.Entry> entries = list.stream().map(this::toDropDownEntry).collect(Collectors.toList());
+        var entries = list.stream().map(this::toDropDownEntry).collect(Collectors.toList());
         dataSource.setEntries(entries);
     }
 

@@ -184,13 +184,13 @@
       <artifactId>dashbuilder-runtime-shared</artifactId>
     </dependency>
 
-    <!-- CLIENT 
+    <!-- CLIENT -->
     <dependency>
       <groupId>org.dashbuilder</groupId>
       <artifactId>dashbuilder-runtime-client</artifactId>
       <type>war</type>
       <scope>runtime</scope>
-    </dependency>-->
+    </dependency>
 
     <!-- BACKEND -->
 

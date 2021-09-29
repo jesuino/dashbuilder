@@ -21,6 +21,7 @@
     <!-- Add the absolute path for $JBOSS_HOME below to manage another instance -->
     <errai.jboss.home>${project.build.directory}/wildfly-${version.org.wildfly}</errai.jboss.home>
     <gwt.compiler.skip>false</gwt.compiler.skip>
+    <version.wildfly.maven.plugin>5.0.1.Final</version.wildfly.maven.plugin>
     <gwt.compiler.localWorkers>4</gwt.compiler.localWorkers>
   </properties>
 
@@ -583,7 +584,7 @@
 
           </compileSourcesArtifacts>
           <runTarget>index.html</runTarget>
-	  <extraJvmArgs>-Xmx4024m -XX:CompileThreshold=7000
+          <extraJvmArgs>-Xmx4024m -XX:CompileThreshold=7000
             -Ddashbuilder.export.location=dashboard.zip
             -Derrai.jboss.home=${errai.jboss.home}
             -Derrai.jboss.debug.port=8787
@@ -726,29 +727,30 @@
             </configuration>
           </plugin>
           <plugin>
-                <groupId>org.wildfly.plugins</groupId>
-                <artifactId>wildfly-jar-maven-plugin</artifactId>
-                <configuration>
-                    <feature-pack-location>wildfly@maven(org.jboss.universe:community-universe)#${version.org.wildfly}</feature-pack-location>
-                    <layers>
-                        <layer>jaxrs</layer>
-                        <layer>management</layer>
-                    </layers>
-                    <excluded-layers>
-                        <layer>deployment-scanner</layer>
-                    </excluded-layers>
-                    <plugin-options>
-                        <jboss-fork-embedded>${plugin.fork.embedded}</jboss-fork-embedded>
-                    </plugin-options>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>package</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+            <groupId>org.wildfly.plugins</groupId>
+            <artifactId>wildfly-jar-maven-plugin</artifactId>
+            <version>${version.wildfly.maven.plugin}</version>
+            <configuration>
+              <feature-pack-location>wildfly@maven(org.jboss.universe:community-universe)#${version.org.wildfly}</feature-pack-location>
+              <layers>
+                <layer>jaxrs</layer>
+                <layer>management</layer>
+              </layers>
+              <excluded-layers>
+                <layer>deployment-scanner</layer>
+              </excluded-layers>
+              <plugin-options>
+                <jboss-fork-embedded>${plugin.fork.embedded}</jboss-fork-embedded>
+              </plugin-options>
+            </configuration>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>package</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
         </plugins>
       </build>
     </profile>

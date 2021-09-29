@@ -22,11 +22,11 @@ import java.util.stream.Collectors;
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 
-import com.google.gwt.editor.client.EditorError;
 import org.dashbuilder.common.client.editor.LeafAttributeEditor;
 import org.dashbuilder.common.client.editor.list.DropDownEditor;
-import org.dashbuilder.common.client.editor.list.DropDownEditor.Entry;
 import org.dashbuilder.dataset.def.KafkaDataSetDef.MetricsTarget;
+
+import com.google.gwt.editor.client.EditorError;
 
 /**
  * Adapts values from a DropDownEditor to work with MetricsTarget enum.
@@ -62,9 +62,9 @@ public class MetricsTargetEditorAdapter implements LeafAttributeEditor<MetricsTa
     }
 
     private void updateEntries() {
-        List<Entry> entries = Arrays.stream(MetricsTarget.values())
-                                    .map(e -> editor.newEntry(e.name(), e.name()))
-                                    .collect(Collectors.toList());
+        var entries = Arrays.stream(MetricsTarget.values())
+                .map(e -> editor.newEntry(e.name(), e.name()))
+                .collect(Collectors.toList());
         editor.setEntries(entries);
         editor.setValue(MetricsTarget.BROKER.name());
     }
